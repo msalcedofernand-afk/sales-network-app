@@ -1,0 +1,434 @@
+[
+  {
+    "source_url": "https://viveoficial.com/productos/botella-purificadora",
+    "slug": "botella-purificadora",
+    "sku": "VIVE-BOTELLA_PURIFICADORA",
+    "name": "Botella purificadora",
+    "category": "Tecnologica",
+    "description": "Diseñada bajo los estándares de VIVE, utiliza tecnología avanzada de filtración para garantizarte agua con el máximo nivel de pureza, libre de contaminantes y con un sabor impecable, sin importar dónde te encuentres.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019fb3cb-0b98-7cc7-a84c-f0494f820721.png"
+    ],
+    "scraped_at": "2026-09-08T05:09:58Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/cafe-gold-capucchino",
+    "slug": "cafe-gold-capucchino",
+    "sku": "VIVE-CAFE_GOLD_CAPUCCHINO",
+    "name": "Gold Capucchino Gourmet",
+    "category": "Dia a dia",
+    "description": "Gold Capucchino Gourmet es un complemento nutricional ideal para brindar energía, vitalidad y bienestar. Su fórmula combina 10 superalimentos ancestrales, ofreciendo un sabor delicioso y un alto valor nutricional. Rico en antioxidantes, ayuda a revitalizar el cuerpo, mejorar el rendimiento diario y promover la longevidad.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019f99c4-50c1-7aa7-b5b9-efa14928c530.png",
+      "https://cdn.viveoficial.com/products/019fa5b2-13f6-7df4-a656-4c288922e7a7.png",
+      "https://cdn.viveoficial.com/products/019fa58b-956e-7a9d-ae87-7c38eca10d2f.png",
+      "https://cdn.viveoficial.com/products/019fa594-17bc-75f7-a0be-4f840c27c4c1.png",
+      "https://cdn.viveoficial.com/products/019fa589-d763-7210-9768-83211a2ce1b0.png"
+    ],
+    "scraped_at": "2026-09-08T05:09:59Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/inkanzable-max",
+    "slug": "inkanzable-max",
+    "sku": "VIVE-INKANZABLE_MAX",
+    "name": "Inkanzable Max",
+    "category": "Nutrifit",
+    "description": "Aporta energía sostenida y mejora la concentración, revitalizando el cuerpo, elevando el ánimo y favoreciendo un enfoque claro. Fortalece la recuperación celular y el sistema inmune, al mismo tiempo que acelera el metabolismo, optimizando la quema de calorías y la producción de energía.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/01a01bcf-a3a0-7935-80be-3c729b89c154.jpg",
+      "https://cdn.viveoficial.com/products/019fa5a4-0786-7506-9c6a-5059ba85451b.png",
+      "https://cdn.viveoficial.com/products/019fa586-7cdd-7dae-8e4e-f9aa3f7444ef.png",
+      "https://cdn.viveoficial.com/products/019fa5a1-904e-780a-8b95-73e655dc1e0f.png"
+    ],
+    "scraped_at": "2026-09-08T05:09:59Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/colageno-colafem",
+    "slug": "colageno-colafem",
+    "sku": "VIVE-COLAGENO_COLAFEM",
+    "name": "Colafem",
+    "category": "Siempre joven",
+    "description": "Contribuye al equilibrio hormonal femenino y mejora la salud de la piel, el cabello y las uñas. Además, protege las articulaciones, refuerza el sistema inmunológico y favorece la absorción de nutrientes.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/01a01bd1-607e-7bb6-9c37-11fa4f1b6eb4.png",
+      "https://cdn.viveoficial.com/products/019fa598-80e6-77ad-9996-8b455ed42d1b.png",
+      "https://cdn.viveoficial.com/products/019fa596-427a-75cd-abf3-97f6145eb76c.png",
+      "https://cdn.viveoficial.com/products/019fa5a7-54a6-724b-b5d8-4030ee66e1f8.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:00Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/colageno-del-mar",
+    "slug": "colageno-del-mar",
+    "sku": "VIVE-COLAGENO_DEL_MAR",
+    "name": "Delmar",
+    "category": "Siempre joven",
+    "description": "Siente el impulso de energía y vitalidad con una fórmula premium que también cuida tu salud.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/01a01bce-0d1c-7b82-a994-e9b52c80d392.jpg",
+      "https://cdn.viveoficial.com/products/01a01c06-b486-7c66-a3bf-14153d54eb67.jpg",
+      "https://cdn.viveoficial.com/products/019fa5a7-54a6-724b-b5d8-4030ee66e1f8.png",
+      "https://cdn.viveoficial.com/products/019fa596-427a-75cd-abf3-97f6145eb76c.png",
+      "https://cdn.viveoficial.com/products/019fa598-80e6-77ad-9996-8b455ed42d1b.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:01Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/detoxificante-dtx-max",
+    "slug": "detoxificante-dtx-max",
+    "sku": "VIVE-DETOXIFICANTE_DTX_MAX",
+    "name": "DTX Max",
+    "category": "Inmunologica",
+    "description": "Mejora la digestión y limpia el tracto intestinal, desintoxica y elimina impurezas del organismo, controla parásitos y bacterias, combate el estreñimiento y alivia hemorroides,  favorece la pérdida de peso, promueve una piel saludable, aumenta la hidratación.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019f99c2-a909-7d8f-a9a1-3ffae6501dcb.png",
+      "https://cdn.viveoficial.com/products/019fa5aa-4412-7557-bb82-9a4eafc3738e.png",
+      "https://cdn.viveoficial.com/products/019fa585-3f40-7d82-8214-e27d25224d8f.png",
+      "https://cdn.viveoficial.com/products/019fa57e-4516-7aae-b9b9-d8f45ff5b06b.png",
+      "https://cdn.viveoficial.com/products/019fa580-14b3-7774-9dbd-9a4da2db78c9.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:01Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/quemador-bitburn",
+    "slug": "quemador-bitburn",
+    "sku": "VIVE-QUEMADOR_BITBURN",
+    "name": "Fitburn",
+    "category": "Nutrifit",
+    "description": "Quema de grasa efectiva, desinflamación y bienestar general, aumento de energía sostenible. Sabor natural y refrescante, control natural del apetito, aceleración de metabolismo.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/01a01bd3-2b3d-78fb-b52b-3ec5cac195b3.jpg",
+      "https://cdn.viveoficial.com/products/019fa5a1-904e-780a-8b95-73e655dc1e0f.png",
+      "https://cdn.viveoficial.com/products/019fa586-7cdd-7dae-8e4e-f9aa3f7444ef.png",
+      "https://cdn.viveoficial.com/products/019fa5a4-0786-7506-9c6a-5059ba85451b.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:03Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/cafe-black-coffee",
+    "slug": "cafe-black-coffee",
+    "sku": "VIVE-CAFE_BLACK_COFFEE",
+    "name": "Gold Black Coffee",
+    "category": "Inmunologica",
+    "description": "Ayuda a las personas con diabetes a reducir los niveles de glucosa, colesterol y otros indicadores en la sangre. Poder antioxidante total, mejora la digestión y la absorción de nutrientes, apoyo inmunológico y cardiovascular, defensa contra la inflamación Activa y promueve el bienestar desde adentro.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019f99c4-7bfd-789f-b6a9-d7479c2c3137.png",
+      "https://cdn.viveoficial.com/products/01a01bc7-9796-7929-aa14-161e8f38aa2e.jpg",
+      "https://cdn.viveoficial.com/products/01a01bfd-a688-73e7-836a-76e127b09f47.jpg",
+      "https://cdn.viveoficial.com/products/019fa580-14b3-7774-9dbd-9a4da2db78c9.png",
+      "https://cdn.viveoficial.com/products/019fa585-3f40-7d82-8214-e27d25224d8f.png",
+      "https://cdn.viveoficial.com/products/019fa57e-4516-7aae-b9b9-d8f45ff5b06b.png",
+      "https://cdn.viveoficial.com/products/019fa5aa-4412-7557-bb82-9a4eafc3738e.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:04Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/gold-vivelate-gourmet",
+    "slug": "gold-vivelate-gourmet",
+    "sku": "VIVE-GOLD_VIVELATE_GOURMET",
+    "name": "Gold Vivelate Gourmet",
+    "category": "Dia a dia",
+    "description": "Refuerza el sistema inmunológico, aporta antioxidantes y es una fuente natural de energía. Actúa como prebiótico, equilibra el tránsito intestinal y cuenta con propiedades desintoxicantes. Además, es un poderoso antiinflamatorio, ayuda a regular los niveles de azúcar en la sangre y estimula la disminución de las hormonas del estrés.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019f99c4-c516-7b0e-9610-17d2839cf82a.png",
+      "https://cdn.viveoficial.com/products/019fa589-d763-7210-9768-83211a2ce1b0.png",
+      "https://cdn.viveoficial.com/products/019fa58b-956e-7a9d-ae87-7c38eca10d2f.png",
+      "https://cdn.viveoficial.com/products/019fa594-17bc-75f7-a0be-4f840c27c4c1.png",
+      "https://cdn.viveoficial.com/products/019fa5b2-13f6-7df4-a656-4c288922e7a7.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:04Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/gomitas-vital-cbd",
+    "slug": "gomitas-vital-cbd",
+    "sku": "VIVE-GOMITAS_VITAL_CBD",
+    "name": "Gomitas-Vital-Cbd",
+    "category": "CBD",
+    "description": "Un producto de calidad que apoya tu salud sin\ncomprometer otras áreas de tu bienestar",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019f99c5-552d-7b0c-a6c4-f4f17b6d1a91.png",
+      "https://cdn.viveoficial.com/products/019fa5bd-c080-7927-93a3-82a2574f91de.png",
+      "https://cdn.viveoficial.com/products/019fa5bb-31de-7826-9f7a-ce9715620722.png",
+      "https://cdn.viveoficial.com/products/019fb3d5-9a44-7345-ab6b-2094c7ba1e79.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:05Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/clorofila-green-food",
+    "slug": "clorofila-green-food",
+    "sku": "VIVE-CLOROFILA_GREEN_FOOD",
+    "name": "Green Food Clorofila",
+    "category": "Inmunologica",
+    "description": "Desintoxica, protege y estimula la regeneración del hígado frente a los daños causados por el alcohol, medicamentos o una mala alimentación. Alcaliniza el pH y facilita el procesamiento de grasas, mejorando la función biliar. Además, ayuda a combatir problemas respiratorios, cardiovasculares y de la piel, al mismo tiempo que regula los niveles de colesterol y glucosa.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019f99c5-9b31-7763-a737-559a6e688414.png",
+      "https://cdn.viveoficial.com/products/01a01bf1-8382-7f36-a890-aeeae2d74b44.jpg",
+      "https://cdn.viveoficial.com/products/019fa580-14b3-7774-9dbd-9a4da2db78c9.png",
+      "https://cdn.viveoficial.com/products/019fa5aa-4412-7557-bb82-9a4eafc3738e.png",
+      "https://cdn.viveoficial.com/products/019fa57e-4516-7aae-b9b9-d8f45ff5b06b.png",
+      "https://cdn.viveoficial.com/products/019fa585-3f40-7d82-8214-e27d25224d8f.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:07Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/energizante-inkanzable",
+    "slug": "energizante-inkanzable",
+    "sku": "VIVE-ENERGIZANTE_INKANZABLE",
+    "name": "Inkanzable",
+    "category": "Dia a dia",
+    "description": "Mejora el rendimiento físico y mental, reduce el estrés y la fatiga, y contribuye a la formación de serotonina (la hormona de la felicidad). Funciona como un energizante y estimulante natural que potencia la capacidad biológica y refuerza el sistema inmunológico. Además, mejora la circulación, cuida la salud cardiovascular y ayuda a aliviar el dolor articular.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019f99c6-2c68-7693-96aa-19cc83373c7d.png",
+      "https://cdn.viveoficial.com/products/019fa589-d763-7210-9768-83211a2ce1b0.png",
+      "https://cdn.viveoficial.com/products/019fa5b2-13f6-7df4-a656-4c288922e7a7.png",
+      "https://cdn.viveoficial.com/products/019fa594-17bc-75f7-a0be-4f840c27c4c1.png",
+      "https://cdn.viveoficial.com/products/019fa58b-956e-7a9d-ae87-7c38eca10d2f.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:07Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/locion-analgesica-cbd",
+    "slug": "locion-analgesica-cbd",
+    "sku": "VIVE-LOCION_ANALGESICA_CBD",
+    "name": "Locion Analgesica",
+    "category": "CBD",
+    "description": "Gracias a su rápida absorción ayuda en dolores\nagudos como golpes y torceduras",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019fa5bd-c080-7927-93a3-82a2574f91de.png",
+      "https://cdn.viveoficial.com/products/019fb3d5-9a44-7345-ab6b-2094c7ba1e79.png",
+      "https://cdn.viveoficial.com/products/019fa5bb-31de-7826-9f7a-ce9715620722.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:08Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/ph-max",
+    "slug": "ph-max",
+    "sku": "VIVE-PH_MAX",
+    "name": "PH MAX",
+    "category": "Inmunologica",
+    "description": "Refuerza el Sistema Inmunológico, aporta energía y combate la fatiga Nutre la piel, mejorando su apariencia y vitalidad Mejora la digestión y la absorción de nutrientes. Además Favorece la salud cardiovascular y la circulación.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/01a01bd5-5de4-7b74-a470-b82832c2bb64.jpg",
+      "https://cdn.viveoficial.com/products/01a01bf4-3778-7eb6-abbf-010c2a557082.jpg",
+      "https://cdn.viveoficial.com/products/019fa580-14b3-7774-9dbd-9a4da2db78c9.png",
+      "https://cdn.viveoficial.com/products/019fa5aa-4412-7557-bb82-9a4eafc3738e.png",
+      "https://cdn.viveoficial.com/products/019fa585-3f40-7d82-8214-e27d25224d8f.png",
+      "https://cdn.viveoficial.com/products/019fa57e-4516-7aae-b9b9-d8f45ff5b06b.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:09Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/sumplementos-pureshield",
+    "slug": "sumplementos-pureshield",
+    "sku": "VIVE-SUMPLEMENTOS_PURESHIELD",
+    "name": "Pureshield",
+    "category": "Inmunologica",
+    "description": "Tiene propiedades antibacterianas y antivirales, reduce la inflamación y fortalece el sistema inmunológico, mejorando la defensa natural del cuerpo. Además es un antioxidante poderoso que protege las células y previene enfermedades.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019f99c6-f2c7-7194-b9ba-0443fc40cce0.png",
+      "https://cdn.viveoficial.com/products/01a01be7-94fb-7e01-817e-5d86dcfc14ce.png",
+      "https://cdn.viveoficial.com/products/019fa580-14b3-7774-9dbd-9a4da2db78c9.png",
+      "https://cdn.viveoficial.com/products/019fa5aa-4412-7557-bb82-9a4eafc3738e.png",
+      "https://cdn.viveoficial.com/products/019fa585-3f40-7d82-8214-e27d25224d8f.png",
+      "https://cdn.viveoficial.com/products/019fa591-c111-7121-b083-d71b97acc9af.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:09Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/sumplementos-purifit",
+    "slug": "sumplementos-purifit",
+    "sku": "VIVE-SUMPLEMENTOS_PURIFIT",
+    "name": "Purifit",
+    "category": "Nutrifit",
+    "description": "Es rica en antioxidantes, aumenta la energía y fortalece el sistema inmunológico. Mejora la digestión, reduce la inflamación y promueve una piel saludable. Además, ayuda a regular el azúcar en la sangre, mejora la salud cardiovascular y apoya la pérdida de peso.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019f99c7-2cfd-7ec3-b16a-cbbfbc0e1826.png",
+      "https://cdn.viveoficial.com/products/01a01be8-e3c8-7617-940e-81c6cc2c0889.png",
+      "https://cdn.viveoficial.com/products/019fa5a4-0786-7506-9c6a-5059ba85451b.png",
+      "https://cdn.viveoficial.com/products/019fa5a1-904e-780a-8b95-73e655dc1e0f.png",
+      "https://cdn.viveoficial.com/products/019fa586-7cdd-7dae-8e4e-f9aa3f7444ef.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:10Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/vitaminas-nutrigummies",
+    "slug": "vitaminas-nutrigummies",
+    "sku": "VIVE-VITAMINAS_NUTRIGUMMIES",
+    "name": "Superkids Nutri Gummies",
+    "category": "Kids",
+    "description": "Gomitas nutritivas diseñadas para apoyar el crecimiento y desarrollo saludable de los niños.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/01a01bd7-1307-7bd2-90b6-526fb00eedf8.jpg",
+      "https://cdn.viveoficial.com/products/019fa56c-4b1c-77a4-a301-06c4ad213b51.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:11Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/moringa-aceite-en-capsulas-vit",
+    "slug": "moringa-aceite-en-capsulas-vit",
+    "sku": "VIVE-MORINGA_ACEITE_EN_CAPSULAS_VIT",
+    "name": "Vit - Aceite de Moringa en Cápsulas blandas",
+    "category": "Inmunologica",
+    "description": "Nutre y protege la piel y el cabello, fortalece los huesos y favorece la salud hepática. Ayuda a regular los trastornos del estado de ánimo, mejora las molestias estomacales y protege el sistema cardiovascular. Además, combate infecciones bacterianas, previene trastornos renales, alivia edemas y contribuye a tratar la anemia, las enfermedades de células falciformes y a prevenir el cáncer.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/01a01bdf-40da-7248-b08f-279208ba5b73.png",
+      "https://cdn.viveoficial.com/products/01a01bf7-038b-7bd4-b31f-0e3dac953848.jpg",
+      "https://cdn.viveoficial.com/products/019fa580-14b3-7774-9dbd-9a4da2db78c9.png",
+      "https://cdn.viveoficial.com/products/019fa5aa-4412-7557-bb82-9a4eafc3738e.png",
+      "https://cdn.viveoficial.com/products/019fa585-3f40-7d82-8214-e27d25224d8f.png",
+      "https://cdn.viveoficial.com/products/019fa599-d901-72e0-8420-aa6f0d39c1af.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:11Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/moringa-aceite-prensado-al-frio",
+    "slug": "moringa-aceite-prensado-al-frio",
+    "sku": "VIVE-MORINGA_ACEITE_PRENSADO_AL_FRIO",
+    "name": "VIT - Aceite de Moringa en Spray",
+    "category": "Siempre joven",
+    "description": "Proporciona una hidratación duradera, reduce la aparición de arrugas y mejora la elasticidad de la piel. Ofrece propiedades antiacné y antiinflamatorias, ayudando a disminuir la apariencia de cicatrices y estrías.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/01a01bdd-d1f3-7251-b519-466aae9e35f8.png",
+      "https://cdn.viveoficial.com/products/01a01bf9-0924-7192-80b0-ef6818d14956.jpg",
+      "https://cdn.viveoficial.com/products/019fa5a7-54a6-724b-b5d8-4030ee66e1f8.png",
+      "https://cdn.viveoficial.com/products/019fa598-80e6-77ad-9996-8b455ed42d1b.png",
+      "https://cdn.viveoficial.com/products/019fa596-427a-75cd-abf3-97f6145eb76c.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:12Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/sacha-inchi-omega369",
+    "slug": "sacha-inchi-omega369",
+    "sku": "VIVE-SACHA_INCHI_OMEGA369",
+    "name": "Vit Omega 3,6,9",
+    "category": "Dia a dia",
+    "description": "Potencia la función cerebral y ayuda a prevenir enfermedades neurodegenerativas, mientras reduce el colesterol malo (LDL) y aumenta el bueno (HDL). Además, ayuda a aliviar procesos inflamatorios y dolores articulares y musculares.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019f99c7-907b-70ec-8b94-85856243500b.png",
+      "https://cdn.viveoficial.com/products/019fa589-d763-7210-9768-83211a2ce1b0.png",
+      "https://cdn.viveoficial.com/products/019fa5b2-13f6-7df4-a656-4c288922e7a7.png",
+      "https://cdn.viveoficial.com/products/019fa58b-956e-7a9d-ae87-7c38eca10d2f.png",
+      "https://cdn.viveoficial.com/products/019fa594-17bc-75f7-a0be-4f840c27c4c1.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:13Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/vital-cbd-sublingual",
+    "slug": "vital-cbd-sublingual",
+    "sku": "VIVE-VITAL_CBD_SUBLINGUAL",
+    "name": "Vital CBD",
+    "category": "CBD",
+    "description": "Nutre tu cuerpo, calma tu mente.\nCBD 5% + ACEITE DE MORINGA",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019fa5bb-31de-7826-9f7a-ce9715620722.png",
+      "https://cdn.viveoficial.com/products/019fb3d5-9a44-7345-ab6b-2094c7ba1e79.png",
+      "https://cdn.viveoficial.com/products/019fa5bd-c080-7927-93a3-82a2574f91de.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:13Z"
+  },
+  {
+    "source_url": "https://viveoficial.com/productos/vitaminas-vitamoringa",
+    "slug": "vitaminas-vitamoringa",
+    "sku": "VIVE-VITAMINAS_VITAMORINGA",
+    "name": "Vitamoringa",
+    "category": "Dia a dia",
+    "description": "Aporta vitaminas y minerales esenciales, favorece la desintoxicación del cuerpo y reduce el riesgo de enfermedades. Mejora la función cerebral, apoya la salud visual y ayuda a aliviar el estrés y la ansiedad, contribuyendo a un sueño reparador. Además, mejora la salud de la piel y el cabello y regula los niveles de azúcar en sangre.",
+    "price_cents": null,
+    "price_status": "Precio disponible próximamente; confirmar con proveedor.",
+    "currency": "PEN",
+    "available": false,
+    "image_urls": [
+      "https://cdn.viveoficial.com/products/019f99c7-d772-7b75-9d6c-a9741fc1f2e2.png",
+      "https://cdn.viveoficial.com/products/01a01bfa-d35b-7b75-bd7e-a74e9080dad7.jpg",
+      "https://cdn.viveoficial.com/products/019fa589-d763-7210-9768-83211a2ce1b0.png",
+      "https://cdn.viveoficial.com/products/019fa5b2-13f6-7df4-a656-4c288922e7a7.png",
+      "https://cdn.viveoficial.com/products/019fa58b-956e-7a9d-ae87-7c38eca10d2f.png",
+      "https://cdn.viveoficial.com/products/019fa57c-a4f5-7be0-b8c0-b1ec3dcd65a1.png"
+    ],
+    "scraped_at": "2026-09-08T05:10:14Z"
+  }
+]
