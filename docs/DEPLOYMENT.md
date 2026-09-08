@@ -9,6 +9,10 @@
 7. Conectar GitHub a Vercel: Preview para Pull Requests y Production únicamente desde `main`.
 8. Configurar Android con URL y clave publicable mediante mecanismo de build; nunca subir secretos.
 
-Este entorno no tiene sesión de GitHub, Vercel ni Supabase configurada, por lo que la creación del proyecto remoto y el primer despliegue requieren las cuentas del propietario.
+Proyectos remotos creados:
+
+- GitHub: https://github.com/msalcedofernand-afk/sales-network-app
+- Vercel: https://sales-network-app.vercel.app (Root Directory `web`)
+- Supabase: proyecto `sales-network-app`, ref. `xceqwexdufdgnmctsxcg`, URL https://xceqwexdufdgnmctsxcg.supabase.co
 
 El proyecto usa `web/proxy.ts` para renovar cookies y proteger las rutas web. Si se cambia la versión mayor de Next.js, conservar esa responsabilidad y actualizar la convención de proxy/middleware según la documentación vigente.
