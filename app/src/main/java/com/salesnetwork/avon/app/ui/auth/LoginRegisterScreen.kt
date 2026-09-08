@@ -1,6 +1,7 @@
 package com.salesnetwork.avon.app.ui.auth
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -64,15 +65,25 @@ fun LoginRegisterScreen(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Surface(
+                    modifier = Modifier.size(64.dp),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text("SN", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = if (isRegisterMode) "Registro de Red" else "Ingreso al Sistema",
+                    text = if (isRegisterMode) "Crea tu cuenta" else "Bienvenido a Sales Network",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
 
                 Text(
-                    text = "Venta Directa & Gestión de Líderes (Chiclayo)",
+                    text = if (isRegisterMode) "Únete a tu equipo y empieza a vender" else "Organiza clientes, catálogo y pedidos desde un solo lugar",
                     fontSize = 13.sp,
                     color = Color.Gray,
                     modifier = Modifier.padding(bottom = 16.dp)
