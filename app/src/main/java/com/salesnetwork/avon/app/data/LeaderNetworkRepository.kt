@@ -169,6 +169,16 @@ class LeaderNetworkRepository private constructor(context: Context) {
         )
         usersMap[defaultLeader.id] = defaultLeader
         leaderCodesSet.add(defaultLeader.referralCode)
+        val demoUser = User(
+            id = "074fa307-28b6-4ec3-bc11-849b66c97675",
+            name = "Usuario demo",
+            email = "demo@salesnetwork.test",
+            role = UserRole.LIDER,
+            referralCode = "AVON-DEMO"
+        )
+        usersMap[demoUser.id] = demoUser
+        passwordHashes[demoUser.id] = hashPassword("ViveDemo-2026!")
+        leaderCodesSet.add(demoUser.referralCode)
 
         val userIds = prefs.getStringSet("all_user_ids", emptySet()) ?: emptySet()
         for (id in userIds) {
