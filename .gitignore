@@ -1,0 +1,16 @@
+.gradle/
+.kotlin/
+.idea/
+.vscode/
+local.properties
+app/build/
+build/
+web/node_modules/
+web/.next/
+web/.vercel/
+web/.env*
+!.env.example
+*.jks
+*.keystore
+supabase/.temp/
+

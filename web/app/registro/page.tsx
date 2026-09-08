@@ -1,0 +1,5 @@
+"use client";
+import { FormEvent, useState } from "react";
+import { createClient } from "../../lib/supabase";
+export default function RegisterPage(){const [name,setName]=useState("");const [email,setEmail]=useState("");const [password,setPassword]=useState("");const [message,setMessage]=useState("");async function submit(e:FormEvent){e.preventDefault();const {error}=await createClient().auth.signUp({email,password,options:{data:{name}}});setMessage(error?.message??"Revisa tu correo para confirmar la cuenta.");}return <section className="card" style={{maxWidth:460,margin:"64px auto"}}><h1>Crear cuenta</h1><form onSubmit={submit} style={{display:"grid",gap:12}}><label>Nombre<input required value={name} onChange={e=>setName(e.target.value)}/></label><label>Correo<input type="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Contraseña<input type="password" required minLength={8} value={password} onChange={e=>setPassword(e.target.value)}/></label><button>Registrarme</button></form>{message&&<p>{message}</p>}</section>;}
+

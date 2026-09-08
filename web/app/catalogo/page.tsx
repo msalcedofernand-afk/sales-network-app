@@ -1,0 +1,4 @@
+import Link from "next/link";
+const demoProducts=[{slug:"far-away",name:"Perfume Far Away Glamour",category:"Perfumería",price:69.9},{slug:"anew",name:"Crema Anew Reversalist",category:"Cuidado de la Piel",price:85},{slug:"labial",name:"Labial Ultra Matte",category:"Maquillaje",price:24.9}];
+export default function CatalogPage(){return <><section className="hero"><p className="muted">Catálogo privado por equipo</p><h1>Productos de la campaña</h1><p>Los datos demo se reemplazarán por productos de Supabase al configurar el proyecto.</p></section><section className="grid">{demoProducts.map(p=><article className="card" key={p.slug}><p className="muted">{p.category}</p><h2>{p.name}</h2><strong>S/ {p.price.toFixed(2)}</strong><p><Link href={`/catalogo/${p.slug}`}>Ver producto →</Link></p></article>)}</section></>;}
+

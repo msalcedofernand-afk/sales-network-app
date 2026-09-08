@@ -1,0 +1,25 @@
+project_id = "sales-network"
+
+[api]
+enabled = true
+
+[functions.create-invitation]
+verify_jwt = true
+[functions.create-team]
+verify_jwt = true
+[functions.accept-invitation]
+verify_jwt = true
+[functions.calculate-cart]
+verify_jwt = true
+[functions.checkout-cart]
+verify_jwt = true
+[functions.sync-catalog]
+verify_jwt = true
+[functions.publish-campaign]
+verify_jwt = true
+[functions.receive-catalog-webhook]
+verify_jwt = false
+[functions.calculate-route]
+verify_jwt = true
+[functions.send-order-summary]
+verify_jwt = true
