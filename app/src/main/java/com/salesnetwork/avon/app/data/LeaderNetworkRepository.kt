@@ -8,6 +8,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.UUID
 import java.security.MessageDigest
+import java.net.HttpURLConnection
+import java.net.URL
+import org.json.JSONObject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 
 class LeaderNetworkRepository private constructor(context: Context) {
 
@@ -75,6 +80,15 @@ class LeaderNetworkRepository private constructor(context: Context) {
 
     fun login(email: String, password: String): Result<User> {
         val cleanEmail = email.trim().lowercase()
+        val remote = runBlocking(Dispatchers.IO) { loginSupabase(cleanEmail, password) }
+        if (remote.isSuccess) {
+            val user = remote.getOrThrow()
+            usersMap[user.id] = user
+            persistUser(user)
+            saveActiveUserSession(user)
+            _currentUser.value = user
+            return Result.success(user)
+        }
         val user = usersMap.values.firstOrNull { it.email.equals(cleanEmail, ignoreCase = true) }
         return if (user != null && passwordHashes[user.id] == hashPassword(password)) {
             saveActiveUserSession(user)
@@ -82,6 +96,35 @@ class LeaderNetworkRepository private constructor(context: Context) {
             Result.success(user)
         } else {
             Result.failure(Exception("Correo o contraseña incorrectos."))
+        }
+    }
+
+    private fun loginSupabase(email: String, password: String): Result<User> {
+        return try {
+        val connection = (URL("https://xceqwexdufdgnmctsxcg.supabase.co/auth/v1/token?grant_type=password").openConnection() as HttpURLConnection).apply {
+            requestMethod = "POST"
+            doOutput = true
+            connectTimeout = 8000
+            readTimeout = 8000
+            setRequestProperty("apikey", SUPABASE_ANON_KEY)
+            setRequestProperty("Content-Type", "application/json")
+        }
+        connection.outputStream.use { it.write(JSONObject().put("email", email).put("password", password).toString().toByteArray()) }
+        val body = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)
+            ?.bufferedReader()?.use { it.readText() }.orEmpty()
+        if (connection.responseCode !in 200..299) return Result.failure(Exception("Correo o contraseña incorrectos."))
+        val json = JSONObject(body)
+        val authUser = json.getJSONObject("user")
+        val metadata = authUser.optJSONObject("user_metadata")
+        Result.success(User(
+            id = authUser.getString("id"),
+            name = metadata?.optString("name").orEmpty().ifBlank { email.substringBefore("@").replaceFirstChar { it.uppercase() } },
+            email = authUser.optString("email", email),
+            role = UserRole.LIDER,
+            referralCode = "AVON-2026"
+        ))
+    } catch (_: Exception) {
+        Result.failure(Exception("No se pudo conectar. Revisa tu conexión e inténtalo de nuevo."))
         }
     }
 
@@ -150,6 +193,7 @@ class LeaderNetworkRepository private constructor(context: Context) {
     }
 
     companion object {
+        private const val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjZXE3ZXhkdWZkZ25tY3RzeGNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MzgxMjgsImV4cCI6MjEwNDQxNDEyOH0.LqPTMoS3Q1-zdsOX9CMOahMynB5XAl-AxsjrVxSlse8"
         @Volatile
         private var INSTANCE: LeaderNetworkRepository? = null
 
