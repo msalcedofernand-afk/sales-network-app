@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salesnetwork.avon.app.domain.model.Product
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,6 +130,11 @@ fun CatalogScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
+                            AsyncImage(
+                                model = product.imageUrl,
+                                contentDescription = product.name,
+                                modifier = Modifier.fillMaxWidth().height(120.dp),
+                            )
                             Surface(
                                 color = MaterialTheme.colorScheme.primaryContainer,
                                 shape = RoundedCornerShape(6.dp),
@@ -154,6 +160,9 @@ fun CatalogScreen(
                                 fontSize = 11.sp,
                                 color = Color.Gray
                             )
+                            if (product.description.isNotBlank()) {
+                                Text(product.description, fontSize = 11.sp, color = Color.Gray, maxLines = 3)
+                            }
 
                             Spacer(modifier = Modifier.height(8.dp))
 
