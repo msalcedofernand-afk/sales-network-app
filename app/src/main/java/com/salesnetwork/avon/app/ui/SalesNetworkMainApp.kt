@@ -1,6 +1,7 @@
 package com.salesnetwork.avon.app.ui
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.LocationOn
@@ -64,6 +65,25 @@ fun SalesNetworkMainApp(
         )
     } else {
         Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                            Text(
+                                text = when (selectedTab) {
+                                    SalesAppTab.NETWORK -> "Mi red"
+                                    SalesAppTab.CATALOG -> "Catálogo"
+                                    SalesAppTab.CUSTOMERS -> "Clientes"
+                                    SalesAppTab.ORDERS -> "Pedidos"
+                                },
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                            )
+                            Text("Sales Network", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+                )
+            },
             bottomBar = {
                 NavigationBar {
                     NavigationBarItem(
