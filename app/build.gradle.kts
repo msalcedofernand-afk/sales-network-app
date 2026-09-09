@@ -36,10 +36,23 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    flavorDimensions += "channel"
+    productFlavors {
+        create("stable") {
+            dimension = "channel"
+            buildConfigField("String", "UPDATE_CHANNEL", "\"stable\"")
+        }
+        create("beta") {
+            dimension = "channel"
+            applicationIdSuffix = ".beta"
+            versionNameSuffix = "-beta"
+            buildConfigField("String", "UPDATE_CHANNEL", "\"beta\"")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
-            buildConfigField("String", "UPDATE_CHANNEL", "\"stable\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -47,7 +60,6 @@ android {
         }
         debug {
             isDebuggable = true
-            buildConfigField("String", "UPDATE_CHANNEL", "\"beta\"")
         }
     }
 
