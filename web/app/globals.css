@@ -83,7 +83,6 @@ button, input, select, textarea { font: inherit; }
 .release-beta { color: var(--aviso); background: #fff8df; }
 .release-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .sidebar-foot .release-badge { margin-block-start: 4px; }
-@media (max-width: 639px) { .auth-header .release-badge { display: none; } }
 .download-app-link:hover { background: #c2e5d5; }
 .nav-section-label { margin: 28px 12px 8px; color: var(--tinta-500); font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .sidebar-nav { display: grid; gap: 4px; }
