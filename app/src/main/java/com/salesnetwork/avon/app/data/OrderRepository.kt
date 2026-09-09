@@ -12,6 +12,7 @@ import java.util.UUID
 
 class OrderRepository private constructor(context: Context) {
     private val remoteApi = SupabaseOrderApi(context.applicationContext)
+    private val checkoutApi = SupabaseCheckoutApi(context.applicationContext)
 
     private val _orders = MutableStateFlow<List<Order>>(emptyList())
     val orders: StateFlow<List<Order>> = _orders.asStateFlow()
@@ -21,6 +22,9 @@ class OrderRepository private constructor(context: Context) {
         _orders.value = remote
         remote.size
     }
+
+    suspend fun checkoutRemote(userId: String, customerId: String, items: List<OrderItem>): Result<Unit> =
+        checkoutApi.checkout(userId, customerId, items)
 
     fun getOrdersForLeader(leaderUserId: String, campaignCode: String? = null): List<Order> {
         val list = _orders.value.filter { it.leaderUserId == leaderUserId || it.leaderUserId.isEmpty() }

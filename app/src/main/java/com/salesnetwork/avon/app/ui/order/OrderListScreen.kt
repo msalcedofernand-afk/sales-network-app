@@ -47,6 +47,7 @@ fun OrderListScreen(
     pendingCount: Int,
     availableCustomers: List<CustomerContact> = emptyList(),
     availableProducts: List<Product> = emptyList(),
+    statusMessage: String? = null,
     onUpdateStatus: (String, OrderStatus) -> Unit,
     onRegisterPayment: (String, PaymentMethod, Double) -> Unit = { _, _, _ -> },
     onCreateOrder: (customerId: String, customerName: String, items: List<OrderItem>, method: PaymentMethod, paid: Double) -> Unit = { _, _, _, _, _ -> },
@@ -98,6 +99,7 @@ fun OrderListScreen(
                 .padding(16.dp)
         ) {
             SectionIntro("VV / Ventas", "Tu negocio en movimiento", "Pedidos, cobros y entregas en un solo lugar.")
+            statusMessage?.let { Text(it, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) }
 
             Spacer(modifier = Modifier.height(14.dp))
 

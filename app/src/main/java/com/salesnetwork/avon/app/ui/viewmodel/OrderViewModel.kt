@@ -23,7 +23,8 @@ data class OrderUiState(
     val pendingCount: Int = 0,
     val activeCampaign: String = "C-01-2026",
     val campaigns: List<String> = listOf("C-01-2026", "C-02-2026", "C-03-2026"),
-    val showCreateDialog: Boolean = false
+    val showCreateDialog: Boolean = false,
+    val statusMessage: String? = null
 )
 
 class OrderViewModel(application: Application) : AndroidViewModel(application) {
@@ -76,17 +77,14 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         amountPaid: Double = 0.0
     ) {
         if (items.isEmpty()) return
-        repository.createOrder(
-            customerId = customerId,
-            customerName = customerName,
-            leaderUserId = currentLeaderId,
-            campaignCode = _uiState.value.activeCampaign,
-            items = items,
-            paymentMethod = paymentMethod,
-            amountPaid = amountPaid
-        )
-        closeCreateDialog()
-        loadOrders()
+        viewModelScope.launch {
+            val result = repository.checkoutRemote(currentLeaderId, customerId, items)
+            _uiState.value = _uiState.value.copy(
+                showCreateDialog = false,
+                statusMessage = result.fold({ "Pedido confirmado." }, { "No pudimos confirmar el pedido: " + (it.message ?: "revisa tu conexión") })
+            )
+            if (result.isSuccess) loadOrders()
+        }
     }
 
     fun updateStatus(orderId: String, status: OrderStatus) {
