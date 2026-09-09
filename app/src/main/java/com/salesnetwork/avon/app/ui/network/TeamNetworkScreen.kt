@@ -410,7 +410,7 @@ fun TeamNetworkScreen(
                                 fontSize = 17.sp,
                                 color = MaterialTheme.colorScheme.primary
                             )
-                            Text("Por ventas de tu equipo", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("Por ventas de tu equipo", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
 
@@ -428,7 +428,7 @@ fun TeamNetworkScreen(
                                 fontSize = 17.sp,
                                 color = if (activeCount > 0) Color(0xFF2E7D32) else Color(0xFFC62828)
                             )
-                            Text("En campana activa", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("En campaña activa", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
