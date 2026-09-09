@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class CustomerRepository private constructor(context: Context) {
 
-    private val _customers = MutableStateFlow<List<CustomerContact>>(generateInitialCustomers())
+    private val _customers = MutableStateFlow<List<CustomerContact>>(emptyList())
     val customers: StateFlow<List<CustomerContact>> = _customers.asStateFlow()
 
     fun getCustomersForUser(userId: String): List<CustomerContact> {

@@ -12,7 +12,7 @@ import java.util.UUID
 
 class OrderRepository private constructor(context: Context) {
 
-    private val _orders = MutableStateFlow<List<Order>>(generateInitialOrders())
+    private val _orders = MutableStateFlow<List<Order>>(emptyList())
     val orders: StateFlow<List<Order>> = _orders.asStateFlow()
 
     fun getOrdersForLeader(leaderUserId: String, campaignCode: String? = null): List<Order> {
