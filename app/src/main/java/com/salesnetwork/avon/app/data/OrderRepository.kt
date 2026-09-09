@@ -26,6 +26,9 @@ class OrderRepository private constructor(context: Context) {
     suspend fun checkoutRemote(userId: String, customerId: String, items: List<OrderItem>): Result<Unit> =
         checkoutApi.checkout(userId, customerId, items)
 
+    suspend fun transitionStatusRemote(orderId: String, status: OrderStatus): Result<Unit> =
+        remoteApi.transitionStatus(orderId, status)
+
     fun getOrdersForLeader(leaderUserId: String, campaignCode: String? = null): List<Order> {
         val list = _orders.value.filter { it.leaderUserId == leaderUserId || it.leaderUserId.isEmpty() }
         return if (campaignCode.isNullOrBlank()) list else list.filter { it.campaignCode.equals(campaignCode, ignoreCase = true) }

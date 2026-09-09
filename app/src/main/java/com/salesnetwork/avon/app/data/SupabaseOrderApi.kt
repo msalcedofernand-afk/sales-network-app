@@ -9,6 +9,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import java.net.HttpURLConnection
 import java.net.URL
+import org.json.JSONObject
 
 class SupabaseOrderApi(context: Context) {
     private val prefs = context.getSharedPreferences("leader_network_prefs", Context.MODE_PRIVATE)
@@ -33,6 +34,29 @@ class SupabaseOrderApi(context: Context) {
                 val status = runCatching { OrderStatus.valueOf(row.optString("status")) }.getOrDefault(OrderStatus.PENDIENTE)
                 add(Order(id, row.optString("customer_id"), "Cliente", row.optString("user_id"), totalAmount = row.optInt("total_cents") / 100.0, commissionLeader = row.optInt("commission_cents") / 100.0, items = lines, status = status, createdAt = row.optString("created_at").take(10)))
             }
+        }
+    }
+
+    suspend fun transitionStatus(orderId: String, status: OrderStatus): Result<Unit> = withContext(Dispatchers.IO) {
+        runCatching {
+            val auth = token ?: error("Sesión vencida. Vuelve a iniciar sesión.")
+            val connection = (URL(base + "/rest/v1/rpc/transition_order_status").openConnection() as HttpURLConnection).apply {
+                requestMethod = "POST"
+                doOutput = true
+                connectTimeout = 8_000
+                readTimeout = 8_000
+                setRequestProperty("apikey", ANON_KEY)
+                setRequestProperty("Authorization", "Bearer $auth")
+                setRequestProperty("Content-Type", "application/json")
+                setRequestProperty("Accept", "application/json")
+            }
+            connection.outputStream.use { output ->
+                output.write(JSONObject().put("input_order_id", orderId).put("next_status", status.name).toString().toByteArray())
+            }
+            val response = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)
+                ?.bufferedReader()?.use { it.readText() }.orEmpty()
+            if (connection.responseCode !in 200..299) error("No pudimos actualizar el pedido: $response")
+            connection.disconnect()
         }
     }
 

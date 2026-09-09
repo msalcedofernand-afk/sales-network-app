@@ -88,8 +88,16 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateStatus(orderId: String, status: OrderStatus) {
-        repository.updateOrderStatus(orderId, status)
-        loadOrders()
+        viewModelScope.launch {
+            val result = repository.transitionStatusRemote(orderId, status)
+            _uiState.value = _uiState.value.copy(
+                statusMessage = result.fold({ "Estado actualizado." }, { it.message ?: "No pudimos actualizar el pedido." })
+            )
+            if (result.isSuccess) {
+                repository.refreshFromSupabase()
+                loadOrders()
+            }
+        }
     }
 
     fun registerPayment(orderId: String, method: PaymentMethod, amount: Double) {
