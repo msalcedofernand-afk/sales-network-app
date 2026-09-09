@@ -34,7 +34,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(OrderUiState())
     val uiState: StateFlow<OrderUiState> = _uiState.asStateFlow()
 
-    private var currentLeaderId: String = "leader-demo-01"
+    private var currentLeaderId: String = ""
     private var isRootAdmin: Boolean = false
 
     fun setUser(userId: String, isRoot: Boolean = false) {

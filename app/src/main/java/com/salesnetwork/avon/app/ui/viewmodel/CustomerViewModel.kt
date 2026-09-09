@@ -44,7 +44,7 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
     private val _uiState = MutableStateFlow(CustomerUiState())
     val uiState: StateFlow<CustomerUiState> = _uiState.asStateFlow()
 
-    private var currentUserId: String = "leader-demo-01"
+    private var currentUserId: String = ""
     private var isRootAdmin: Boolean = false
 
     fun setUser(userId: String, isRoot: Boolean = false) {
