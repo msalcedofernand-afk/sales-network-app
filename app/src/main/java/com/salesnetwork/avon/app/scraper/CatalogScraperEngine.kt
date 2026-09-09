@@ -1,4 +1,4 @@
-package com.salesnetwork.avon.app.scraper
+﻿package com.salesnetwork.avon.app.scraper
 
 import com.salesnetwork.avon.app.domain.model.Product
 import org.jsoup.Jsoup
@@ -6,93 +6,104 @@ import java.util.UUID
 
 class CatalogScraperEngine {
 
-    fun parseHtmlCatalog(htmlContent: String, sourceUrl: String = ""): List<Product> {
+    fun parseHtmlCatalog(htmlContent: String, sourceUrl: String): List<Product> {
         val products = mutableListOf<Product>()
         try {
-            val doc = Jsoup.parse(htmlContent)
-            val productCards = doc.select(".product-card, .item-card, .catalog-item, article")
-            
-            for (i in 0 until productCards.size) {
-                val card = productCards[i]
-                val titleText = card.select(".product-title, .title, h2, h3").text()
-                val title = if (titleText.isNotBlank()) titleText else "Producto Cosmético"
-                
-                val rawPrice = card.select(".price, .product-price, .amount").text()
-                val normalizedPrice = rawPrice.replace(",", ".").replace("[^0-9.]".toRegex(), "")
-                val price = normalizedPrice.toDoubleOrNull() ?: 29.90
-                
-                val catText = card.select(".category, .badge").text()
-                val category = if (catText.isNotBlank()) catText else "Perfumería y Maquillaje"
-                
-                val imgUrl = card.select("img").attr("src")
-                val dataSku = card.attr("data-sku")
-                val sku = if (dataSku.isNotBlank()) dataSku else "AVON-${(1000..9999).random()}"
-                
-                products.add(
-                    Product(
-                        id = UUID.randomUUID().toString(),
-                        sku = sku,
-                        name = title,
-                        category = category,
-                        price = price,
-                        imageUrl = imgUrl,
-                        description = "Producto oficial de la campaña de ventas.",
-                        sourceUrl = sourceUrl
+            val doc = Jsoup.parse(htmlContent, sourceUrl)
+            val items = doc.select(".product-card, .catalog-item, [data-product-sku]")
+
+            items.forEach { element ->
+                val name = element.select(".product-title, .title, h2, h3").text().trim()
+                val priceText = element.select(".product-price, .price, .amount").text().trim()
+                val category = element.select(".category, .product-cat").text().trim()
+                val imageUrl = element.select("img").attr("abs:src")
+                val dataSku = element.attr("data-product-sku")
+
+                val cleanPrice = priceText
+                    .replace("[^0-9,.]".toRegex(), "")
+                    .replace(",", ".")
+                    .toDoubleOrNull() ?: 59.90
+
+                val sku = if (dataSku.isNotBlank()) dataSku else "VV-${(1000..9999).random()}"
+
+                if (name.isNotEmpty()) {
+                    products.add(
+                        Product(
+                            id = UUID.randomUUID().toString(),
+                            sku = sku,
+                            name = name,
+                            category = if (category.isNotEmpty()) category else "Perfumeria",
+                            price = cleanPrice,
+                            imageUrl = imageUrl,
+                            description = "Producto de belleza y cosmetica oficial VV Chiclayo.",
+                            sourceUrl = sourceUrl
+                        )
                     )
-                )
+                }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            // Fallback default
         }
-        return if (products.isNotEmpty()) products else generateDefaultAvonCatalog()
+
+        return if (products.isNotEmpty()) products else generateDefaultVVCatalog()
     }
 
-    fun generateDefaultAvonCatalog(): List<Product> {
+    fun generateDefaultVVCatalog(): List<Product> {
         return listOf(
             Product(
-                id = "p-101",
-                sku = "AV-101",
-                name = "Perfume Far Away Glamour 50ml",
-                category = "Perfumería",
-                price = 69.90,
-                imageUrl = "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80",
-                description = "Fragancia de larga duración con notas de grosella negra y flor de naranjo."
+                id = "prod-001",
+                sku = "PERF-01",
+                name = "Far Away Royale EDP 50ml",
+                category = "Perfumeria",
+                price = 89.90,
+                imageUrl = "https://images.unsplash.com/photo-1547887537-6158d64c35b3",
+                description = "Fragancia floral oriental con notas de jazmin, vainilla de Madagascar y acordes amaderados.",
+                usageMode = "Vaporizar sobre cuello y munecas a 15 cm de distancia.",
+                stockAvailable = 18
             ),
             Product(
-                id = "p-102",
-                sku = "AV-102",
-                name = "Labial Ultra Matte Red Supreme",
+                id = "prod-002",
+                sku = "FACIAL-01",
+                name = "Crema Facial Anew Ultimate Noche 50g",
+                category = "Cuidado Facial",
+                price = 119.90,
+                imageUrl = "https://images.unsplash.com/photo-1556228720-195a672e8a03",
+                description = "Tecnologia Protinol para reactivar la produccion de colageno. Reafirma y restaura la elasticidad.",
+                usageMode = "Aplicar sobre rostro y cuello limpios cada noche con suaves movimientos ascendentes.",
+                stockAvailable = 12
+            ),
+            Product(
+                id = "prod-003",
+                sku = "MAQ-01",
+                name = "Labial Ultra Matte VV Red",
                 category = "Maquillaje",
-                price = 24.90,
-                imageUrl = "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=400&q=80",
-                description = "Acabado mate de alta cobertura que no reseca los labios."
+                price = 34.90,
+                imageUrl = "https://images.unsplash.com/photo-1586495777744-4413f21062fa",
+                description = "Acabado 100% mate aterciopelado con aceite de aguacate y manteca de karite. 12 horas de duracion.",
+                usageMode = "Delinear el contorno de los labios y rellenar del centro hacia afuera.",
+                stockAvailable = 25
             ),
             Product(
-                id = "p-103",
-                sku = "AV-103",
-                name = "Crema Anew Reversalist Día SPF 25",
-                category = "Cuidado de la Piel",
-                price = 85.00,
-                imageUrl = "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=80",
-                description = "Crema facial antiedad con tecnología Protinol para elasticidad e hidratación."
-            ),
-            Product(
-                id = "p-104",
-                sku = "AV-104",
-                name = "Máscara de Pestañas Lash Genius 5 en 1",
-                category = "Maquillaje",
-                price = 32.50,
-                imageUrl = "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80",
-                description = "Volumen, longitud, definición, elevación y color negro intenso."
-            ),
-            Product(
-                id = "p-105",
-                sku = "AV-105",
-                name = "Loción Corporal Encanto Seducción 400ml",
+                id = "prod-004",
+                sku = "BODY-01",
+                name = "Locion Corporal Encanto Seduccion 400ml",
                 category = "Cuidado Corporal",
+                price = 42.90,
+                imageUrl = "https://images.unsplash.com/photo-1608248597359-0a6344585c57",
+                description = "Hidratacion 48 horas con mora y champan. Textura sedosa que perfuma suavemente la piel.",
+                usageMode = "Aplicar en todo el cuerpo despues de la ducha con masajes circulares.",
+                stockAvailable = 14
+            ),
+            Product(
+                id = "prod-005",
+                sku = "MASC-01",
+                name = "Mascara de Pestanas Legendary Extension",
+                category = "Maquillaje",
                 price = 39.90,
-                imageUrl = "https://images.unsplash.com/photo-1608248597261-833258657640?auto=format&fit=crop&w=400&q=80",
-                description = "Hidratación 48 horas con infusión de aceites florales."
+                imageUrl = "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92",
+                description = "Cepillo con cerdas de precision que alarga las pestanas hasta un 50% sin dejar grumos.",
+                usageMode = "Aplicar desde la raiz hasta las puntas en movimientos zig-zag.",
+                stockAvailable = 20
             )
         )
     }

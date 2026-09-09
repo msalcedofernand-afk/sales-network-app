@@ -12,13 +12,28 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 
+data class ChiclayoZone(
+    val name: String,
+    val addressHint: String,
+    val lat: Double,
+    val lng: Double
+)
+
 data class CustomerUiState(
     val customers: List<CustomerContact> = emptyList(),
     val filteredCustomers: List<CustomerContact> = emptyList(),
     val searchQuery: String = "",
     val isCalculatingEta: Boolean = false,
     val showAddDialog: Boolean = false,
-    val statusMessage: String? = null
+    val statusMessage: String? = null,
+    val chiclayoZones: List<ChiclayoZone> = listOf(
+        ChiclayoZone("Centro / Balta", "Av. Jose Balta, Chiclayo", -6.7725, -79.8390),
+        ChiclayoZone("Bolognesi / Santa Victoria", "Av. Bolognesi 450, Chiclayo", -6.7750, -79.8420),
+        ChiclayoZone("Luis Gonzales / Mercado", "Av. Luis Gonzales 890, Chiclayo", -6.7680, -79.8375),
+        ChiclayoZone("La Victoria / Grau", "Av. Miguel Grau 350, La Victoria", -6.7820, -79.8460),
+        ChiclayoZone("Jose Leonardo Ortiz / Moshoqueque", "Av. Augusto B. Leguia, JLO", -6.7580, -79.8350),
+        ChiclayoZone("Pimentel / Balneario", "Av. Quiñones, Pimentel", -6.8333, -79.9333)
+    )
 )
 
 class CustomerViewModel(application: Application) : AndroidViewModel(application) {
@@ -30,9 +45,21 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
     val uiState: StateFlow<CustomerUiState> = _uiState.asStateFlow()
 
     private var currentUserId: String = "leader-demo-01"
+    private var isRootAdmin: Boolean = false
+
+    fun setUser(userId: String, isRoot: Boolean = false) {
+        currentUserId = userId
+        isRootAdmin = isRoot
+        loadCustomers()
+    }
 
     fun setUserId(userId: String) {
         currentUserId = userId
+        loadCustomers()
+    }
+
+    fun deleteCustomer(id: String) {
+        repository.deleteCustomer(id)
         loadCustomers()
     }
 
@@ -49,23 +76,34 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
         _uiState.value = _uiState.value.copy(showAddDialog = false)
     }
 
-    fun addCustomer(name: String, phone: String, address: String, notes: String) {
+    fun addCustomer(
+        name: String,
+        phone: String,
+        address: String,
+        notes: String,
+        latitude: Double? = -6.7714,
+        longitude: Double? = -79.8409
+    ) {
         if (name.isBlank() || phone.isBlank()) return
-        val newCustomer = CustomerContact(
-            id = "c-${UUID.randomUUID().toString().take(6)}",
-            name = name.trim(),
-            phone = phone.trim(),
-            whatsapp = phone.trim(),
-            address = address.trim().ifEmpty { "Chiclayo, Perú" },
-            city = "Chiclayo",
-            latitude = -6.7714, // Coordenadas default de Chiclayo
-            longitude = -79.8409,
-            notes = notes.trim(),
-            addedByUserId = currentUserId
-        )
-        repository.addCustomer(newCustomer, currentUserId)
-        closeAddDialog()
-        loadCustomers()
+        viewModelScope.launch {
+            var newCustomer = CustomerContact(
+                id = "c-${UUID.randomUUID().toString().take(6)}",
+                name = name.trim(),
+                phone = phone.trim(),
+                whatsapp = phone.trim(),
+                address = address.trim().ifEmpty { "Chiclayo, Peru" },
+                city = "Chiclayo",
+                latitude = latitude,
+                longitude = longitude,
+                notes = notes.trim(),
+                addedByUserId = currentUserId
+            )
+            // Calculate instant route ETA
+            newCustomer = routeEtaService.enrichCustomerWithEta(newCustomer)
+            repository.addCustomer(newCustomer, currentUserId)
+            closeAddDialog()
+            loadCustomers()
+        }
     }
 
     fun recalculateEtas() {
@@ -83,7 +121,7 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
     }
 
     private fun loadCustomers() {
-        val list = repository.getCustomersForUser(currentUserId)
+        val list = if (isRootAdmin) repository.getAllCustomers() else repository.getCustomersForUser(currentUserId)
         _uiState.value = _uiState.value.copy(customers = list)
         applyFilters()
     }

@@ -1,4 +1,4 @@
-package com.salesnetwork.avon.app.data
+﻿package com.salesnetwork.avon.app.data
 
 import android.content.Context
 import com.salesnetwork.avon.app.domain.model.Product
@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 class ProductCatalogRepository private constructor(context: Context) {
 
     private val scraperEngine = CatalogScraperEngine()
-    private val _products = MutableStateFlow<List<Product>>(scraperEngine.generateDefaultAvonCatalog())
+    private val _products = MutableStateFlow<List<Product>>(scraperEngine.generateDefaultVVCatalog())
     val products: StateFlow<List<Product>> = _products.asStateFlow()
 
     private val _isScraping = MutableStateFlow(false)

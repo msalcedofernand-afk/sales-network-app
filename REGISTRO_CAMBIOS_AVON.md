@@ -67,3 +67,15 @@
 - publish-campaign dejó de ser placeholder y valida el rol de líder.
 - Documentación visual actualizada en docs/UI_UX_GUIA.md.
 - Validación: web npm run build correcto; Android testDebugUnitTest y assembleDebug correctos, APK build 26 generada y copiada a releases/sales-network-redesign-debug.apk. La instalación final quedó pendiente porque el emulador ADB apareció en estado recovery. La migración de repositorios Android locales a Supabase requiere una siguiente iteración.
+
+## 2026-09-08 - Sistema premium compartido y ruta de venta
+
+- Aplicadas las guías `ui-ux-design-pro` y `ui-ux-pro-max` al sistema compartido.
+- Documentada la fuente de verdad en `.interface-design/system.md` con intención, paleta, profundidad, tipografía, espaciado, firma y reglas de aceptación.
+- Nueva navegación web con destino activo, iconografía vectorial consistente, barra lateral en escritorio y barra inferior segura en móvil.
+- Login y registro web rediseñados con narrativa comercial, formularios claros, mensajes comprensibles, recuperación de contraseña y atributos de accesibilidad.
+- Tokens web renombrados según el mundo de Sales Network: petróleo, menta, papel, tinta y estados semánticos.
+- Añadido soporte para foco visible, contraste reforzado, Windows High Contrast y movimiento reducido.
+- Android centraliza colores, radios y espaciado en `SalesDesignTokens`; la cabecera incorpora la firma visual de ruta de venta.
+- La navegación Android anuncia el destino seleccionado a tecnologías de asistencia y usa profundidad basada en superficies/bordes.
+- Validación: `npm run build`, `testDebugUnitTest` y `assembleDebug` correctos. APK de prueba actualizado a versionCode 28.

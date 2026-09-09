@@ -17,7 +17,8 @@ data class CatalogUiState(
     val selectedCategory: String = "Todos",
     val searchQuery: String = "",
     val isScraping: Boolean = false,
-    val statusMessage: String? = null
+    val statusMessage: String? = null,
+    val selectedProductForDetail: Product? = null
 )
 
 class CatalogViewModel(application: Application) : AndroidViewModel(application) {
@@ -50,15 +51,19 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         applyFilters()
     }
 
+    fun selectProductForDetail(product: Product?) {
+        _uiState.value = _uiState.value.copy(selectedProductForDetail = product)
+    }
+
     fun scrapeOfficialWebCatalog() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isScraping = true, statusMessage = "Extrayendo productos de la web...")
+            _uiState.value = _uiState.value.copy(isScraping = true, statusMessage = "Extrayendo catalogo web...")
             val before = repository.products.value.size
             repository.syncFromWebPage("", "https://www.avon.com.pe")
             val newCount = (repository.products.value.size - before).coerceAtLeast(0)
             _uiState.value = _uiState.value.copy(
                 isScraping = false,
-                statusMessage = "Sincronizados $newCount productos del catálogo oficial."
+                statusMessage = "Sincronizados $newCount productos del catalogo oficial."
             )
         }
     }
