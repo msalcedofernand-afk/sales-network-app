@@ -4,6 +4,8 @@ El repositorio privado `sales-network-app` contiene el código fuente y las rama
 
 El workflow `publish-release-repo.yml` compila la APK y la copia al repositorio público usando el secreto `RELEASES_REPO_TOKEN`. Ese token debe tener alcance mínimo y escritura únicamente sobre el repositorio de releases.
 
+La publicación automática queda habilitada después de configurar ese secreto en Actions.
+
 El repositorio local ya está inicializado en la raíz del proyecto y usa la rama `main`. No se creó un remoto porque este equipo no tiene sesión ni nombre de repositorio del propietario.
 
 Después de crear un repositorio privado vacío en GitHub:
