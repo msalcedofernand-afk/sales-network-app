@@ -386,6 +386,12 @@ fun TeamNetworkScreen(
         } else {
             // VISTA NORMAL DE LIDER
             if (isLeader) {
+                var showLeaderSummary by rememberSaveable { mutableStateOf(true) }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Resumen del líder", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    TextButton(onClick = { showLeaderSummary = !showLeaderSummary }) { Text(if (showLeaderSummary) "Ocultar" else "Mostrar") }
+                }
+                if (showLeaderSummary) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -427,6 +433,7 @@ fun TeamNetworkScreen(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
+                }
             }
 
             Text(
