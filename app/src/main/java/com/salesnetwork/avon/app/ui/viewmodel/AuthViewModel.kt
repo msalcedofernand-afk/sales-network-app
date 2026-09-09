@@ -86,6 +86,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         return result.map { it as Any }
     }
 
+    fun resetPassword(email: String, newPassword: String): Result<Boolean> {
+        val result = repository.resetPassword(email, newPassword)
+        _uiState.value = _uiState.value.copy(
+            errorMessage = result.exceptionOrNull()?.message
+        )
+        return result
+    }
+
     fun logout() {
         repository.logout()
     }

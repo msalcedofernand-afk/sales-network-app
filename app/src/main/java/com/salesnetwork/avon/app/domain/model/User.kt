@@ -1,6 +1,7 @@
 package com.salesnetwork.avon.app.domain.model
 
 enum class UserRole {
+    ROOT_ADMIN,
     LIDER,
     MIEMBRO
 }
@@ -12,5 +13,6 @@ data class User(
     val role: UserRole,
     val referralCode: String,
     val leaderCode: String? = null,
-    val registrationDate: Long = System.currentTimeMillis()
+    val registrationDate: Long = System.currentTimeMillis(),
+    val isActiveInCampaign: Boolean = true
 )

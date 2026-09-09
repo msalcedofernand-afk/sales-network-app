@@ -8,5 +8,7 @@ data class Product(
     val price: Double,
     val imageUrl: String,
     val description: String,
-    val sourceUrl: String = ""
+    val sourceUrl: String = "",
+    val usageMode: String = "Aplicar sobre la piel limpia con suaves masajes circulares.",
+    val stockAvailable: Int = 15
 )

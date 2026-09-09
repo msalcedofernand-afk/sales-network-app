@@ -1,4 +1,4 @@
-package com.salesnetwork.avon.app
+﻿package com.salesnetwork.avon.app
 
 import com.salesnetwork.avon.app.data.RouteEtaService
 import com.salesnetwork.avon.app.scraper.CatalogScraperEngine
@@ -11,12 +11,12 @@ class SalesNetworkModuleTest {
     @Test
     fun testDefaultCatalogGeneration() {
         val engine = CatalogScraperEngine()
-        val products = engine.generateDefaultAvonCatalog()
+        val products = engine.generateDefaultVVCatalog()
 
         assertNotNull(products)
         assertTrue(products.isNotEmpty())
         assertEquals(5, products.size)
-        assertTrue(products.any { it.category == "Perfumería" })
+        assertTrue(products.any { it.category == "Perfumeria" })
         assertTrue(products.any { it.name.contains("Far Away") })
     }
 
