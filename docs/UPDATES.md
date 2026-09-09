@@ -1,6 +1,6 @@
 # Actualizaciones de la app
 
-La app no descarga ni ejecuta código desde GitHub. Consulta el manifiesto público de Vercel (`/updates/stable.json` o `/updates/beta.json`), generado desde commits revisados, y abre la APK publicada en Supabase Storage cuando hay un `versionCode` superior. Así el repositorio privado no obliga a incrustar tokens en Android.
+La app consulta primero el manifiesto público del repositorio `sales-network-app-releases` y conserva Vercel como fallback. El repositorio de releases contiene solo APKs y manifiestos; el repositorio de código permanece privado. Si el release público todavía no existe, Vercel mantiene funcionando la detección.
 
 ## Canales
 
