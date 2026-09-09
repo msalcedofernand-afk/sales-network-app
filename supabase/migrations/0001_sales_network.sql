@@ -1,9 +1,9 @@
 create extension if not exists pgcrypto;
 
-create type public.team_role as enum ('LIDER', 'MIEMBRO');
-create type public.invitation_status as enum ('ACTIVE', 'USED', 'REVOKED', 'EXPIRED');
-create type public.cart_status as enum ('ACTIVE', 'CONVERTED', 'ABANDONED');
-create type public.order_status as enum ('PENDIENTE', 'CONFIRMADO', 'COBRADO', 'ENTREGADO', 'CANCELADO');
+do $$ begin create type public.team_role as enum ('LIDER', 'MIEMBRO'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.invitation_status as enum ('ACTIVE', 'USED', 'REVOKED', 'EXPIRED'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.cart_status as enum ('ACTIVE', 'CONVERTED', 'ABANDONED'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.order_status as enum ('PENDIENTE', 'CONFIRMADO', 'COBRADO', 'ENTREGADO', 'CANCELADO'); exception when duplicate_object then null; end $$;
 
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,

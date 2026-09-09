@@ -123,3 +123,9 @@
 - **Por qué:** Validar accesibilidad básica y detectar fugas entre equipos antes de publicar beta.
 - **Archivos:** `web/playwright.config.ts`, `web/tests/public-pages.spec.ts`, `.github/workflows/ci.yml`, `supabase/tests/rls_smoke.sql`.
 - **Resultado:** Suite preparada; la descarga del navegador Playwright queda para CI o una máquina con acceso al binario.
+## 2026-09-09 — Migración Supabase reintentable
+
+- **Qué:** Las definiciones de enums de la migración inicial toleran tipos que ya existan en el proyecto remoto.
+- **Por qué:** El primer `supabase db push` se detuvo porque `team_role` ya estaba creado.
+- **Archivos:** `supabase/migrations/0001_sales_network.sql`.
+- **Resultado:** El despliegue puede reintentarse sin fallar por tipos duplicados.
