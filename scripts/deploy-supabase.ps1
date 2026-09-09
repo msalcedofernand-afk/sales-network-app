@@ -8,6 +8,9 @@ if ([string]::IsNullOrWhiteSpace($env:SUPABASE_DB_PASSWORD)) { throw "Define SUP
 
 npx supabase link --project-ref $ProjectRef --password $env:SUPABASE_DB_PASSWORD
 npx supabase db push
+if ($LASTEXITCODE -ne 0) {
+  throw "La migración no se aplicó. Revisa el historial remoto con: npx supabase migration list"
+}
 
 $functions = Get-ChildItem "supabase/functions" -Directory | Where-Object { $_.Name -ne "_shared" }
 foreach ($function in $functions) {

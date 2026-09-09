@@ -129,3 +129,9 @@
 - **Por qué:** El primer `supabase db push` se detuvo porque `team_role` ya estaba creado.
 - **Archivos:** `supabase/migrations/0001_sales_network.sql`.
 - **Resultado:** El despliegue puede reintentarse sin fallar por tipos duplicados.
+## 2026-09-09 — Despliegue remoto con historial seguro
+
+- **Qué:** El script ahora se detiene cuando `db push` falla y la guía documenta cómo reparar el historial de migraciones existentes.
+- **Por qué:** El proyecto remoto ya contiene tablas; no se deben recrear ni borrar datos.
+- **Archivos:** `scripts/deploy-supabase.ps1`, `docs/DEPLOYMENT.md`.
+- **Resultado:** Las Edge Functions no se publican si la base de datos no está sincronizada y el siguiente paso queda explícito.

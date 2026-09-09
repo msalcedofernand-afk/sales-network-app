@@ -22,6 +22,21 @@ $env:SUPABASE_DB_PASSWORD = "<password-de-la-base>"
 
 El script vincula el proyecto `xceqwexdufdgnmctsxcg`, ejecuta `supabase db push` y publica `create-team`, `accept-invitation`, `checkout-cart`, `sync-catalog` y las demás funciones del directorio `supabase/functions`. No guardes esos valores en `.env`, GitHub ni el repositorio.
 
+Si `db push` indica que `profiles`, `teams` u otra tabla ya existe, no borres tablas ni vuelvas a ejecutar SQL destructivo. Comprueba primero el historial:
+
+```powershell
+npx supabase migration list
+```
+
+Cuando el esquema remoto ya contiene las migraciones `0001`, `0002` y `0003` pero faltan en el historial, márcalas como aplicadas y vuelve a ejecutar el script para aplicar solo `0004`:
+
+```powershell
+npx supabase migration repair --status applied 0001 0002 0003
+.\scripts\deploy-supabase.ps1
+```
+
+Si alguna migración no está realmente reflejada en el esquema, no la marques como aplicada: revisa esa diferencia en el SQL Editor de Supabase antes de continuar.
+
 En Vercel configura para Preview y Production:
 
 - `NEXT_PUBLIC_SUPABASE_URL=https://xceqwexdufdgnmctsxcg.supabase.co`
