@@ -12,6 +12,7 @@ import java.net.URLEncoder
 
 class SupabaseCheckoutApi(context: Context) {
     private val secureTokenStore = SecureTokenStore(context)
+    private val checkoutPrefs = context.getSharedPreferences("checkout_attempts", Context.MODE_PRIVATE)
     private val base = "https://xceqwexdufdgnmctsxcg.supabase.co"
     private val token get() = secureTokenStore.get()
 
@@ -32,10 +33,16 @@ class SupabaseCheckoutApi(context: Context) {
                     put("cart_id", cartId); put("product_id", productId); put("quantity", item.quantity)
                 }.toString(), "resolution=merge-duplicates,return=minimal")
             }
-            val key = "android-" + java.util.UUID.randomUUID()
+            // Reuse the key until the server confirms the checkout. If the response is
+            // lost, retrying the same cart remains idempotent instead of creating a duplicate.
+            val keyName = "checkout_key_$cartId"
+            val key = checkoutPrefs.getString(keyName, null) ?: ("android-" + java.util.UUID.randomUUID()).also {
+                checkoutPrefs.edit().putString(keyName, it).apply()
+            }
             request("/functions/v1/checkout-cart", "POST", auth, JSONObject().apply {
                 put("cart_id", cartId); put("customer_id", customerId); put("idempotency_key", key)
             }.toString())
+            checkoutPrefs.edit().remove(keyName).apply()
             Unit
         }
     }

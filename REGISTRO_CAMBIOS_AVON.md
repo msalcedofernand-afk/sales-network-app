@@ -87,3 +87,9 @@
 - **Por qué:** Evitar guardar credenciales de sesión en texto plano en SharedPreferences.
 - **Archivos:** `SecureTokenStore.kt`, `LeaderNetworkRepository.kt` y clientes Supabase de catálogo, clientes, carrito y pedidos.
 - **Resultado:** La sesión se guarda, lee y revoca desde almacenamiento cifrado; validado con el build Android.
+## 2026-09-09 — Checkout idempotente en Android
+
+- **Qué:** La clave de checkout queda guardada hasta que Supabase confirma el pedido.
+- **Por qué:** Un reintento después de perder la respuesta de red no debe duplicar la venta.
+- **Archivos:** `SupabaseCheckoutApi.kt`.
+- **Resultado:** Reintentos del mismo carrito reutilizan la clave y el servidor mantiene la operación idempotente.
