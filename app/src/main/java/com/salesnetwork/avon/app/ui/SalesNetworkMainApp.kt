@@ -1,6 +1,8 @@
 package com.salesnetwork.avon.app.ui
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,7 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -24,7 +26,6 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.salesnetwork.avon.app.domain.model.UserRole
 import com.salesnetwork.avon.app.update.AppUpdateInfo
@@ -111,19 +112,19 @@ fun SalesNetworkMainApp(
                                             SalesAppTab.ORDERS -> "Pedidos & Cobranza"
                                         },
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 17.sp
+                                        fontSize = S.TextSubtitle
                                     )
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
                                             text = orderState.activeCampaign,
-                                            fontSize = 11.sp,
+                                            fontSize = S.TextCaption,
                                             fontWeight = FontWeight.SemiBold,
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                         Icon(
                                             Icons.Default.ArrowDropDown,
                                             contentDescription = "Cambiar Campana",
-                                            modifier = Modifier.size(16.dp),
+                                            modifier = Modifier.size(S.IconS),
                                             tint = MaterialTheme.colorScheme.primary
                                         )
                                     }
@@ -237,51 +238,62 @@ fun SalesNetworkMainApp(
                     )
                 }
 
-                Surface(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 16.dp),
-                    shape = RoundedCornerShape(32.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 0.dp,
-                    shadowElevation = 0.dp,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        FloatingNavIcon(
-                            icon = Icons.Default.Group,
-                            label = "Equipo",
-                            isSelected = selectedTab == SalesAppTab.NETWORK,
-                            onClick = { selectedTab = SalesAppTab.NETWORK }
-                        )
-
-                        FloatingNavIcon(
-                            icon = Icons.Default.ShoppingCart,
-                            label = "Catalogo",
-                            isSelected = selectedTab == SalesAppTab.CATALOG,
-                            onClick = { selectedTab = SalesAppTab.CATALOG }
-                        )
-
-                        FloatingNavIcon(
-                            icon = Icons.Default.LocationOn,
-                            label = "Clientes",
-                            isSelected = selectedTab == SalesAppTab.CUSTOMERS,
-                            onClick = { selectedTab = SalesAppTab.CUSTOMERS }
-                        )
-
-                        FloatingNavIcon(
-                            icon = Icons.AutoMirrored.Filled.ReceiptLong,
-                            label = "Pedidos",
-                            isSelected = selectedTab == SalesAppTab.ORDERS,
-                            onClick = { selectedTab = SalesAppTab.ORDERS }
-                        )
-                    }
-                }
+                FloatingNavBar(
+                    selectedTab = selectedTab,
+                    onTabSelected = { selectedTab = it },
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun FloatingNavBar(
+    selectedTab: SalesAppTab,
+    onTabSelected: (SalesAppTab) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .padding(bottom = S.M)
+.shadow(S.ElevationMed, RoundedCornerShape(S.RHero)),
+                    shape = RoundedCornerShape(S.RHero),
+        color = MaterialTheme.colorScheme.surface,
+        border = B.subtleBorder()
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = S.SM, vertical = S.S),
+            horizontalArrangement = Arrangement.spacedBy(S.XS),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FloatingNavIcon(
+                icon = Icons.Default.Group,
+                label = "Equipo",
+                isSelected = selectedTab == SalesAppTab.NETWORK,
+                onClick = { onTabSelected(SalesAppTab.NETWORK) }
+            )
+
+            FloatingNavIcon(
+                icon = Icons.Default.ShoppingCart,
+                label = "Catalogo",
+                isSelected = selectedTab == SalesAppTab.CATALOG,
+                onClick = { onTabSelected(SalesAppTab.CATALOG) }
+            )
+
+            FloatingNavIcon(
+                icon = Icons.Default.LocationOn,
+                label = "Clientes",
+                isSelected = selectedTab == SalesAppTab.CUSTOMERS,
+                onClick = { onTabSelected(SalesAppTab.CUSTOMERS) }
+            )
+
+            FloatingNavIcon(
+                icon = Icons.AutoMirrored.Filled.ReceiptLong,
+                label = "Pedidos",
+                isSelected = selectedTab == SalesAppTab.ORDERS,
+                onClick = { onTabSelected(SalesAppTab.ORDERS) }
+            )
         }
     }
 }
@@ -295,20 +307,19 @@ private fun UpdateBanner(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = S.SM, vertical = S.S),
         color = MaterialTheme.colorScheme.primaryContainer,
-        shape = RoundedCornerShape(16.dp),
-        tonalElevation = 0.dp,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        shape = RoundedCornerShape(S.RCard),
+        border = B.cardBorder()
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = S.M, vertical = S.SM),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(S.SM)
         ) {
             Column(Modifier.weight(1f)) {
-                Text("Nueva versión ${info.versionName}", fontWeight = FontWeight.Bold)
-                Text(info.releaseNotes, style = MaterialTheme.typography.bodySmall, maxLines = 2)
+                Text("Nueva version ${info.versionName}", fontWeight = FontWeight.Bold, fontSize = S.TextBody)
+                Text(info.releaseNotes, style = MaterialTheme.typography.bodySmall, maxLines = 2, fontSize = S.TextSmall)
             }
             TextButton(onClick = { onOpenUpdate(info.apkUrl) }) { Text("Actualizar") }
         }
@@ -316,34 +327,58 @@ private fun UpdateBanner(
 }
 
 @Composable
-fun FloatingNavIcon(
+private fun FloatingNavIcon(
     icon: ImageVector,
     label: String,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val bgColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+        animationSpec = tween(200),
+        label = "nav_bg"
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = tween(200),
+        label = "nav_content"
+    )
+    val scale by animateDpAsState(
+        targetValue = if (isSelected) S.IconM else S.IconS,
+        animationSpec = tween(200),
+        label = "nav_icon"
+    )
+
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
-        color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+        shape = RoundedCornerShape(S.RL),
+        color = bgColor,
         modifier = Modifier
-            .width(64.dp)
-            .height(60.dp)
+            .width(72.dp)
+            .height(56.dp)
             .semantics {
                 selected = isSelected
                 role = Role.Tab
                 contentDescription = label
             }
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(22.dp)
+                tint = contentColor,
+                modifier = Modifier.size(scale)
             )
-            Spacer(Modifier.height(4.dp))
-            Text(label, fontSize = 11.sp, color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(S.XXS))
+            Text(
+                label,
+                fontSize = S.TextCaption,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                color = contentColor
+            )
         }
     }
 }

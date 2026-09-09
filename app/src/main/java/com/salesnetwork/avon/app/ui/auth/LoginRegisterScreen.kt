@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -20,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -29,6 +27,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salesnetwork.avon.app.domain.model.UserRole
+import com.salesnetwork.avon.app.ui.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,7 +57,7 @@ fun LoginRegisterScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF123D49))
+            .background(C.Petroleo900)
             .safeDrawingPadding()
             .imePadding(),
         contentAlignment = Alignment.Center
@@ -67,157 +66,181 @@ fun LoginRegisterScreen(
             modifier = Modifier
                 .widthIn(max = 520.dp)
                 .fillMaxWidth()
-                .padding(16.dp),
-            shape = RoundedCornerShape(24.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                .padding(S.M),
+            shape = SH.Dialog,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = B.cardBorder(),
+            elevation = CardDefaults.cardElevation(S.ElevationNone)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.Start
+                    .padding(S.L),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.spacedBy(S.SM)
             ) {
+                // Logo
                 Surface(
-                    modifier = Modifier.size(60.dp),
-                    shape = CircleShape,
+                    modifier = Modifier.size(56.dp),
+                    shape = SH.Avatar,
                     color = MaterialTheme.colorScheme.primary
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Text("VV", color = Color.White, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                        Text(
+                            "VV",
+                            color = Color.White,
+                            fontWeight = FontWeight.Black,
+                            fontSize = S.TextSubtitle
+                        )
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+
+                // Title
                 Text(
                     text = if (isRegisterMode) "Crea tu cuenta" else "Tu negocio,\na otro nivel.",
-                    fontSize = 28.sp,
-                    lineHeight = 32.sp,
+                    fontSize = S.TextHeadline,
+                    lineHeight = 30.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
 
+                // Subtitle
                 Text(
                     text = if (isRegisterMode) "Unete a una red de ventas o crea la tuya propia" else "Organiza clientes, catalogo y pedidos desde un solo lugar",
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    fontSize = S.TextBody,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                if (errorMessage != null) {
+                // Error message
+                AnimatedVisibility(visible = errorMessage != null, enter = fadeIn(), exit = fadeOut()) {
                     Surface(
-                        color = MaterialTheme.colorScheme.errorContainer,
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp)
+                        color = C.ErrorLight,
+                        shape = SH.Badge,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = errorMessage!!,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            modifier = Modifier.padding(12.dp),
-                            fontSize = 13.sp
+                            text = errorMessage ?: "",
+                            color = C.Error,
+                            modifier = Modifier.padding(S.SM),
+                            fontSize = S.TextSmall,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
 
-                if (isRegisterMode) {
+                // Name field (register only)
+                AnimatedVisibility(visible = isRegisterMode, enter = fadeIn(), exit = fadeOut()) {
                     OutlinedTextField(
                         value = name,
                         onValueChange = { name = it },
                         label = { Text("Nombre Completo") },
-                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(S.IconM)) },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = true,
+                        shape = SH.Input
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
+                // Email field
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
                     label = { Text("Correo Electronico") },
-                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(S.IconM)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                    shape = SH.Input,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
 
+                // Password field
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
                     label = { Text("Contrasena") },
-                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(S.IconM)) },
                     visualTransformation = if (showPassword) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = { TextButton(onClick = { showPassword = !showPassword }) { Text(if (showPassword) "Ocultar" else "Ver") } },
+                    trailingIcon = {
+                        TextButton(onClick = { showPassword = !showPassword }) {
+                            Text(
+                                if (showPassword) "Ocultar" else "Ver",
+                                fontSize = S.TextSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
+                    shape = SH.Input,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
 
-                if (isRegisterMode) {
-                    Text(
-                        text = "Seleccione Tipo de Cuenta:",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 13.sp,
-                        modifier = Modifier
-                            .align(Alignment.Start)
-                            .padding(top = 8.dp, bottom = 4.dp)
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        FilterChip(
-                            selected = selectedRole == UserRole.LIDER,
-                            onClick = { selectedRole = UserRole.LIDER },
-                            label = { Text("Soy Lider de Red") },
-                            leadingIcon = { Icon(Icons.Default.Group, contentDescription = null) }
+                // Register mode: role selection
+                AnimatedVisibility(visible = isRegisterMode, enter = fadeIn(), exit = fadeOut()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(S.S)) {
+                        Text(
+                            text = "Tipo de Cuenta:",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = S.TextBody
                         )
-                        FilterChip(
-                            selected = selectedRole == UserRole.MIEMBRO,
-                            onClick = { selectedRole = UserRole.MIEMBRO },
-                            label = { Text("Soy Vendedor") },
-                            leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) }
-                        )
-                    }
 
-                    if (selectedRole == UserRole.MIEMBRO) {
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Aviso de Codigo Obligatorio
-                        Surface(
-                            color = Color(0xFFFFF3E0),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth()
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(S.S)
                         ) {
-                            Text(
-                                text = "CODIGO DE RED OBLIGATORIO: Para registrarte como vendedor debes ingresar el codigo de referido de tu Lider (ej. VV-2026).",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFFE65100),
-                                modifier = Modifier.padding(10.dp)
+                            FilterChip(
+                                selected = selectedRole == UserRole.LIDER,
+                                onClick = { selectedRole = UserRole.LIDER },
+                                label = { Text("Lider de Red", fontSize = S.TextSmall) },
+                                leadingIcon = { Icon(Icons.Default.Group, contentDescription = null, modifier = Modifier.size(S.IconS)) },
+                                modifier = Modifier.weight(1f),
+                                shape = SH.Chip
+                            )
+                            FilterChip(
+                                selected = selectedRole == UserRole.MIEMBRO,
+                                onClick = { selectedRole = UserRole.MIEMBRO },
+                                label = { Text("Vendedor", fontSize = S.TextSmall) },
+                                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(S.IconS)) },
+                                modifier = Modifier.weight(1f),
+                                shape = SH.Chip
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        // Leader code for members
+                        AnimatedVisibility(visible = selectedRole == UserRole.MIEMBRO, enter = fadeIn(), exit = fadeOut()) {
+                            Column(verticalArrangement = Arrangement.spacedBy(S.S)) {
+                                Surface(
+                                    color = C.WarningLight,
+                                    shape = SH.Badge,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = "CODIGO DE RED OBLIGATORIO: Ingresa el codigo de referido de tu Lider (ej. VV-2026).",
+                                        fontSize = S.TextCaption,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = C.Warning,
+                                        modifier = Modifier.padding(S.SM)
+                                    )
+                                }
 
-                        OutlinedTextField(
-                            value = leaderCode,
-                            onValueChange = { leaderCode = it.uppercase() },
-                            label = { Text("Codigo de invitacion") },
-                            placeholder = { Text("Ej. VV-2026") },
-                            leadingIcon = { Icon(Icons.Default.QrCode, contentDescription = null) },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            isError = leaderCode.isBlank()
-                        )
+                                OutlinedTextField(
+                                    value = leaderCode,
+                                    onValueChange = { leaderCode = it.uppercase() },
+                                    label = { Text("Codigo de invitacion") },
+                                    placeholder = { Text("Ej. VV-2026") },
+                                    leadingIcon = { Icon(Icons.Default.QrCode, contentDescription = null, modifier = Modifier.size(S.IconM)) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                    shape = SH.Input,
+                                    isError = leaderCode.isBlank()
+                                )
+                            }
+                        }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
 
+                // Submit button
                 Button(
                     onClick = {
                         errorMessage = null
@@ -250,17 +273,18 @@ fun LoginRegisterScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 54.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    enabled = !isLoading
+                        .height(56.dp),
+                    shape = SH.Button,
+                    enabled = !isLoading,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
+                            modifier = Modifier.size(S.IconM),
                             color = MaterialTheme.colorScheme.onPrimary,
                             strokeWidth = 2.dp
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(S.S))
                     }
                     Text(
                         text = if (isLoading) {
@@ -268,12 +292,13 @@ fun LoginRegisterScreen(
                         } else {
                             if (isRegisterMode) "Crear Cuenta" else "Iniciar Sesion"
                         },
-                        fontSize = 16.sp,
+                        fontSize = S.TextSubtitle,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
-                if (!isRegisterMode) {
+                // Forgot password
+                AnimatedVisibility(visible = !isRegisterMode, enter = fadeIn(), exit = fadeOut()) {
                     TextButton(
                         onClick = {
                             resetEmail = email.trim()
@@ -285,40 +310,44 @@ fun LoginRegisterScreen(
                     ) {
                         Text(
                             text = "Olvidaste tu contrasena?",
-                            fontSize = 13.sp,
+                            fontSize = S.TextBody,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
-
-                TextButton(onClick = {
-                    isRegisterMode = !isRegisterMode
-                    errorMessage = null
-                }) {
+                // Toggle mode
+                TextButton(
+                    onClick = {
+                        isRegisterMode = !isRegisterMode
+                        errorMessage = null
+                    },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
                     Text(
-                        text = if (isRegisterMode) "Ya tienes cuenta? Inicia Sesion" else "No tienes cuenta? Registrate aqui"
+                        text = if (isRegisterMode) "Ya tienes cuenta? Inicia Sesion" else "No tienes cuenta? Registrate aqui",
+                        fontSize = S.TextBody
                     )
                 }
             }
         }
     }
 
+    // Reset password dialog
     if (showResetDialog) {
         AlertDialog(
             onDismissRequest = { showResetDialog = false },
-            title = { Text("Recuperar Contrasena", fontWeight = FontWeight.Bold) },
+            title = { Text("Recuperar Contrasena", fontWeight = FontWeight.Bold, fontSize = S.TextTitle) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Ingresa tu correo registrado y tu nueva contrasena:", fontSize = 13.sp)
+                Column(verticalArrangement = Arrangement.spacedBy(S.SM)) {
+                    Text("Ingresa tu correo registrado y tu nueva contrasena:", fontSize = S.TextBody)
                     OutlinedTextField(
                         value = resetEmail,
                         onValueChange = { resetEmail = it },
                         label = { Text("Correo Electronico") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = SH.Input
                     )
                     OutlinedTextField(
                         value = resetNewPassword,
@@ -326,13 +355,14 @@ fun LoginRegisterScreen(
                         label = { Text("Nueva Contrasena (minimo 6 caracteres)") },
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = SH.Input
                     )
                     if (resetMessage != null) {
                         Text(
                             text = resetMessage!!,
-                            color = if (resetMessage!!.startsWith("OK")) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error,
-                            fontSize = 12.sp,
+                            color = if (resetMessage!!.startsWith("OK")) C.Success else MaterialTheme.colorScheme.error,
+                            fontSize = S.TextSmall,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
@@ -343,13 +373,14 @@ fun LoginRegisterScreen(
                     onClick = {
                         val res = onResetPassword(resetEmail.trim(), resetNewPassword)
                         if (res.isSuccess) {
-                            resetMessage = "OK: Contrasena actualizada correctamente. Ya puedes iniciar sesion."
+                            resetMessage = "OK: Contrasena actualizada. Ya puedes iniciar sesion."
                         } else {
                             resetMessage = res.exceptionOrNull()?.message ?: "Error al actualizar."
                         }
-                    }
+                    },
+                    shape = SH.Button
                 ) {
-                    Text("Actualizar")
+                    Text("Actualizar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
