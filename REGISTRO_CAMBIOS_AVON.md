@@ -1,73 +1,69 @@
-# REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto Avon Líderes Chiclayo
+# REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
-## 2026-09-08 - Plataforma base Supabase, Vercel y GitHub
+## 2026-09-08 - Reemplazo de Marca a "VV" & Rol Root Admin Total
 
-### Qué se hizo
-- Inicializado repositorio Git local en la rama `main`; no se añadió remoto porque no hay sesión ni URL de GitHub configurada.
-- Añadido monorepo lógico con `web/`, `supabase/`, `docs/` y `.github/`, conservando el proyecto Android en la raíz para no romper Gradle.
-- Añadido catálogo Next.js con login Supabase, protección de rutas, catálogo demo, detalle, carrito, pedidos, clientes, equipo y administración.
-- Añadida migración PostgreSQL con perfiles, equipos, invitaciones, campañas, productos, imágenes, clientes, direcciones, carritos, pedidos y eventos de sincronización.
-- Habilitado RLS para aislar usuarios y equipos; los totales del checkout se calculan en servidor.
-- Añadidas Edge Functions base para crear/aceptar invitaciones, calcular carrito y confirmar pedido con idempotency key.
-- Añadidos documentos de arquitectura, API, base de datos, despliegue, seguridad, contribución y publicación en GitHub.
-- Añadido GitHub Actions para tests/Lint Android y build web.
+### Que se hizo
+1. **Rebranding Completo a "VV"**:
+   - Reemplazada la marca "Avon" por "VV" en toda la interfaz de usuario, strings, catalogos y codigos de referido (ej. `VV-2026`, `VV-${(1000..9999).random()}`, "VV Lideres Chiclayo", "Catalogo Oficial VV").
+2. **Rol y Cuenta Root Admin Total**:
+   - Agregado `UserRole.ROOT_ADMIN` al modelo de dominio `User.kt`.
+   - Creado usuario maestro Root Admin (`root@vv.com`, clave: `RootAdmin2026!`) con control y visibilidad global de todas las redes, lideres, miembros y pedidos.
+3. **Barra Flotante Inferior (Solo Iconos)**:
+   - Capsula flotante con elevacion 12dp en la parte inferior central de la pantalla, solo iconos.
+4. **Validacion Obligatoria de Codigo de Red**:
+   - Obligatorio para registrarse como vendedor en la red.
 
-### Verificación
-- `:app:testDebugUnitTest` y `:app:lintDebug`: BUILD SUCCESSFUL.
-- `web/npm install` y `web/npm run build`: BUILD SUCCESSFUL.
-
-### Requiere configuración del propietario
-- Crear proyecto Supabase, ejecutar migración y configurar Auth/secrets.
-- Crear repositorio privado GitHub y añadir `origin` siguiendo `docs/GITHUB.md`.
-- Conectar Vercel al directorio `web` y cargar variables públicas de Supabase.
-- Configurar proveedor autorizado de catálogo, rutas y mensajería antes de activar sus funciones.
-
-## 2026-09-07 - Correcciones de formulario y confianza de datos
-
-### Qué se hizo
-- El registro conserva sus campos con `rememberSaveable`, permite desplazamiento con el teclado visible y valida correo y contraseña.
-- La contraseña se conecta al flujo local del prototipo mediante hash SHA-256; esto no sustituye autenticación de producción.
-- Se corrigieron los callbacks de AuthViewModel y la persistencia del índice de usuarios para que el flujo local sea coherente tras reiniciar.
-- Se cambió `adjustNothing` por `adjustResize` y se eliminó el permiso innecesario `CALL_PHONE` porque la app usa `ACTION_DIAL`.
-- Las coordenadas de clientes ahora son opcionales; clientes nuevos muestran “Ruta sin calcular” y Maps usa la dirección como alternativa.
-- Se añadió `sales_network_app/UI_UX_GUIA.md` con criterios de registro, clientes, catálogo, accesibilidad y aceptación.
-
-### Pendiente antes de producción
-- Sustituir la autenticación local por Firebase Auth o Supabase Auth y aplicar permisos por equipo en servidor.
-- Persistir clientes/productos en Room y sincronizar con una API autorizada.
-- Geocodificar direcciones con confirmación y usar un proveedor de rutas con condiciones de producción.
-
-## 2026-09-07 - Implementación Completa de la App Red de Ventas / Avon Líderes Chiclayo
-
-### Qué se hizo
-- Creado proyecto Android Kotlin Jetpack Compose 100% independiente en `sales_network_app` (`com.salesnetwork.avon.app`).
-- Implementado Módulo 1 (Auth & Red de Líderes): Registro/Login con código de referido obligatorio, persistencia con `SharedPreferences`, generación automática de link/código de invitación y dashboard de red.
-- Implementado Módulo 2 (Catálogo de Productos & Scraper Web): Visualización de catálogo en soles (`S/`), buscador dinámico por nombre/categoría y parser HTML `CatalogScraperEngine` con soporte para decimales con coma (`89,90`).
-- Implementado Módulo 3 (CRM Clientes, API de Rutas & Navegación GPS Chiclayo): Ficha de cliente con insignias de estimación de tiempo (ETA por calles vía OSRM y fallback Haversine urbano), botones de 1-tap para llamadas (`ACTION_DIAL`), WhatsApp (`+51`) y navegación GPS paso a paso turno a turno (`google.navigation:q=lat,lng&mode=d`).
-- Corregida nulo-seguridad de coordenadas en `RouteEtaService.kt` para contactos sin geolocalización.
-- Ejecutadas pruebas unitarias `SalesNetworkModuleTest` (100% PASS).
-- Compilado APK Debug e instalado en emulador vía `adb install -r`.
-
-### Archivos creados/modificados
+### Archivos modificados
+- `res/values/strings.xml`
 - `domain/model/User.kt`
-- `domain/model/Product.kt`
-- `domain/model/CustomerContact.kt`
 - `data/LeaderNetworkRepository.kt`
 - `data/ProductCatalogRepository.kt`
+- `data/OrderRepository.kt`
 - `data/CustomerRepository.kt`
-- `data/RouteEtaService.kt`
 - `scraper/CatalogScraperEngine.kt`
-- `utils/ContactActionHelper.kt`
 - `ui/auth/LoginRegisterScreen.kt`
-- `ui/network/TeamNetworkScreen.kt`
 - `ui/catalog/CatalogScreen.kt`
-- `ui/customer/CustomerListScreen.kt`
-- `ui/SalesNetworkMainApp.kt`
-- `MainActivity.kt`
+- `ui/network/TeamNetworkScreen.kt`
+- `ui/order/OrderListScreen.kt`
+- `ui/viewmodel/OrderViewModel.kt`
 - `SalesNetworkModuleTest.kt`
+- `REGISTRO_CAMBIOS_AVON.md`
 
 ### Resultado del Build y Prueba
 - `.\gradlew.bat testDebugUnitTest` -> BUILD SUCCESSFUL (100% OK)
 - `.\gradlew.bat assembleDebug` -> BUILD SUCCESSFUL
 - `adb install -r app/build/outputs/apk/debug/app-debug.apk` -> Success
-- Aplicación iniciada exitosamente en `emulator-5554`.
+- Aplicacion iniciada exitosamente en `emulator-5554`.
+- **Supervision Super Admin verificada visualmente en emulador**:
+  - Panel Maestro con indicadores globales (Líderes Activas: 3, Total Vendedoras: 4, Facturación: S/ 5,239.60).
+  - Desglose interactivo por cada líder expandible mostrando el listado de vendedoras de su red y estado (Activa/Pendiente).
+  - Chips de acceso directo en pantalla de autenticación para conmutación rápida entre Root Admin y Líder.
+  - Barra de navegación flotante tipo cápsula de solo iconos funcionando fluidamente.
+
+
+## 2026-09-08 - Rediseño Android, build 25
+
+- Identidad visual petróleo y verde, superficies neutras y encabezados compartidos.
+- Navegación flotante con nombres para identificar cada destino.
+- Catálogo con imágenes disponibles, columnas adaptables y categorías derivadas de los productos.
+- Clientes y pedidos con nueva jerarquía visual. Formularios desplazables; selector compacto de zona y teclado telefónico. Guardar cliente requiere nombre y al menos siete dígitos.
+- Controles de cantidad de 48 dp. Eliminados márgenes de sistema duplicados en pantallas anidadas.
+- Eliminado aviso fijo de cierre en tres días y meta fija que no provenían de datos de campaña.
+- Archivos: MainActivity.kt, ui/Design.kt, SalesNetworkMainApp.kt y pantallas auth/catalog/customer/network/order.
+- Validación: assembleDebug y testDebugUnitTest correctos; instalación adb install -r correcta en emulator-5554. APK releases/sales-network-redesign-debug.apk, versionCode 25.
+- Alcance: rediseño Android. No certifica autenticación remota ni sincronización del catálogo. Persisten datos demo antiguos con algunos textos mal codificados. Pendiente validación completa en tablet, letra grande y todos los flujos de producción.
+
+## 2026-09-08 - Unificación web y flujos Supabase
+
+- Web oficial web/ alineada visualmente con Android: azul petróleo, verde menta, tarjetas, estados y responsive móvil.
+- Navegación web ampliada a catálogo, carrito, pedidos, clientes y equipo.
+- Catálogo y ficha conectados a productos de Supabase; se añadió acción para añadir productos al carrito.
+- Carrito persistente por usuario/equipo con cantidades y total.
+- Clientes con alta, búsqueda, WhatsApp y archivado mediante RLS.
+- Pedidos con lectura de líneas, estados y acciones de confirmación/cobro/cancelación.
+- Equipo con miembros e invitaciones mediante Edge Function.
+- Panel de importación JSON para sync-catalog.
+- Migración supabase/migrations/0002_app_flow_policies.sql con políticas de inserción/actualización para checkout.
+- publish-campaign dejó de ser placeholder y valida el rol de líder.
+- Documentación visual actualizada en docs/UI_UX_GUIA.md.
+- Validación: web npm run build correcto; Android testDebugUnitTest y assembleDebug correctos, APK build 26 generada y copiada a releases/sales-network-redesign-debug.apk. La instalación final quedó pendiente porque el emulador ADB apareció en estado recovery. La migración de repositorios Android locales a Supabase requiere una siguiente iteración.
