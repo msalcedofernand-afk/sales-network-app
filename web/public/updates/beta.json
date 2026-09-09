@@ -2,7 +2,7 @@
   "versionCode": 29,
   "versionName": "1.0.0",
   "channel": "beta",
-  "apkUrl": "https://xceqwexdufdgnmctsxcg.supabase.co/storage/v1/object/public/app-releases/beta/sales-network.apk",
+  "apkUrl": "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/beta/releases/sales-network-beta.apk",
   "releaseNotes": "Versión beta para validar mejoras antes de publicarlas en estable.",
   "mandatory": false
 }

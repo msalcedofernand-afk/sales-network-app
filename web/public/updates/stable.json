@@ -2,7 +2,7 @@
   "versionCode": 28,
   "versionName": "1.0.0",
   "channel": "stable",
-  "apkUrl": "https://xceqwexdufdgnmctsxcg.supabase.co/storage/v1/object/public/app-releases/stable/sales-network.apk",
+  "apkUrl": "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/main/releases/sales-network-stable.apk",
   "releaseNotes": "Nueva experiencia de venta: navegación clara, formularios accesibles y mejor sincronización.",
   "mandatory": false
 }

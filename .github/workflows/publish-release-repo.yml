@@ -1,0 +1,54 @@
+name: Publish APK to public releases repository
+
+on:
+  push:
+    branches: [main, beta]
+    paths:
+      - "app/**"
+      - "updates/**"
+      - "version.properties"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      RELEASES_REPO: msalcedofernand-afk/sales-network-app-releases
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build beta APK
+        run: ./gradlew :app:assembleDebug
+      - name: Publish artifact and manifest
+        env:
+          RELEASES_REPO_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+        run: |
+          test -n "$RELEASES_REPO_TOKEN" || { echo "Configura RELEASES_REPO_TOKEN"; exit 1; }
+          git clone "https://x-access-token:${RELEASES_REPO_TOKEN}@github.com/${RELEASES_REPO}.git" release-repo
+          channel="${GITHUB_REF_NAME}"
+          if [ "$channel" = "main" ]; then
+            apk_name="sales-network-stable.apk"
+            target_branch="main"
+            manifest="updates/stable.json"
+            public_manifest="stable.json"
+          else
+            apk_name="sales-network-beta.apk"
+            target_branch="beta"
+            manifest="updates/beta.json"
+            public_manifest="beta.json"
+          fi
+          mkdir -p "release-repo/releases" "release-repo/updates"
+          cp app/build/outputs/apk/debug/app-debug.apk "release-repo/releases/${apk_name}"
+          cp "${manifest}" "release-repo/updates/${public_manifest}"
+          cd release-repo
+          git config user.name "sales-network-release-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add releases updates
+          git commit -m "release(${channel}): publish APK ${GITHUB_SHA::7}" || exit 0
+          git push origin "HEAD:${target_branch}"
