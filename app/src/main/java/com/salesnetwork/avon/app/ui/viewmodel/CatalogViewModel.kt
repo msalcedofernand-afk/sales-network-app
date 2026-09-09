@@ -57,14 +57,12 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
 
     fun scrapeOfficialWebCatalog() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isScraping = true, statusMessage = "Extrayendo catalogo web...")
-            val before = repository.products.value.size
-            repository.syncFromWebPage("", "https://www.avon.com.pe")
-            val newCount = (repository.products.value.size - before).coerceAtLeast(0)
-            _uiState.value = _uiState.value.copy(
-                isScraping = false,
-                statusMessage = "Sincronizados $newCount productos del catalogo oficial."
-            )
+            _uiState.value = _uiState.value.copy(isScraping = true, statusMessage = "Sincronizando catálogo…")
+            val result = repository.refreshFromSupabase()
+            _uiState.value = _uiState.value.copy(isScraping = false, statusMessage = result.fold(
+                onSuccess = { "Sincronizados $it productos." },
+                onFailure = { "No pudimos sincronizar el catálogo. Se conserva la última copia." }
+            ))
         }
     }
 

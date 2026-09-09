@@ -70,6 +70,7 @@ fun SalesNetworkMainApp(
 
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
+            catalogViewModel.scrapeOfficialWebCatalog()
             val isRoot = currentUser.role == UserRole.ROOT_ADMIN
             teamViewModel.loadTeamForUser(currentUser)
             customerViewModel.setUser(currentUser.id, isRoot)
