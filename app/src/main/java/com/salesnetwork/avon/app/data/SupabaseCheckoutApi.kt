@@ -11,9 +11,9 @@ import java.net.URL
 import java.net.URLEncoder
 
 class SupabaseCheckoutApi(context: Context) {
-    private val prefs = context.getSharedPreferences("leader_network_prefs", Context.MODE_PRIVATE)
+    private val secureTokenStore = SecureTokenStore(context)
     private val base = "https://xceqwexdufdgnmctsxcg.supabase.co"
-    private val token get() = prefs.getString("supabase_access_token", null)
+    private val token get() = secureTokenStore.get()
 
     suspend fun checkout(userId: String, customerId: String, items: List<OrderItem>): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {

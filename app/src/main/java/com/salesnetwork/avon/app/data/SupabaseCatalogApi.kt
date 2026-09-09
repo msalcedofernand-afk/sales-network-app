@@ -9,10 +9,10 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 class SupabaseCatalogApi(context: Context) {
-    private val prefs = context.getSharedPreferences("leader_network_prefs", Context.MODE_PRIVATE)
+    private val secureTokenStore = SecureTokenStore(context)
 
     suspend fun fetchProducts(): List<Product> = withContext(Dispatchers.IO) {
-        val token = prefs.getString("supabase_access_token", null) ?: return@withContext emptyList()
+        val token = secureTokenStore.get() ?: return@withContext emptyList()
         val endpoint = URL("https://xceqwexdufdgnmctsxcg.supabase.co/rest/v1/products?select=id,sku,name,category,price_cents,currency,image_url,description,source_url,available&order=name")
         val connection = (endpoint.openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"

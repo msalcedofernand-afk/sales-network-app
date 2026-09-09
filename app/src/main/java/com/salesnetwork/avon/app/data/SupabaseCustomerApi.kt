@@ -10,9 +10,9 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 class SupabaseCustomerApi(context: Context) {
-    private val prefs = context.getSharedPreferences("leader_network_prefs", Context.MODE_PRIVATE)
+    private val secureTokenStore = SecureTokenStore(context)
     private val base = "https://xceqwexdufdgnmctsxcg.supabase.co"
-    private val token get() = prefs.getString("supabase_access_token", null)
+    private val token get() = secureTokenStore.get()
 
     suspend fun fetch(): List<CustomerContact> = withContext(Dispatchers.IO) {
         val auth = token ?: return@withContext emptyList()

@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 class LeaderNetworkRepository private constructor(context: Context) {
 
     private val prefs = context.getSharedPreferences("leader_network_prefs", Context.MODE_PRIVATE)
+    private val secureTokenStore = SecureTokenStore(context)
 
     private val usersMap = mutableMapOf<String, User>()
     private val leaderCodesSet = mutableSetOf<String>()
@@ -80,7 +81,7 @@ class LeaderNetworkRepository private constructor(context: Context) {
             val authUser = json.getJSONObject("user")
             val metadata = authUser.optJSONObject("user_metadata")
             val accessToken = json.optString("access_token")
-            if (accessToken.isNotBlank()) prefs.edit().putString("supabase_access_token", accessToken).apply()
+            if (accessToken.isNotBlank()) secureTokenStore.save(accessToken)
             val role = fetchRemoteRole(authUser.getString("id"), accessToken)
             Result.success(User(
                 id = authUser.getString("id"),
@@ -121,7 +122,8 @@ class LeaderNetworkRepository private constructor(context: Context) {
         .digest(password.toByteArray()).joinToString("") { "%02x".format(it) }
 
     fun logout() {
-        prefs.edit().remove("active_user_id").remove("supabase_access_token").apply()
+        prefs.edit().remove("active_user_id").apply()
+        secureTokenStore.clear()
         _currentUser.value = null
     }
 

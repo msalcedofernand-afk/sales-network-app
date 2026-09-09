@@ -81,3 +81,9 @@
 - Validación: `npm run build`, `testDebugUnitTest` y `assembleDebug` correctos. APK de prueba actualizado a versionCode 28.
 - Actualizador: el APK generado contiene el detector de versiones; el manifiesto estable apunta a versionCode 28 y beta a 29.
 - Beta: generado APK versionCode 29 para validar el aviso de actualización desde la rama `beta`; `main` conserva el APK estable 28.
+## 2026-09-09 — Sesión Android protegida
+
+- **Qué:** Se cifró el token de acceso de Supabase con Android Keystore y AES/GCM.
+- **Por qué:** Evitar guardar credenciales de sesión en texto plano en SharedPreferences.
+- **Archivos:** `SecureTokenStore.kt`, `LeaderNetworkRepository.kt` y clientes Supabase de catálogo, clientes, carrito y pedidos.
+- **Resultado:** La sesión se guarda, lee y revoca desde almacenamiento cifrado; validado con el build Android.
