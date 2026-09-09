@@ -1,14 +1,17 @@
 # Reglas del Proyecto - Avon Líderes Chiclayo
 
-## Versiones
-- Cada build incrementa `versionCode` automáticamente (vía `version.properties` + `build.gradle.kts`).
-- No tocar `version.properties` manualmente — el build lo gestiona solo.
-- `versionName` se actualiza manualmente solo en cambios mayores.
+## Versiones (Semantic Versioning)
+- Formato: `MAJOR.MINOR.PATCH` (ej: 1.2.0)
+- `MAJOR`: cambios que rompen compatibilidad
+- `MINOR`: nuevas features sin breaking changes
+- `PATCH`: bug fixes
+- `versionCode` se incrementa automáticamente en cada build
+- `versionName` se actualiza manualmente según semver
 
 ## Instalación
-- Siempre usar `adb install -r` (reemplaza sin desinstalar).
-- Nunca desinstalar la app — el versionCode ascendente garantiza actualización limpia.
+- Siempre usar `adb install -r` (reemplaza sin desinstalar)
+- Nunca desinstalar la app
 
 ## Cambios
-- Registrar todo cambio en `REGISTRO_CAMBIOS_AVON.md`.
-- Incluir: qué, por qué, archivos modificados, resultado del build.
+- Registrar todo cambio en `REGISTRO_CAMBIOS_AVON.md`
+- Incluir: qué, por qué, archivos modificados, resultado del build

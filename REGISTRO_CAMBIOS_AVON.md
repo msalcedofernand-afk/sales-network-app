@@ -1,5 +1,51 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-09 - UX Profesional + API Key + Versionado Semántico (v1.1.0)
+
+### Que se hizo
+1. **UX Redesign Completo**:
+   - Tokens centralizados en `Design.kt` (S, C, B, SH)
+   - Componenets reutilizables: KpiCard, StatusBadge, EmptyState, SectionHeader, SectionIntro
+   - Nav bar animada con `animateColorAsState`/`animateDpAsState`
+   - Inputs redondeados, header con gradiente en login
+   - KPIs interactivos en pedidos (click para detalle)
+   - Empty states con icono + acción en todas las pantallas
+
+2. **API Key Supabase Actualizada**:
+   - Reemplazada key inválida por nueva key pública
+   - Login funciona correctamente
+
+3. **Versionado Semántico Implementado**:
+   - `versionName`: 1.0.0 → 1.1.0 (nuevas features)
+   - `versionCode`: 35 (stable), 36 (beta)
+   - Reglas documentadas en `AGENTS.md`
+
+4. **Compilación e Instalación**:
+   - `assembleStableDebug` + `assembleBetaDebug` exitosos
+   - Ambas APKs instaladas vía `adb install -r`
+   - Releases actualizados en repo de releases
+
+### Archivos modificados
+- `app/src/main/java/com/salesnetwork/avon/app/ui/Design.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/SalesNetworkMainApp.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/auth/LoginRegisterScreen.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/catalog/CatalogScreen.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/customer/CustomerListScreen.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/network/TeamNetworkScreen.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/order/OrderListScreen.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/data/LeaderNetworkRepository.kt`
+- `web/public/updates/stable.json`
+- `web/public/updates/beta.json`
+- `version.properties`
+- `AGENTS.md`
+- `REGISTRO_CAMBIOS_AVON.md`
+
+### Resultado del build
+- BUILD SUCCESSFUL (stable v1.1.0 code=35, beta v1.1.0 code=36)
+- Instalación exitosa en dispositivo 7c13e912
+
+---
+
 ## 2026-09-08 - Reemplazo de Marca a "VV" & Rol Root Admin Total
 
 ### Que se hizo
