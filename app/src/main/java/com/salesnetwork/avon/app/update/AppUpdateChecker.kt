@@ -19,8 +19,9 @@ data class AppUpdateInfo(
 class AppUpdateChecker {
     suspend fun check(): AppUpdateInfo? = withContext(Dispatchers.IO) {
         val channel = BuildConfig.UPDATE_CHANNEL
-        val branch = if (channel == "beta") "beta" else "main"
-        val endpoint = "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app/$branch/updates/$channel.json"
+        // GitHub is private, so an installed APK cannot read raw files anonymously.
+        // Vercel publishes these manifests from reviewed Git commits.
+        val endpoint = "https://sales-network-app.vercel.app/updates/$channel.json"
         val connection = (URL(endpoint).openConnection() as HttpURLConnection).apply {
             connectTimeout = 5_000
             readTimeout = 5_000
