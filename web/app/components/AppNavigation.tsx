@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import ReleaseBadge from "./ReleaseBadge";
 
 type NavItem = {
   href: string;
@@ -85,6 +86,7 @@ export default function AppNavigation() {
           <span className="brand-mark" aria-hidden="true">VV</span>
           <span className="brand-copy"><strong>Sales Network</strong><small>Tu ruta de ventas</small></span>
         </Link>
+        <ReleaseBadge />
         <a className="download-app-link" href={APK_DOWNLOAD_URL} download aria-label="Descargar aplicación Android">Descargar app</a>
       </header>
     );
@@ -101,6 +103,7 @@ export default function AppNavigation() {
         <div className="sidebar-foot">
           <span className="sync-dot" aria-hidden="true" />
           <span>Conectado a tu equipo</span>
+          <ReleaseBadge />
           <a className="download-app-link" href={APK_DOWNLOAD_URL} download>Descargar app</a>
         </div>
       </aside>
@@ -110,6 +113,7 @@ export default function AppNavigation() {
           <span className="brand-mark" aria-hidden="true">VV</span>
           <span className="brand-copy"><strong>Sales Network</strong><small>Tu ruta de ventas</small></span>
         </Link>
+        <ReleaseBadge />
         <a className="download-app-link" href={APK_DOWNLOAD_URL} download aria-label="Descargar aplicación Android">Descargar app</a>
       </header>
 

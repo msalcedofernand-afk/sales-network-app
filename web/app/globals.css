@@ -78,6 +78,12 @@ button, input, select, textarea { font: inherit; }
 .brand-copy strong { color: var(--petroleo-900); font-size: .95rem; }
 .brand-copy small { margin-block-start: 3px; color: var(--tinta-500); font-size: .72rem; }
 .download-app-link { margin-inline-start: auto; padding: 9px 12px; color: var(--petroleo-900); background: var(--menta-200); border-radius: var(--radius-md); font-size: .78rem; font-weight: 800; white-space: nowrap; }
+.release-badge { display: inline-flex; align-items: center; gap: 6px; width: fit-content; padding: 5px 9px; border: 1px solid var(--linea-suave); border-radius: 999px; color: var(--tinta-700); background: var(--papel-0); font-size: .69rem; font-weight: 800; white-space: nowrap; }
+.release-stable { color: var(--exito); background: var(--menta-100); }
+.release-beta { color: var(--aviso); background: #fff8df; }
+.release-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.sidebar-foot .release-badge { margin-block-start: 4px; }
+@media (max-width: 639px) { .auth-header .release-badge { display: none; } }
 .download-app-link:hover { background: #c2e5d5; }
 .nav-section-label { margin: 28px 12px 8px; color: var(--tinta-500); font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .sidebar-nav { display: grid; gap: 4px; }
