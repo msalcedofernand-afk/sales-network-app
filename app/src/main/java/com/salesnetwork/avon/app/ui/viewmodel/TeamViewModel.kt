@@ -51,8 +51,9 @@ class TeamViewModel(application: Application) : AndroidViewModel(application) {
                 val team = leaderRepo.getMembersForLeader(leader.referralCode)
                 val activeCount = team.count { it.isActiveInCampaign }
                 val orders = orderRepo.getOrdersForLeader(leader.id)
-                val sales = if (orders.isNotEmpty()) orders.sumOf { it.totalAmount } else 2480.0
-                val comm = if (orders.isNotEmpty()) orders.sumOf { it.networkCommissionLeader } else 124.0
+                // Never manufacture sales for an account that has not synced orders yet.
+                val sales = orders.sumOf { it.totalAmount }
+                val comm = orders.sumOf { it.networkCommissionLeader }
 
                 totalSalesAll += sales
                 totalMembersAll += team.size
@@ -85,7 +86,7 @@ class TeamViewModel(application: Application) : AndroidViewModel(application) {
                 members = membersList,
                 totalTeamCount = membersList.size,
                 activeMembersCount = activeCount,
-                networkCommissionTotal = if (netComm > 0) netComm else 135.50
+                networkCommissionTotal = netComm
             )
         }
     }

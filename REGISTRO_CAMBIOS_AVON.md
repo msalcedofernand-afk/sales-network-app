@@ -105,3 +105,9 @@
 - **Por qué:** Completar el flujo de gestión de clientes y evitar archivados accidentales.
 - **Archivos:** `web/app/clientes/page.tsx`.
 - **Resultado:** Build de Next.js correcto y cambios publicados en `develop`.
+## 2026-09-09 — Equipo sin cifras demo
+
+- **Qué:** Se eliminaron ventas y comisiones de ejemplo que aparecían cuando no había pedidos sincronizados.
+- **Por qué:** Los indicadores deben representar únicamente datos reales de Supabase.
+- **Archivos:** `TeamViewModel.kt`.
+- **Resultado:** Sin pedidos, los indicadores muestran cero hasta completar la sincronización.
