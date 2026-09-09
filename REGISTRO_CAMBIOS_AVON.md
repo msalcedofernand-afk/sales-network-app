@@ -79,3 +79,4 @@
 - Android centraliza colores, radios y espaciado en `SalesDesignTokens`; la cabecera incorpora la firma visual de ruta de venta.
 - La navegación Android anuncia el destino seleccionado a tecnologías de asistencia y usa profundidad basada en superficies/bordes.
 - Validación: `npm run build`, `testDebugUnitTest` y `assembleDebug` correctos. APK de prueba actualizado a versionCode 28.
+- Actualizador: el APK generado contiene el detector de versiones; el manifiesto estable apunta a versionCode 28 y beta a 29.
