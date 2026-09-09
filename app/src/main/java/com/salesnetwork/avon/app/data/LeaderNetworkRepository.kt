@@ -1,6 +1,7 @@
 package com.salesnetwork.avon.app.data
 
 import android.content.Context
+import com.salesnetwork.avon.app.BuildConfig
 import com.salesnetwork.avon.app.domain.model.User
 import com.salesnetwork.avon.app.domain.model.UserRole
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -81,6 +82,20 @@ class LeaderNetworkRepository private constructor(context: Context) {
     fun login(email: String, password: String): Result<User> {
         val cleanEmail = email.trim().lowercase()
 
+        // Production always authenticates against Supabase. Local demo accounts
+        // remain available only for debug builds used during UI validation.
+        val remote = runBlocking(Dispatchers.IO) { loginSupabase(cleanEmail, password) }
+        if (remote.isSuccess) {
+            val remoteUser = remote.getOrThrow()
+            usersMap[remoteUser.id] = remoteUser
+            persistUser(remoteUser)
+            saveActiveUserSession(remoteUser)
+            _currentUser.value = remoteUser
+            return Result.success(remoteUser)
+        }
+
+        if (!BuildConfig.DEBUG) return Result.failure(Exception("Correo o contrasena incorrectos."))
+
         // Verificacion especial para Usuario Root Admin Total y Lideres
         val user = usersMap.values.firstOrNull { it.email.equals(cleanEmail, ignoreCase = true) }
         if (user != null) {
@@ -92,17 +107,6 @@ class LeaderNetworkRepository private constructor(context: Context) {
                 _currentUser.value = user
                 return Result.success(user)
             }
-        }
-
-        // Intento Supabase para sincronizacion remota
-        val remote = runBlocking(Dispatchers.IO) { loginSupabase(cleanEmail, password) }
-        if (remote.isSuccess) {
-            val remoteUser = remote.getOrThrow()
-            usersMap[remoteUser.id] = remoteUser
-            persistUser(remoteUser)
-            saveActiveUserSession(remoteUser)
-            _currentUser.value = remoteUser
-            return Result.success(remoteUser)
         }
 
         return Result.failure(Exception("Correo o contrasena incorrectos."))
@@ -138,16 +142,42 @@ class LeaderNetworkRepository private constructor(context: Context) {
             val json = JSONObject(body)
             val authUser = json.getJSONObject("user")
             val metadata = authUser.optJSONObject("user_metadata")
+            val accessToken = json.optString("access_token")
+            if (accessToken.isNotBlank()) prefs.edit().putString("supabase_access_token", accessToken).apply()
+            val role = fetchRemoteRole(authUser.getString("id"), accessToken)
             Result.success(User(
                 id = authUser.getString("id"),
                 name = metadata?.optString("name").orEmpty().ifBlank { email.substringBefore("@").replaceFirstChar { it.uppercase() } },
                 email = authUser.optString("email", email),
-                role = UserRole.LIDER,
+                role = role,
                 referralCode = "VV-2026"
             ))
         } catch (_: Exception) {
             Result.failure(Exception("No se pudo conectar."))
         }
+    }
+
+    private fun fetchRemoteRole(userId: String, accessToken: String): UserRole {
+        if (accessToken.isBlank()) return UserRole.MIEMBRO
+        return try {
+            val endpoint = URL("https://xceqwexdufdgnmctsxcg.supabase.co/rest/v1/team_members?user_id=eq.$userId&select=role&limit=1")
+            val connection = (endpoint.openConnection() as HttpURLConnection).apply {
+                requestMethod = "GET"
+                connectTimeout = 5000
+                readTimeout = 5000
+                setRequestProperty("apikey", SUPABASE_ANON_KEY)
+                setRequestProperty("Authorization", "Bearer $accessToken")
+                setRequestProperty("Accept", "application/json")
+            }
+            val body = connection.inputStream.bufferedReader().use { it.readText() }
+            connection.disconnect()
+            val rows = org.json.JSONArray(body)
+            if (rows.length() == 0) UserRole.MIEMBRO else when (rows.getJSONObject(0).optString("role")) {
+                "LIDER" -> UserRole.LIDER
+                "ROOT_ADMIN" -> UserRole.ROOT_ADMIN
+                else -> UserRole.MIEMBRO
+            }
+        } catch (_: Exception) { UserRole.MIEMBRO }
     }
 
     private fun hashPassword(password: String): String = MessageDigest.getInstance("SHA-256")
