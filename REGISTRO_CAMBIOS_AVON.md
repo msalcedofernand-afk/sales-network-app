@@ -99,3 +99,9 @@
 - **Por qué:** Evitar presentar una distancia en línea recta como si fuera una ruta real.
 - **Archivos:** `RouteEtaService.kt`, `SalesNetworkModuleTest.kt`.
 - **Resultado:** El cliente aparece como “Sin calcular” hasta tener una ruta confirmada.
+## 2026-09-09 — Clientes web
+
+- **Qué:** Se añadió edición de clientes, confirmación antes de archivar y acciones para llamar o abrir WhatsApp.
+- **Por qué:** Completar el flujo de gestión de clientes y evitar archivados accidentales.
+- **Archivos:** `web/app/clientes/page.tsx`.
+- **Resultado:** Build de Next.js correcto y cambios publicados en `develop`.
