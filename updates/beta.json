@@ -1,0 +1,8 @@
+{
+  "versionCode": 28,
+  "versionName": "1.0.0-beta.1",
+  "channel": "beta",
+  "apkUrl": "https://github.com/msalcedofernand-afk/sales-network-app/raw/beta/releases/sales-network-redesign-debug.apk",
+  "releaseNotes": "Versión beta para validar mejoras antes de publicarlas en estable.",
+  "mandatory": false
+}

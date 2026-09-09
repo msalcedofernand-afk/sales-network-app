@@ -39,6 +39,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            buildConfigField("String", "UPDATE_CHANNEL", "\"stable\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -46,6 +47,7 @@ android {
         }
         debug {
             isDebuggable = true
+            buildConfigField("String", "UPDATE_CHANNEL", "\"beta\"")
         }
     }
 
@@ -60,7 +62,9 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
+
 }
 
 dependencies {

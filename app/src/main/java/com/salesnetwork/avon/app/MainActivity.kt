@@ -1,6 +1,13 @@
 package com.salesnetwork.avon.app
 
 import android.os.Bundle
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -9,12 +16,17 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Surface
 import com.salesnetwork.avon.app.ui.SalesNetworkMainApp
+import com.salesnetwork.avon.app.update.AppUpdateChecker
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            var availableUpdate by remember { mutableStateOf<com.salesnetwork.avon.app.update.AppUpdateInfo?>(null) }
+            LaunchedEffect(Unit) {
+                availableUpdate = AppUpdateChecker().check()
+            }
             MaterialTheme(
                 colorScheme = lightColorScheme(
                     primary = Color(0xFF165C59),
@@ -39,7 +51,12 @@ class MainActivity : ComponentActivity() {
                 )
             ) {
                 Surface {
-                    SalesNetworkMainApp()
+                    SalesNetworkMainApp(
+                        availableUpdate = availableUpdate,
+                        onOpenUpdate = { url ->
+                            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                        }
+                    )
                 }
             }
         }

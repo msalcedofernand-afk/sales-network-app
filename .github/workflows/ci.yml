@@ -2,7 +2,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main, develop]
+    branches: [main, beta, develop]
 jobs:
   android:
     runs-on: windows-latest
