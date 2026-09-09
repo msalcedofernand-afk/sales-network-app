@@ -117,3 +117,9 @@
 - **Por qué:** Aplicar migraciones y Edge Functions de forma repetible sin exponer secretos.
 - **Archivos:** `scripts/deploy-supabase.ps1`, `docs/DEPLOYMENT.md`.
 - **Resultado:** El despliegue queda listo para ejecutarse cuando estén disponibles el token y la contraseña del proyecto.
+## 2026-09-09 — Pruebas web y RLS
+
+- **Qué:** Se añadió Playwright con pruebas de login y catálogo, integración en CI y un smoke test SQL para aislamiento RLS.
+- **Por qué:** Validar accesibilidad básica y detectar fugas entre equipos antes de publicar beta.
+- **Archivos:** `web/playwright.config.ts`, `web/tests/public-pages.spec.ts`, `.github/workflows/ci.yml`, `supabase/tests/rls_smoke.sql`.
+- **Resultado:** Suite preparada; la descarga del navegador Playwright queda para CI o una máquina con acceso al binario.
