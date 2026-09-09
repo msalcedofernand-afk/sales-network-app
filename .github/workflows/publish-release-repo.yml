@@ -45,6 +45,7 @@ jobs:
             manifest="updates/beta.json"
             public_manifest="beta.json"
           fi
+          git -C release-repo checkout "$target_branch"
           mkdir -p "release-repo/releases" "release-repo/updates"
           cp app/build/outputs/apk/debug/app-debug.apk "release-repo/releases/${apk_name}"
           cp "${manifest}" "release-repo/updates/${public_manifest}"
