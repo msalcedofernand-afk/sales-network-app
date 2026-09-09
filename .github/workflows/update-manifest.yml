@@ -1,0 +1,31 @@
+name: Validate update channels
+
+on:
+  pull_request:
+    paths:
+      - "updates/**"
+      - "app/build.gradle.kts"
+  push:
+    branches: [main, beta]
+    paths:
+      - "updates/**"
+      - "app/build.gradle.kts"
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate stable and beta manifests
+        shell: pwsh
+        run: |
+          $files = @("updates/stable.json", "updates/beta.json")
+          foreach ($file in $files) {
+            $manifest = Get-Content $file -Raw | ConvertFrom-Json
+            if ($manifest.versionCode -lt 1) { throw "${file}: versionCode inválido" }
+            if ([string]::IsNullOrWhiteSpace($manifest.versionName)) { throw "${file}: versionName vacío" }
+            if ($manifest.channel -notin @("stable", "beta")) { throw "${file}: channel inválido" }
+            if ($manifest.apkUrl -notmatch "^https://") { throw "${file}: apkUrl debe ser HTTPS" }
+            if ([string]::IsNullOrWhiteSpace($manifest.releaseNotes)) { throw "${file}: releaseNotes vacío" }
+          }
+          Write-Host "Manifiestos de actualización válidos."

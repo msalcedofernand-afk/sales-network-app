@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.salesnetwork.avon.app.domain.model.UserRole
+import com.salesnetwork.avon.app.update.AppUpdateInfo
 import com.salesnetwork.avon.app.ui.auth.LoginRegisterScreen
 import com.salesnetwork.avon.app.ui.catalog.CatalogScreen
 import com.salesnetwork.avon.app.ui.customer.CustomerListScreen
@@ -52,7 +53,9 @@ fun SalesNetworkMainApp(
     catalogViewModel: CatalogViewModel = viewModel(),
     customerViewModel: CustomerViewModel = viewModel(),
     teamViewModel: TeamViewModel = viewModel(),
-    orderViewModel: OrderViewModel = viewModel()
+    orderViewModel: OrderViewModel = viewModel(),
+    availableUpdate: AppUpdateInfo? = null,
+    onOpenUpdate: (String) -> Unit = {}
 ) {
     val authState by authViewModel.uiState.collectAsState()
     val catalogState by catalogViewModel.uiState.collectAsState()
@@ -75,13 +78,18 @@ fun SalesNetworkMainApp(
     }
 
     if (currentUser == null) {
-        LoginRegisterScreen(
-            onLoginSuccess = { selectedTab = SalesAppTab.NETWORK },
-            onRegisterLeader = { name, email, password -> authViewModel.registerLeader(name, email, password) },
-            onRegisterMember = { name, email, password, code -> authViewModel.registerMember(name, email, password, code) },
-            onLoginClick = { email, password -> authViewModel.login(email, password) },
-            onResetPassword = { email, newPass -> authViewModel.resetPassword(email, newPass) }
-        )
+        Column(Modifier.fillMaxSize()) {
+            availableUpdate?.let { UpdateBanner(it, onOpenUpdate) }
+            Box(Modifier.fillMaxWidth().weight(1f)) {
+                LoginRegisterScreen(
+                    onLoginSuccess = { selectedTab = SalesAppTab.NETWORK },
+                    onRegisterLeader = { name, email, password -> authViewModel.registerLeader(name, email, password) },
+                    onRegisterMember = { name, email, password, code -> authViewModel.registerMember(name, email, password, code) },
+                    onLoginClick = { email, password -> authViewModel.login(email, password) },
+                    onResetPassword = { email, newPass -> authViewModel.resetPassword(email, newPass) }
+                )
+            }
+        }
     } else {
         Scaffold(
             topBar = {
@@ -150,7 +158,7 @@ fun SalesNetworkMainApp(
                 Surface(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(bottom = 88.dp)
+                        .padding(bottom = 88.dp, top = if (availableUpdate != null) 84.dp else 0.dp)
                 ) {
                     when (selectedTab) {
                         SalesAppTab.NETWORK -> {
@@ -218,6 +226,14 @@ fun SalesNetworkMainApp(
                     }
                 }
 
+                availableUpdate?.let {
+                    UpdateBanner(
+                        info = it,
+                        onOpenUpdate = onOpenUpdate,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
+                }
+
                 Surface(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -263,6 +279,35 @@ fun SalesNetworkMainApp(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun UpdateBanner(
+    info: AppUpdateInfo,
+    onOpenUpdate: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        color = MaterialTheme.colorScheme.primaryContainer,
+        shape = RoundedCornerShape(16.dp),
+        tonalElevation = 0.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("Nueva versión ${info.versionName}", fontWeight = FontWeight.Bold)
+                Text(info.releaseNotes, style = MaterialTheme.typography.bodySmall, maxLines = 2)
+            }
+            TextButton(onClick = { onOpenUpdate(info.apkUrl) }) { Text("Actualizar") }
         }
     }
 }
