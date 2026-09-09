@@ -48,13 +48,13 @@ class SalesNetworkModuleTest {
     }
 
     @Test
-    fun testRouteEtaCalculation() = runBlocking {
+    fun testRouteEtaWithoutCoordinatesDoesNotInventDistance() = runBlocking {
         val service = RouteEtaService()
-        val eta = service.calculateRouteEta(-6.7714, -79.8409, -6.7820, -79.8460)
+        val eta = service.calculateRouteEta(-6.7714, -79.8409, null, null)
 
         assertNotNull(eta)
-        assertTrue(eta.distanceKm > 0.0)
-        assertTrue(eta.durationMinutes > 0)
-        assertTrue(eta.formattedSummary.contains("min"))
+        assertFalse(eta.isRouteAvailable)
+        assertEquals("Sin calcular", eta.formattedSummary)
+        assertEquals(0.0, eta.distanceKm, 0.0)
     }
 }

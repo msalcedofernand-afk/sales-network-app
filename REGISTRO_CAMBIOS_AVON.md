@@ -93,3 +93,9 @@
 - **Por qué:** Un reintento después de perder la respuesta de red no debe duplicar la venta.
 - **Archivos:** `SupabaseCheckoutApi.kt`.
 - **Resultado:** Reintentos del mismo carrito reutilizan la clave y el servidor mantiene la operación idempotente.
+## 2026-09-09 — ETA sin estimaciones inventadas
+
+- **Qué:** La app ya no muestra una distancia o tiempo calculado si el proveedor de rutas no responde.
+- **Por qué:** Evitar presentar una distancia en línea recta como si fuera una ruta real.
+- **Archivos:** `RouteEtaService.kt`, `SalesNetworkModuleTest.kt`.
+- **Resultado:** El cliente aparece como “Sin calcular” hasta tener una ruta confirmada.
