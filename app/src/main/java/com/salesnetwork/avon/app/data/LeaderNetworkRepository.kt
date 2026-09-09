@@ -13,7 +13,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import org.json.JSONObject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 class LeaderNetworkRepository private constructor(context: Context) {
 
@@ -41,12 +41,10 @@ class LeaderNetworkRepository private constructor(context: Context) {
         return Result.failure(Exception("Acepta la invitación desde la web después de confirmar tu correo."))
     }
 
-    fun login(email: String, password: String): Result<User> {
+    suspend fun login(email: String, password: String): Result<User> {
         val cleanEmail = email.trim().lowercase()
 
-        // Production always authenticates against Supabase. Local demo accounts
-        // remain available only for debug builds used during UI validation.
-        val remote = runBlocking(Dispatchers.IO) { loginSupabase(cleanEmail, password) }
+        val remote = withContext(Dispatchers.IO) { loginSupabase(cleanEmail, password) }
         if (remote.isSuccess) {
             val remoteUser = remote.getOrThrow()
             usersMap[remoteUser.id] = remoteUser
@@ -56,6 +54,8 @@ class LeaderNetworkRepository private constructor(context: Context) {
             return Result.success(remoteUser)
         }
 
+        val errorMsg = remote.exceptionOrNull()?.message ?: "Unknown error"
+        android.util.Log.e("Auth", "Login failed: $errorMsg")
         return Result.failure(Exception("Correo o contrasena incorrectos."))
     }
 
@@ -65,6 +65,7 @@ class LeaderNetworkRepository private constructor(context: Context) {
 
     private fun loginSupabase(email: String, password: String): Result<User> {
         return try {
+            android.util.Log.d("Auth", "Attempting Supabase login for: $email")
             val connection = (URL("https://xceqwexdufdgnmctsxcg.supabase.co/auth/v1/token?grant_type=password").openConnection() as HttpURLConnection).apply {
                 requestMethod = "POST"
                 doOutput = true
@@ -76,7 +77,11 @@ class LeaderNetworkRepository private constructor(context: Context) {
             connection.outputStream.use { it.write(JSONObject().put("email", email).put("password", password).toString().toByteArray()) }
             val body = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)
                 ?.bufferedReader()?.use { it.readText() }.orEmpty()
-            if (connection.responseCode !in 200..299) return Result.failure(Exception("Correo o contrasena incorrectos."))
+            android.util.Log.d("Auth", "Supabase response code: ${connection.responseCode}")
+            if (connection.responseCode !in 200..299) {
+                android.util.Log.e("Auth", "Supabase auth failed: $body")
+                return Result.failure(Exception("Correo o contrasena incorrectos."))
+            }
             val json = JSONObject(body)
             val authUser = json.getJSONObject("user")
             val metadata = authUser.optJSONObject("user_metadata")

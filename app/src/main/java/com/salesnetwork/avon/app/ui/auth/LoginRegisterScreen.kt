@@ -1,5 +1,8 @@
 package com.salesnetwork.avon.app.ui.auth
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -17,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -33,7 +37,8 @@ fun LoginRegisterScreen(
     onRegisterLeader: (name: String, email: String, password: String) -> Result<Any>,
     onRegisterMember: (name: String, email: String, password: String, leaderCode: String) -> Result<Any>,
     onLoginClick: (email: String, password: String) -> Result<Any>,
-    onResetPassword: (email: String, newPassword: String) -> Result<Boolean> = { _, _ -> Result.success(true) }
+    onResetPassword: (email: String, newPassword: String) -> Result<Boolean> = { _, _ -> Result.success(true) },
+    isLoading: Boolean = false
 ) {
     var isRegisterMode by rememberSaveable { mutableStateOf(false) }
     var selectedRole by rememberSaveable { mutableStateOf(UserRole.LIDER) }
@@ -240,21 +245,29 @@ fun LoginRegisterScreen(
                                 errorMessage = "Ingresa un correo valido y tu contrasena."
                                 return@Button
                             }
-                            val result = onLoginClick(email.trim(), password)
-                            if (result.isSuccess) {
-                                onLoginSuccess()
-                            } else {
-                                errorMessage = result.exceptionOrNull()?.message ?: "Error al iniciar sesion."
-                            }
+                            onLoginClick(email.trim(), password)
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 54.dp),
-                    shape = RoundedCornerShape(20.dp)
+                    shape = RoundedCornerShape(20.dp),
+                    enabled = !isLoading
                 ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
                     Text(
-                        text = if (isRegisterMode) "Crear Cuenta" else "Iniciar Sesion",
+                        text = if (isLoading) {
+                            if (isRegisterMode) "Creando cuenta..." else "Iniciando sesion..."
+                        } else {
+                            if (isRegisterMode) "Crear Cuenta" else "Iniciar Sesion"
+                        },
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )

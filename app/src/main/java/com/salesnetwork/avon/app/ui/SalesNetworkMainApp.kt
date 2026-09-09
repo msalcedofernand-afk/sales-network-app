@@ -87,7 +87,8 @@ fun SalesNetworkMainApp(
                     onRegisterLeader = { name, email, password -> authViewModel.registerLeader(name, email, password) },
                     onRegisterMember = { name, email, password, code -> authViewModel.registerMember(name, email, password, code) },
                     onLoginClick = { email, password -> authViewModel.login(email, password) },
-                    onResetPassword = { email, newPass -> authViewModel.resetPassword(email, newPass) }
+                    onResetPassword = { email, newPass -> authViewModel.resetPassword(email, newPass) },
+                    isLoading = authState.isLoading
                 )
             }
         }

@@ -25,7 +25,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             var availableUpdate by remember { mutableStateOf<com.salesnetwork.avon.app.update.AppUpdateInfo?>(null) }
-            LaunchedEffect(Unit) { availableUpdate = AppUpdateChecker().check() }
+            val updateChecker = remember { com.salesnetwork.avon.app.update.AppUpdateChecker(applicationContext) }
+            LaunchedEffect(Unit) { availableUpdate = updateChecker.check() }
             MaterialTheme(
                 colorScheme = lightColorScheme(
                     primary = Color(0xFF165C59), onPrimary = Color.White,
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
                     SalesNetworkMainApp(
                         availableUpdate = availableUpdate,
                         onOpenUpdate = { url ->
+                            updateChecker.markInstalled(url)
                             try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
                             catch (_: ActivityNotFoundException) { }
                         }
