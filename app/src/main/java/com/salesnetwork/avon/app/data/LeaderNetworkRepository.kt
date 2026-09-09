@@ -81,7 +81,11 @@ class LeaderNetworkRepository private constructor(context: Context) {
             val authUser = json.getJSONObject("user")
             val metadata = authUser.optJSONObject("user_metadata")
             val accessToken = json.optString("access_token")
-            if (accessToken.isNotBlank()) secureTokenStore.save(accessToken)
+            if (accessToken.isNotBlank()) {
+                secureTokenStore.save(accessToken)
+                // Remove tokens written by versions prior to the Keystore migration.
+                prefs.edit().remove("supabase_access_token").apply()
+            }
             val role = fetchRemoteRole(authUser.getString("id"), accessToken)
             Result.success(User(
                 id = authUser.getString("id"),
