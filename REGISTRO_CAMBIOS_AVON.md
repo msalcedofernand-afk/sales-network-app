@@ -135,3 +135,9 @@
 - **Por qué:** El proyecto remoto ya contiene tablas; no se deben recrear ni borrar datos.
 - **Archivos:** `scripts/deploy-supabase.ps1`, `docs/DEPLOYMENT.md`.
 - **Resultado:** Las Edge Functions no se publican si la base de datos no está sincronizada y el siguiente paso queda explícito.
+## 2026-09-09 — Corrección de smoke test web
+
+- **Qué:** El smoke test de login ahora busca el texto real del botón `Ingresar`.
+- **Por qué:** CI fallaba aunque la pantalla funcionaba correctamente.
+- **Archivos:** `web/tests/public-pages.spec.ts`.
+- **Resultado:** La prueba coincide con la interfaz actual y el Pull Request se actualizará automáticamente.
