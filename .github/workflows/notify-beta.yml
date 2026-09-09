@@ -1,0 +1,64 @@
+name: Notify beta deployment
+
+on:
+  push:
+    branches: [beta]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish beta links in GitHub
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = 'Beta deployment · Sales Network';
+            const sha = context.sha;
+            const shortSha = sha.slice(0, 7);
+            const repo = `${context.repo.owner}/${context.repo.repo}`;
+            const betaWeb = 'https://sales-network-app-git-beta-fms7w7.vercel.app/';
+            const apk = 'https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/beta/releases/sales-network-beta.apk';
+            const body = [
+              `## Beta actualizada · ${shortSha}`,
+              '',
+              `Se publicó un nuevo cambio en [${shortSha}](${context.serverUrl}/${repo}/commit/${sha}).`,
+              '',
+              `- **Web beta:** [Abrir beta](${betaWeb})`,
+              `- **APK beta:** [Descargar APK](${apk})`,
+              `- **Cambios:** [Ver commits de beta](${context.serverUrl}/${repo}/commits/beta)`,
+              '',
+              '_Este aviso se actualiza automáticamente en cada push a `beta`._'
+            ].join('\n');
+
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100
+            });
+            let issue = issues.find(i => i.title === title && !i.pull_request);
+            if (!issue) {
+              issue = (await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+              })).data;
+            } else {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body
+              });
+            }
+            core.summary
+              .addHeading(`Beta publicada · ${shortSha}`)
+              .addLink('Web beta', betaWeb)
+              .addLink('Descargar APK beta', apk)
+              .addLink('Cambios', `${context.serverUrl}/${repo}/commits/beta`)
+              .write();
