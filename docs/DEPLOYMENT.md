@@ -8,6 +8,7 @@
 6. Mantener `SUPABASE_SERVICE_ROLE_KEY` solo como secreto server-side si alguna función lo necesita.
 7. Conectar GitHub a Vercel: Preview para Pull Requests y Production únicamente desde `main`.
 8. Configurar Android con URL y clave publicable mediante mecanismo de build; nunca subir secretos.
+9. Aplicar las migraciones y publicar las APK en `app-releases/stable/sales-network.apk` y `app-releases/beta/sales-network.apk` usando una Edge Function o CI con `service_role` únicamente en el servidor.
 
 Proyectos remotos creados:
 
