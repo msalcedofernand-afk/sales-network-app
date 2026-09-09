@@ -11,6 +11,8 @@ type NavItem = {
   icon: ReactNode;
 };
 
+const APK_DOWNLOAD_URL = "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/beta/releases/sales-network-beta.apk";
+
 const iconProps = {
   width: 20,
   height: 20,
@@ -83,6 +85,7 @@ export default function AppNavigation() {
           <span className="brand-mark" aria-hidden="true">VV</span>
           <span className="brand-copy"><strong>Sales Network</strong><small>Tu ruta de ventas</small></span>
         </Link>
+        <a className="download-app-link" href={APK_DOWNLOAD_URL} download aria-label="Descargar aplicación Android">Descargar app</a>
       </header>
     );
   }
@@ -98,6 +101,7 @@ export default function AppNavigation() {
         <div className="sidebar-foot">
           <span className="sync-dot" aria-hidden="true" />
           <span>Conectado a tu equipo</span>
+          <a className="download-app-link" href={APK_DOWNLOAD_URL} download>Descargar app</a>
         </div>
       </aside>
 
@@ -106,6 +110,7 @@ export default function AppNavigation() {
           <span className="brand-mark" aria-hidden="true">VV</span>
           <span className="brand-copy"><strong>Sales Network</strong><small>Tu ruta de ventas</small></span>
         </Link>
+        <a className="download-app-link" href={APK_DOWNLOAD_URL} download aria-label="Descargar aplicación Android">Descargar app</a>
       </header>
 
       <nav className="bottom-nav" aria-label="Navegación móvil"><NavLinks mobile /></nav>

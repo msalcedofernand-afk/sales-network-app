@@ -147,3 +147,9 @@
 - **Por qué:** Evitar que la documentación diga que la app sigue usando datos demo locales.
 - **Archivos:** `README.md`.
 - **Resultado:** Se documentan también Room/offline, firma de APK y validación beta como pendientes.
+## 2026-09-09 — Descarga de APK desde la web
+
+- **Qué:** Se añadió un botón visible para descargar la APK beta desde la navegación web.
+- **Por qué:** Facilitar que las vendedoras instalen la aplicación Android desde el catálogo.
+- **Archivos:** `web/app/components/AppNavigation.tsx`, `web/app/globals.css`.
+- **Resultado:** El botón apunta al artefacto público beta de GitHub Releases y funciona en móvil, escritorio y login.
