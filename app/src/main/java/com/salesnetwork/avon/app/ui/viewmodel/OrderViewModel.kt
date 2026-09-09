@@ -2,6 +2,7 @@ package com.salesnetwork.avon.app.ui.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.salesnetwork.avon.app.data.OrderRepository
 import com.salesnetwork.avon.app.domain.model.Order
 import com.salesnetwork.avon.app.domain.model.OrderItem
@@ -10,6 +11,7 @@ import com.salesnetwork.avon.app.domain.model.PaymentMethod
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 data class OrderUiState(
     val orders: List<Order> = emptyList(),
@@ -37,7 +39,10 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
     fun setUser(userId: String, isRoot: Boolean = false) {
         currentLeaderId = userId
         isRootAdmin = isRoot
-        loadOrders()
+        viewModelScope.launch {
+            repository.refreshFromSupabase()
+            loadOrders()
+        }
     }
 
     fun setLeaderId(leaderId: String) {

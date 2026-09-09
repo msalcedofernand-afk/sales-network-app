@@ -265,6 +265,7 @@ fun OrderListScreen(
                                             onClick = { showStatusMenu = true },
                                             color = when (order.status) {
                                                 OrderStatus.COBRADO -> Color(0xFF2E7D32)
+                                                OrderStatus.CONFIRMADO -> Color(0xFF1565C0)
                                                 OrderStatus.ENTREGADO -> Color(0xFF1976D2)
                                                 OrderStatus.PENDIENTE -> Color(0xFFE65100)
                                                 OrderStatus.CANCELADO -> Color(0xFFC62828)

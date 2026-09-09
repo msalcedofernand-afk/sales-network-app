@@ -11,9 +11,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.util.UUID
 
 class OrderRepository private constructor(context: Context) {
+    private val remoteApi = SupabaseOrderApi(context.applicationContext)
 
     private val _orders = MutableStateFlow<List<Order>>(emptyList())
     val orders: StateFlow<List<Order>> = _orders.asStateFlow()
+
+    suspend fun refreshFromSupabase(): Result<Int> = runCatching {
+        val remote = remoteApi.fetch()
+        _orders.value = remote
+        remote.size
+    }
 
     fun getOrdersForLeader(leaderUserId: String, campaignCode: String? = null): List<Order> {
         val list = _orders.value.filter { it.leaderUserId == leaderUserId || it.leaderUserId.isEmpty() }
