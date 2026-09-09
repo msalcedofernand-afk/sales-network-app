@@ -76,7 +76,7 @@ function NavLinks({ mobile = false }: { mobile?: boolean }) {
 
 export default function AppNavigation() {
   const pathname = usePathname();
-  if (pathname === "/login" || pathname === "/registro") {
+  if (pathname === "/login" || pathname === "/registro" || pathname === "/restablecer-contrasena" || pathname === "/onboarding") {
     return (
       <header className="mobile-header auth-header">
         <Link className="brand" href="/login" aria-label="Sales Network, ir al inicio de sesión">

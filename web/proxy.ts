@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const protectedPrefixes = ["/catalogo", "/carrito", "/pedidos", "/clientes", "/equipo", "/admin"];
+const protectedPrefixes = ["/catalogo", "/carrito", "/pedidos", "/clientes", "/equipo", "/admin", "/onboarding"];
 
 function loginRedirect(request: NextRequest, reason?: string) {
   const destination = new URL("/login", request.url);
@@ -47,5 +47,4 @@ export async function proxy(request: NextRequest) {
   }
 }
 
-export const config = { matcher: ["/catalogo/:path*", "/carrito/:path*", "/pedidos/:path*", "/clientes/:path*", "/equipo/:path*", "/admin/:path*"] };
-
+export const config = { matcher: ["/catalogo/:path*", "/carrito/:path*", "/pedidos/:path*", "/clientes/:path*", "/equipo/:path*", "/admin/:path*", "/onboarding/:path*"] };
