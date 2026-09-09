@@ -111,3 +111,9 @@
 - **Por qué:** Los indicadores deben representar únicamente datos reales de Supabase.
 - **Archivos:** `TeamViewModel.kt`.
 - **Resultado:** Sin pedidos, los indicadores muestran cero hasta completar la sincronización.
+## 2026-09-09 — Automatización de despliegue Supabase
+
+- **Qué:** Se añadió `scripts/deploy-supabase.ps1` y la guía de puesta en marcha remota.
+- **Por qué:** Aplicar migraciones y Edge Functions de forma repetible sin exponer secretos.
+- **Archivos:** `scripts/deploy-supabase.ps1`, `docs/DEPLOYMENT.md`.
+- **Resultado:** El despliegue queda listo para ejecutarse cuando estén disponibles el token y la contraseña del proyecto.
