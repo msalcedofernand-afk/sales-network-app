@@ -1,5 +1,6 @@
 package com.salesnetwork.avon.app.update
 
+import android.net.Uri
 import com.salesnetwork.avon.app.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,8 +22,8 @@ class AppUpdateChecker {
         val channel = BuildConfig.UPDATE_CHANNEL
         val branch = if (channel == "beta") "beta" else "main"
         val endpoints = listOf(
-            "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/$branch/updates/$channel.json",
-            "https://sales-network-app.vercel.app/updates/$channel.json"
+            "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/${branch}/updates/${channel}.json",
+            "https://sales-network-app.vercel.app/updates/${channel}.json"
         )
         try {
             var payload: String? = null
@@ -43,15 +44,29 @@ class AppUpdateChecker {
             }
             if (payload == null) return@withContext null
             val json = JSONObject(payload)
+            val apkUrl = json.optString("apkUrl", "")
             val available = AppUpdateInfo(
                 versionCode = json.optInt("versionCode", 0),
                 versionName = json.optString("versionName", ""),
                 channel = json.optString("channel", channel),
-                apkUrl = json.optString("apkUrl", ""),
+                apkUrl = apkUrl,
                 releaseNotes = json.optString("releaseNotes", "Nueva versión disponible."),
                 mandatory = json.optBoolean("mandatory", false)
             )
-            if (available.channel != channel || available.versionCode <= BuildConfig.VERSION_CODE || available.apkUrl.isBlank()) null else available
+            if (
+                available.channel != channel ||
+                available.versionCode <= BuildConfig.VERSION_CODE ||
+                !isApprovedDownload(apkUrl, channel)
+            ) null else available
         } catch (_: Exception) { null }
     }
+
+    private fun isApprovedDownload(value: String, channel: String): Boolean {
+        val uri = Uri.parse(value)
+        if (uri.scheme != "https" || uri.host != "raw.githubusercontent.com") return false
+        val expectedPrefix = "/msalcedofernand-afk/sales-network-app-releases/"
+        val expectedChannelPath = "/releases/sales-network-${channel}.apk"
+        return uri.path?.startsWith(expectedPrefix) == true && uri.path?.endsWith(expectedChannelPath) == true
+    }
 }
+

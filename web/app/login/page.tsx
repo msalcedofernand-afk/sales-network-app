@@ -33,57 +33,16 @@ export default function LoginPage() {
       else router.replace("/catalogo");
     } catch {
       setFeedback({ kind: "error", text: "No pudimos conectar. Comprueba tu conexión e inténtalo nuevamente." });
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }
 
   async function recover() {
-    if (!email.trim()) {
-      setFeedback({ kind: "error", text: "Escribe tu correo para enviarte el enlace de recuperación." });
-      return;
-    }
+    if (!email.trim()) return setFeedback({ kind: "error", text: "Escribe tu correo para enviarte el enlace de recuperación." });
     setLoading(true);
-    const { error } = await createClient().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/login` });
-    setFeedback(error
-      ? { kind: "error", text: "No pudimos enviar el enlace. Revisa el correo." }
-      : { kind: "success", text: "Te enviamos un enlace para crear una contraseña nueva." });
+    const { error } = await createClient().auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin + "/restablecer-contrasena" });
+    setFeedback(error ? { kind: "error", text: "No pudimos enviar el enlace. Revisa el correo." } : { kind: "success", text: "Te enviamos un enlace para crear una contraseña nueva." });
     setLoading(false);
   }
 
-  return (
-    <main className="auth-shell">
-      <section className="auth-story" aria-labelledby="auth-story-title">
-        <div>
-          <span className="auth-route">Tu siguiente venta</span>
-          <h1 id="auth-story-title">Todo tu negocio, en una sola ruta.</h1>
-          <p>Catálogo, clientes, pedidos y equipo sincronizados para que puedas vender desde cualquier lugar.</p>
-        </div>
-        <div className="auth-points" aria-label="Beneficios">
-          <span className="auth-point">Continúa tu carrito en otro dispositivo</span>
-          <span className="auth-point">Consulta la campaña activa</span>
-          <span className="auth-point">Protege los datos de tu equipo</span>
-        </div>
-      </section>
-
-      <section className="auth-panel" aria-labelledby="login-title">
-        <h2 id="login-title">Bienvenida de vuelta</h2>
-        <p className="muted">Ingresa con la cuenta confirmada de tu equipo.</p>
-        <form className="auth-form" onSubmit={submit} aria-describedby={feedback ? "auth-feedback" : undefined}>
-          <label htmlFor="email">Correo
-            <input id="email" type="email" autoComplete="email" inputMode="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
-          </label>
-          <label htmlFor="password">Contraseña
-            <input id="password" type="password" autoComplete="current-password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} />
-          </label>
-          <div className="auth-actions">
-            <button type="submit" disabled={loading}>{loading ? "Comprobando…" : "Ingresar"}</button>
-            <button className="button ghost" type="button" onClick={recover} disabled={loading}>Recuperar contraseña</button>
-          </div>
-        </form>
-        <p>¿Aún no tienes cuenta? <Link className="auth-link" href="/registro">Crear cuenta</Link></p>
-        {feedback && <p id="auth-feedback" className={`auth-feedback ${feedback.kind}`} role={feedback.kind === "error" ? "alert" : "status"}>{feedback.text}</p>}
-      </section>
-    </main>
-  );
+  return <main className="auth-shell"><section className="auth-story" aria-labelledby="auth-story-title"><div><span className="auth-route">Tu siguiente venta</span><h1 id="auth-story-title">Todo tu negocio, en una sola ruta.</h1><p>Catálogo, clientes, pedidos y equipo sincronizados para que puedas vender desde cualquier lugar.</p></div><div className="auth-points" aria-label="Beneficios"><span className="auth-point">Continúa tu carrito en otro dispositivo</span><span className="auth-point">Consulta la campaña activa</span><span className="auth-point">Protege los datos de tu equipo</span></div></section><section className="auth-panel" aria-labelledby="login-title"><h2 id="login-title">Bienvenida de vuelta</h2><p className="muted">Ingresa con la cuenta confirmada de tu equipo.</p><form className="auth-form" onSubmit={submit} aria-describedby={feedback ? "auth-feedback" : undefined}><label htmlFor="email">Correo<input id="email" type="email" autoComplete="email" inputMode="email" required value={email} onChange={event => setEmail(event.target.value)} /></label><label htmlFor="password">Contraseña<input id="password" type="password" autoComplete="current-password" required minLength={8} value={password} onChange={event => setPassword(event.target.value)} /></label><div className="auth-actions"><button type="submit" disabled={loading}>{loading ? "Comprobando…" : "Ingresar"}</button><button className="button ghost" type="button" onClick={recover} disabled={loading}>Recuperar contraseña</button></div></form><p>¿Aún no tienes cuenta? <Link className="auth-link" href="/registro">Crear cuenta</Link></p>{feedback && <p id="auth-feedback" className={"auth-feedback " + feedback.kind} role={feedback.kind === "error" ? "alert" : "status"}>{feedback.text}</p>}</section></main>;
 }

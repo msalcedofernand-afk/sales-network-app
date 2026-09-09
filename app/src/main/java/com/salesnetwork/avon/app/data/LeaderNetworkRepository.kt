@@ -27,56 +27,17 @@ class LeaderNetworkRepository private constructor(context: Context) {
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
     init {
-        loadAllUsersFromPrefs()
-        _currentUser.value = loadCurrentUserFromPrefs()
+        // A session is only considered valid after Supabase Auth verifies it.
+        // Do not restore a locally remembered identity as an authenticated session.
+        _currentUser.value = null
     }
 
     fun registerLeader(name: String, email: String, password: String): Result<User> {
-        val cleanEmail = email.trim().lowercase()
-        if (usersMap.values.any { it.email.equals(cleanEmail, ignoreCase = true) }) {
-            return Result.failure(Exception("El correo '$cleanEmail' ya se encuentra registrado."))
-        }
-        val referralCode = "VV-${(1000..9999).random()}"
-        val leader = User(
-            id = UUID.randomUUID().toString(),
-            name = name.trim(),
-            email = cleanEmail,
-            role = UserRole.LIDER,
-            referralCode = referralCode,
-            leaderCode = null
-        )
-        usersMap[leader.id] = leader
-        passwordHashes[leader.id] = hashPassword(password)
-        leaderCodesSet.add(referralCode)
-        persistUser(leader)
-        saveActiveUserSession(leader)
-        _currentUser.value = leader
-        return Result.success(leader)
+        return Result.failure(Exception("Crea tu cuenta desde la web para confirmar el correo y crear el equipo de forma segura."))
     }
 
     fun registerMember(name: String, email: String, password: String, leaderCode: String): Result<User> {
-        val cleanLeaderCode = leaderCode.trim().uppercase()
-        if (cleanLeaderCode.isBlank() || !leaderCodesSet.contains(cleanLeaderCode)) {
-            return Result.failure(Exception("El codigo de red '$cleanLeaderCode' no es valido o no existe. Para registrarte como vendedor debes solicitar el codigo a tu Lider."))
-        }
-        val cleanEmail = email.trim().lowercase()
-        if (usersMap.values.any { it.email.equals(cleanEmail, ignoreCase = true) }) {
-            return Result.failure(Exception("El correo '$cleanEmail' ya se encuentra registrado."))
-        }
-        val member = User(
-            id = UUID.randomUUID().toString(),
-            name = name.trim(),
-            email = cleanEmail,
-            role = UserRole.MIEMBRO,
-            referralCode = "MBR-${(1000..9999).random()}",
-            leaderCode = cleanLeaderCode
-        )
-        usersMap[member.id] = member
-        passwordHashes[member.id] = hashPassword(password)
-        persistUser(member)
-        saveActiveUserSession(member)
-        _currentUser.value = member
-        return Result.success(member)
+        return Result.failure(Exception("Acepta la invitación desde la web después de confirmar tu correo."))
     }
 
     fun login(email: String, password: String): Result<User> {
@@ -94,35 +55,11 @@ class LeaderNetworkRepository private constructor(context: Context) {
             return Result.success(remoteUser)
         }
 
-        if (!BuildConfig.DEBUG) return Result.failure(Exception("Correo o contrasena incorrectos."))
-
-        // Verificacion especial para Usuario Root Admin Total y Lideres
-        val user = usersMap.values.firstOrNull { it.email.equals(cleanEmail, ignoreCase = true) }
-        if (user != null) {
-            val isRootAdminMatch = user.role == UserRole.ROOT_ADMIN && (password == "RootAdmin2026!" || password == "RootAdmin2026" || password == "123456")
-            val isLeaderMatch = user.role == UserRole.LIDER && (password == "LiderVV2026!" || password == "123456")
-            val isHashMatch = passwordHashes[user.id] == hashPassword(password)
-            if (isHashMatch || isRootAdminMatch || isLeaderMatch) {
-                saveActiveUserSession(user)
-                _currentUser.value = user
-                return Result.success(user)
-            }
-        }
-
         return Result.failure(Exception("Correo o contrasena incorrectos."))
     }
 
     fun resetPassword(email: String, newPassword: String): Result<Boolean> {
-        val cleanEmail = email.trim().lowercase()
-        val user = usersMap.values.firstOrNull { it.email.equals(cleanEmail, ignoreCase = true) }
-            ?: return Result.failure(Exception("No existe ninguna cuenta con el correo '$cleanEmail'."))
-        if (newPassword.length < 6) {
-            return Result.failure(Exception("La nueva contrasena debe tener al menos 6 caracteres."))
-        }
-        val newHash = hashPassword(newPassword)
-        passwordHashes[user.id] = newHash
-        persistUser(user)
-        return Result.success(true)
+        return Result.failure(Exception("Usa la recuperación de contraseña desde la web para recibir un enlace seguro por correo."))
     }
 
     private fun loginSupabase(email: String, password: String): Result<User> {
@@ -184,7 +121,7 @@ class LeaderNetworkRepository private constructor(context: Context) {
         .digest(password.toByteArray()).joinToString("") { "%02x".format(it) }
 
     fun logout() {
-        prefs.edit().remove("active_user_id").apply()
+        prefs.edit().remove("active_user_id").remove("supabase_access_token").apply()
         _currentUser.value = null
     }
 
@@ -214,74 +151,6 @@ class LeaderNetworkRepository private constructor(context: Context) {
         prefs.edit().putString("active_user_id", user.id).apply()
     }
 
-    private fun loadAllUsersFromPrefs() {
-        // 1. Root Admin Total
-        val rootAdmin = User(
-            id = "root-admin-01",
-            name = "Administrador Central",
-            email = "root@vv.com",
-            role = UserRole.ROOT_ADMIN,
-            referralCode = "VV-ROOT",
-            leaderCode = null
-        )
-        usersMap[rootAdmin.id] = rootAdmin
-        passwordHashes[rootAdmin.id] = hashPassword("RootAdmin2026!")
-        leaderCodesSet.add(rootAdmin.referralCode)
-
-        // 2. Lider Demo VV
-        val defaultLeader = User(
-            id = "leader-demo-01",
-            name = "Lider VV Chiclayo",
-            email = "lider.chiclayo@vv.com",
-            role = UserRole.LIDER,
-            referralCode = "VV-2026",
-            leaderCode = null
-        )
-        usersMap[defaultLeader.id] = defaultLeader
-        passwordHashes[defaultLeader.id] = hashPassword("LiderVV2026!")
-        leaderCodesSet.add(defaultLeader.referralCode)
-
-        // 3. Usuario Demo
-        val demoUser = User(
-            id = "074fa307-28b6-4ec3-bc11-849b66c97675",
-            name = "Usuario Demo VV",
-            email = "demo@salesnetwork.test",
-            role = UserRole.LIDER,
-            referralCode = "VV-DEMO"
-        )
-        usersMap[demoUser.id] = demoUser
-        passwordHashes[demoUser.id] = hashPassword("ViveDemo-2026!")
-        leaderCodesSet.add(demoUser.referralCode)
-
-        // 4. Vendedoras Iniciales bajo Lider VV Chiclayo (VV-2026)
-        val initialMembers = listOf(
-            User(id = "mbr-01", name = "Rosa Benites", email = "rosa.benites@vv.com", role = UserRole.MIEMBRO, referralCode = "MBR-1001", leaderCode = "VV-2026", isActiveInCampaign = true),
-            User(id = "mbr-02", name = "Carmen Huaman", email = "carmen.huaman@vv.com", role = UserRole.MIEMBRO, referralCode = "MBR-1002", leaderCode = "VV-2026", isActiveInCampaign = true),
-            User(id = "mbr-03", name = "Lucia Sanchez", email = "lucia.sanchez@vv.com", role = UserRole.MIEMBRO, referralCode = "MBR-1003", leaderCode = "VV-2026", isActiveInCampaign = false),
-            User(id = "mbr-04", name = "Patricia Delgado", email = "patricia.delgado@vv.com", role = UserRole.MIEMBRO, referralCode = "MBR-1004", leaderCode = "VV-2026", isActiveInCampaign = true)
-        )
-        for (m in initialMembers) {
-            usersMap[m.id] = m
-            passwordHashes[m.id] = hashPassword("123456")
-        }
-
-        // Carga de usuarios guardados
-        val userIds = prefs.getStringSet("all_user_ids", emptySet()) ?: emptySet()
-        for (id in userIds) {
-            val name = prefs.getString("user_${id}_name", null) ?: continue
-            val email = prefs.getString("user_${id}_email", null) ?: continue
-            val roleStr = prefs.getString("user_${id}_role", UserRole.LIDER.name)
-            val refCode = prefs.getString("user_${id}_refCode", "VV-2026") ?: "VV-2026"
-            val leaderCode = prefs.getString("user_${id}_leaderCode", null)
-            val role = try { UserRole.valueOf(roleStr!!) } catch (e: Exception) { UserRole.LIDER }
-            val user = User(id = id, name = name, email = email, role = role, referralCode = refCode, leaderCode = leaderCode)
-            usersMap[id] = user
-            prefs.getString("user_${id}_passwordHash", null)?.let { passwordHashes[id] = it }
-            if (role == UserRole.LIDER || role == UserRole.ROOT_ADMIN) {
-                leaderCodesSet.add(refCode)
-            }
-        }
-    }
 
     private fun loadCurrentUserFromPrefs(): User? {
         val activeId = prefs.getString("active_user_id", null) ?: return null

@@ -277,34 +277,6 @@ fun LoginRegisterScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Acceso rapido demo:",
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.outline,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        SuggestionChip(
-                            onClick = {
-                                email = "root@vv.com"
-                                password = "RootAdmin2026!"
-                            },
-                            label = { Text("Root Admin", fontSize = 11.sp) }
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        SuggestionChip(
-                            onClick = {
-                                email = "lider.chiclayo@vv.com"
-                                password = "LiderVV2026!"
-                            },
-                            label = { Text("Lider VV", fontSize = 11.sp) }
-                        )
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
