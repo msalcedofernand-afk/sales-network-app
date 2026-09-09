@@ -15,6 +15,6 @@ export default function ReleaseBadge() {
     setChannel(window.location.hostname === "sales-network-app.vercel.app" ? "stable" : "beta");
   }, []);
   const isStable = channel === "stable";
-  const version = CONFIGURED_VERSION || (isStable ? "1.0.0" : "1.0.1-beta.1");
+  const version = CONFIGURED_VERSION || (isStable ? "1.0.0" : "1.0.1-beta.2");
   return <span className={`release-badge ${isStable ? "release-stable" : "release-beta"}`} title={`Versión ${version}`}><span className="release-dot" aria-hidden="true" />{isStable ? "Producción" : "Beta"} · v{version}</span>;
 }

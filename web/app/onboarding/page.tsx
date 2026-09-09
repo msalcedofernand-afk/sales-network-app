@@ -33,6 +33,7 @@ export default function OnboardingPage() {
     if (error) {
       const fallback = await supabase.rpc("create_team_with_leader", { team_name: teamName.trim() });
       if (!fallback.error) error = null;
+      else error = { message: fallback.error.message };
     }
     if (error) setMessage(await explainFunctionError(error, "No pudimos crear el equipo. Inténtalo nuevamente."));
     else router.replace("/catalogo");
