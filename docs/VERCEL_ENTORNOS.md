@@ -1,6 +1,6 @@
 # Entornos visibles en la web
 
-La navegación muestra `Producción · vX.Y.Z` o `Beta · vX.Y.Z`.
+La navegación muestra `Producción · vX.Y.Z` o `Beta · vX.Y.Z`. La página `/cambios` explica qué se agregó, mejoró, corrigió o retiró.
 
 - `main` se publica en `https://sales-network-app.vercel.app` y se identifica como **Producción**.
 - Los previews de Pull Request y la rama `beta` se identifican como **Beta**.

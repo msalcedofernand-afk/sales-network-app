@@ -83,6 +83,10 @@ button, input, select, textarea { font: inherit; }
 .release-beta { color: var(--aviso); background: #fff8df; }
 .release-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .sidebar-foot .release-badge { margin-block-start: 4px; }
+.changelog-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.changelog-card h2 { margin-block-start: 0; color: var(--petroleo-900); font-size: 1rem; }
+.changelog-card li + li { margin-block-start: 10px; }
+@media (max-width: 720px) { .changelog-grid { grid-template-columns: 1fr; } }
 .download-app-link:hover { background: #c2e5d5; }
 .nav-section-label { margin: 28px 12px 8px; color: var(--tinta-500); font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .sidebar-nav { display: grid; gap: 4px; }

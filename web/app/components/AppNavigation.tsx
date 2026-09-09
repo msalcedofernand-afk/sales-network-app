@@ -57,6 +57,12 @@ const items: NavItem[] = [
     shortLabel: "Equipo",
     icon: <svg {...iconProps}><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2"/><path d="M3 20a6 6 0 0 1 12 0M14 16a5 5 0 0 1 7 4"/></svg>,
   },
+  {
+    href: "/cambios",
+    label: "Cambios",
+    shortLabel: "Cambios",
+    icon: <svg {...iconProps}><path d="M4 5h16M4 12h16M4 19h10"/><circle cx="18" cy="19" r="2"/></svg>,
+  },
 ];
 
 function NavLinks({ mobile = false }: { mobile?: boolean }) {
