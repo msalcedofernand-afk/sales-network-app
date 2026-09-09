@@ -141,3 +141,9 @@
 - **Por qué:** CI fallaba aunque la pantalla funcionaba correctamente.
 - **Archivos:** `web/tests/public-pages.spec.ts`.
 - **Resultado:** La prueba coincide con la interfaz actual y el Pull Request se actualizará automáticamente.
+## 2026-09-09 — Estado real del README
+
+- **Qué:** Se actualizó el estado del proyecto para reflejar la integración remota real de Android, web y Supabase.
+- **Por qué:** Evitar que la documentación diga que la app sigue usando datos demo locales.
+- **Archivos:** `README.md`.
+- **Resultado:** Se documentan también Room/offline, firma de APK y validación beta como pendientes.
