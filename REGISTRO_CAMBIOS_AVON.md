@@ -21,6 +21,36 @@
 
 ---
 
+## 2026-09-09 - Release v1.2.0 (code=42)
+
+### Que se hizo
+- **Bump de versión** de 1.1.0 a 1.2.0
+- **versionCode** incrementado a 42
+- **stable.json** actualizado a v1.2.0
+- **beta.json** actualizado a v1.2.0 con APK URL correcta
+- **Build exitoso** para ambos flavors (stable + beta)
+
+### Contenido de v1.2.0
+| Feature | Descripción |
+|---------|-------------|
+| FASE 1 | Código de referido único por equipo + expiración 90 días |
+| FASE 2 | Ventana de actualización obligatoria + rate limiting |
+| FASE 3 | Git workflow documentado |
+| FASE 4 | Rate limiting login + JWT validation + auto-refresh |
+| FASE 5 | Crash reporting a Supabase |
+| FASE 6 | Offline mode con Room cache |
+| Skill | Versionado semántico implementado |
+
+### Archivos modificados
+- `version.properties` (code=42, name=1.2.0)
+- `web/public/updates/stable.json`
+- `web/public/updates/beta.json`
+
+### Resultado del build
+- BUILD SUCCESSFUL (stable + beta, v1.2.0)
+
+---
+
 ## 2026-09-09 - FASE 6: Offline Mode - Catálogo (v1.1.0)
 
 ### Que se hizo
