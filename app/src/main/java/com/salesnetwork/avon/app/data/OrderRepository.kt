@@ -27,11 +27,19 @@ class OrderRepository private constructor(context: Context) {
     suspend fun checkoutRemote(userId: String, customerId: String, items: List<OrderItem>): Result<Unit> =
         checkoutApi.checkout(userId, customerId, items)
 
-    suspend fun transitionStatusRemote(orderId: String, status: OrderStatus, reason: String? = null, proofPath: String? = null): Result<Unit> =
-        remoteApi.transitionStatus(orderId, status, reason, proofPath)
+    suspend fun transitionStatusRemote(
+        orderId: String,
+        status: OrderStatus,
+        reason: String? = null,
+        proofPath: String? = null,
+        paymentMethod: PaymentMethod? = null,
+        amountPaid: Double? = null
+    ): Result<Unit> = remoteApi.transitionStatus(orderId, status, reason, proofPath, paymentMethod, amountPaid)
 
-    suspend fun uploadPaymentProof(orderId: String, source: Uri): Result<String> =
-        remoteApi.uploadPaymentProof(orderId, source)
+    suspend fun uploadOrderProof(orderId: String, source: Uri, kind: String): Result<String> =
+        remoteApi.uploadOrderProof(orderId, source, kind)
+
+    suspend fun deleteOrderProof(path: String): Result<Unit> = remoteApi.deleteOrderProof(path)
 
     fun getOrdersForLeader(leaderUserId: String, campaignCode: String? = null): List<Order> {
         val list = _orders.value.filter { it.leaderUserId == leaderUserId || it.leaderUserId.isEmpty() }
@@ -41,10 +49,6 @@ class OrderRepository private constructor(context: Context) {
     fun getAllOrders(campaignCode: String? = null): List<Order> {
         val list = _orders.value
         return if (campaignCode.isNullOrBlank()) list else list.filter { it.campaignCode.equals(campaignCode, ignoreCase = true) }
-    }
-
-    fun deleteOrder(orderId: String) {
-        _orders.value = _orders.value.filter { it.id != orderId }
     }
 
     fun getOrdersForCustomer(customerId: String): List<Order> {
@@ -83,27 +87,8 @@ class OrderRepository private constructor(context: Context) {
 
     fun updateOrderStatus(orderId: String, newStatus: OrderStatus) {
         _orders.value = _orders.value.map { order ->
-            if (order.id == orderId && isValidTransition(order.status, newStatus)) {
+            if (order.id == orderId && order.status.canTransitionTo(newStatus)) {
                 order.copy(status = newStatus)
-            } else {
-                order
-            }
-        }
-    }
-
-    private fun isValidTransition(from: OrderStatus, to: OrderStatus): Boolean = when (from) {
-        OrderStatus.PENDIENTE -> to == OrderStatus.CONFIRMADO || to == OrderStatus.CANCELADO
-        OrderStatus.CONFIRMADO -> to == OrderStatus.COBRADO || to == OrderStatus.CANCELADO
-        OrderStatus.COBRADO -> to == OrderStatus.ENTREGADO || to == OrderStatus.CANCELADO
-        OrderStatus.ENTREGADO, OrderStatus.CANCELADO -> false
-    }
-
-    fun registerPayment(orderId: String, method: PaymentMethod, amount: Double) {
-        _orders.value = _orders.value.map { order ->
-            if (order.id == orderId) {
-                val newPaid = (order.amountPaid + amount).coerceAtMost(order.totalAmount)
-                val newStatus = if (newPaid >= order.totalAmount) OrderStatus.COBRADO else order.status
-                order.copy(paymentMethod = method, amountPaid = newPaid, status = newStatus)
             } else {
                 order
             }

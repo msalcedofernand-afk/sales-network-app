@@ -267,12 +267,10 @@ fun SalesNetworkMainApp(
                                 availableCustomers = customerState.customers,
                                 availableProducts = catalogState.products,
                                 statusMessage = orderState.statusMessage,
-                                onUpdateStatus = { id, status, reason, proofUri -> orderViewModel.updateStatus(id, status, reason, proofUri) },
-                                onRegisterPayment = { id, method, amount -> orderViewModel.registerPayment(id, method, amount) },
+                                onUpdateStatus = { id, status, reason, proofUri, method -> orderViewModel.updateStatus(id, status, reason, proofUri, method) },
                                 onCreateOrder = { custId, custName, items, method, paid ->
                                     orderViewModel.createOrder(custId, custName, items, method, paid)
                                 },
-                                onDeleteOrder = { id -> orderViewModel.deleteOrder(id) },
                                 onShareTicket = { order -> orderViewModel.buildWhatsAppTicket(order) }
                             )
                         }

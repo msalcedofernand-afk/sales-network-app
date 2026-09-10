@@ -15,4 +15,6 @@ Las relaciones incluyen siempre `team_id` cuando el dato pertenece a un equipo. 
 - Durante la versión 1.2 una cuenta pertenece a un solo equipo. `team_members(user_id)` lo garantiza y evita seleccionar un equipo al azar.
 - `inventory_movements` registra cada descuento y reposición de stock con una clave idempotente.
 - `order_status_events` conserva el historial de transiciones; los pedidos comerciales no se eliminan.
+- El flujo permitido es `PENDIENTE → CONFIRMADO → COBRADO → ENTREGADO`; antes de entregar se puede cancelar y después de entregar se puede registrar una devolución.
+- Los comprobantes viven en el bucket privado `order-proofs`; una transición solo puede vincular un objeto existente subido por el usuario autenticado.
 - `NULL` en `products.stock_quantity` significa inventario administrado externamente. Un entero activa el control transaccional.

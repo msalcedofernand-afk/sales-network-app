@@ -1,5 +1,12 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-10 — Pedidos auditables con comprobantes y devoluciones
+
+- **Qué:** web y Android usan `transition_order_status_v2`; se añadieron cobro, método, comprobante comprimido, evidencia opcional de entrega, cancelación y devolución con motivo.
+- **Seguridad:** Storage comprueba propiedad, permite limpiar archivos temporales y la base rechaza rutas que no existan. Un fallo posterior a la subida elimina el objeto huérfano.
+- **Consistencia:** se retiraron de Android las acciones de cobro y eliminación que solo modificaban memoria; las transiciones permitidas viven en un único modelo probado.
+- **Resultado:** build web correcto y pruebas/lint Android beta correctos.
+
 ## 2026-09-10 — Catálogo y carrito iguales en Android y web
 
 - **Qué:** web y Android consumen stock y galería desde Supabase; el carrito usa RPC transaccionales para crearlo, incrementar y reemplazar líneas; la campaña se publica atómicamente.
