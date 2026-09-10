@@ -32,9 +32,10 @@ data class Order(
     val campaignCode: String = "C-01-2026",
     val items: List<OrderItem> = emptyList(),
     val totalAmount: Double = items.sumOf { it.subtotal },
-    val commissionLeader: Double = totalAmount * 0.30, // 30% comisión directa
-    val networkCommissionLeader: Double = totalAmount * 0.05, // 5% sobrecomisión de red
-    val commissionMember: Double = totalAmount * 0.20, // 20% comisión miembro
+    /** Server-calculated amounts. Zero means the order has not been hydrated from Supabase yet. */
+    val commissionLeader: Double = 0.0,
+    val networkCommissionLeader: Double = 0.0,
+    val commissionMember: Double = 0.0,
     val status: OrderStatus = OrderStatus.PENDIENTE,
     val paymentMethod: PaymentMethod = PaymentMethod.PENDIENTE,
     val amountPaid: Double = 0.0,

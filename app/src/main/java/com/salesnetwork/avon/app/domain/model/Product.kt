@@ -6,10 +6,12 @@ data class Product(
     val name: String,
     val category: String,
     val price: Double,
-    val imageUrl: String,
+    val imageUrls: List<String> = emptyList(),
     val description: String,
     val sourceUrl: String = "",
     val usageMode: String = "Aplicar sobre la piel limpia con suaves masajes circulares.",
-    val stockAvailable: Int = 15,
+    val available: Boolean = true,
     val teamId: String = ""
-)
+) {
+    val primaryImageUrl: String get() = imageUrls.firstOrNull().orEmpty()
+}

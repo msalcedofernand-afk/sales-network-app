@@ -41,9 +41,10 @@ class SupabaseCatalogApi(context: Context) {
                     name = row.optString("name"),
                     category = row.optString("category", "Otros"),
                     price = row.optInt("price_cents", 0) / 100.0,
-                    imageUrl = row.optString("image_url"),
+                    imageUrls = listOfNotNull(row.optString("image_url").takeIf { it.isNotBlank() }),
                     description = row.optString("description"),
-                    sourceUrl = row.optString("source_url")
+                    sourceUrl = row.optString("source_url"),
+                    available = row.optBoolean("available", true)
                 ))
             }
         }

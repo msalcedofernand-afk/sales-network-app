@@ -132,7 +132,7 @@ fun CatalogScreen(
                     Text(p.usageMode, fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Text("Stock:", fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        StatusBadge(text = "${p.stockAvailable} uds", color = C.Success, backgroundColor = C.SuccessLight)
+                        StatusBadge(text = if (p.available) "Disponible" else "No disponible", color = if (p.available) C.Success else C.Error, backgroundColor = if (p.available) C.SuccessLight else C.ErrorLight)
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Text("Precio Campana:", fontSize = S.TextBody, fontWeight = FontWeight.SemiBold)
@@ -164,9 +164,9 @@ private fun ProductCard(product: Product, onClick: () -> Unit) {
         onClick = onClick
     ) {
         Column {
-            if (product.imageUrl.isNotBlank()) {
+            if (product.primaryImageUrl.isNotBlank()) {
                 AsyncImage(
-                    model = product.imageUrl, contentDescription = product.name,
+                    model = product.primaryImageUrl, contentDescription = product.name,
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
                         .fillMaxWidth()
