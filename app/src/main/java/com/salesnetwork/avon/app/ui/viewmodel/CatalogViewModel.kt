@@ -55,7 +55,8 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         _uiState.value = _uiState.value.copy(selectedProductForDetail = product)
     }
 
-    fun scrapeOfficialWebCatalog() {
+    /** Refreshes the approved catalog from Supabase. Import/scraping belongs to admin tooling only. */
+    fun refreshCatalog() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isScraping = true, statusMessage = "Sincronizando catálogo…")
             val result = repository.refreshFromSupabase()

@@ -26,9 +26,9 @@ class LeaderNetworkRepository private constructor(private val context: Context) 
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val refreshMutex = Mutex()
 
+    // This map only holds the current process view. Credentials always belong to
+    // Supabase Auth and are never persisted by this repository.
     private val usersMap = mutableMapOf<String, User>()
-    private val leaderCodesSet = mutableSetOf<String>()
-    private val passwordHashes = mutableMapOf<String, String>()
 
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
@@ -213,7 +213,6 @@ class LeaderNetworkRepository private constructor(private val context: Context) 
             .putString("user_${user.id}_refCode", user.referralCode)
             .putLong("user_${user.id}_refCodeExpiresAt", user.referralCodeExpiresAt ?: 0L)
             .putString("user_${user.id}_leaderCode", user.leaderCode)
-            .putString("user_${user.id}_passwordHash", passwordHashes[user.id])
             .apply()
     }
 

@@ -53,7 +53,7 @@ fun CatalogScreen(
     ) {
         SectionIntro("VV / Colecciones", "Encuentra tu proxima venta", "${products.size} productos para explorar y compartir.")
 
-        // Sync button
+        // Refreshes the catalog already approved in Supabase; it never scrapes on-device.
         TextButton(onClick = onSyncWebCatalogClick, enabled = !isScraping, modifier = Modifier.align(Alignment.End)) {
             Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(S.IconS))
             Spacer(Modifier.width(S.S))
