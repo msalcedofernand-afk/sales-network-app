@@ -1,5 +1,23 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-09 — Correcciones de seguridad y experiencia para beta
+
+### Qué cambió
+- Android actualiza el catálogo aprobado en Supabase; ya no inicia scraping desde el teléfono.
+- Se eliminó la persistencia local heredada de hashes de contraseña y cada líder ve únicamente sus propias invitaciones activas.
+- La web usa Edge Functions para crear equipos, invitaciones y confirmar pedidos; los mensajes invitan a reintentar ante errores de red.
+- La navegación inferior móvil conserva cinco destinos y el distintivo de versión abre el historial de cambios.
+- Checkout tiene rate limiting del lado servidor y las funciones `SECURITY DEFINER` usan un `search_path` explícito.
+- Las sesiones y la caché cifrada Android quedan excluidas de backup y transferencia. El panel de invitación del líder es plegable.
+
+### Validación
+- `npm run build`: correcto.
+- `:app:testBetaDebugUnitTest`: correcto.
+- `:app:lintBetaDebug`: 0 errores.
+
+### Pendiente remoto
+- Aplicar migración `0010_security_definer_hardening.sql` y desplegar `checkout-cart` después de reconciliar el historial de Supabase.
+
 ## 2026-09-09 — Beta 1.2.0-beta.1 (code=45) preparada
 
 ### Qué cambió
