@@ -10,14 +10,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -66,6 +69,7 @@ fun SalesNetworkMainApp(
 
     var selectedTab by remember { mutableStateOf(SalesAppTab.NETWORK) }
     var showCampaignMenu by remember { mutableStateOf(false) }
+    var showMandatoryUpdate by remember { mutableStateOf(true) }
 
     val currentUser = authState.currentUser
 
@@ -81,7 +85,13 @@ fun SalesNetworkMainApp(
 
     if (currentUser == null) {
         Column(Modifier.fillMaxSize()) {
-            availableUpdate?.let { UpdateBanner(it, onOpenUpdate) }
+            availableUpdate?.let { update ->
+                if (update.mandatory && showMandatoryUpdate) {
+                    UpdateBanner(update, onOpenUpdate)
+                } else if (!update.mandatory) {
+                    UpdateBanner(update, onOpenUpdate, onDismiss = { showMandatoryUpdate = false })
+                }
+            }
             Box(Modifier.fillMaxWidth().weight(1f)) {
                 LoginRegisterScreen(
                     onLoginSuccess = { selectedTab = SalesAppTab.NETWORK },
@@ -230,12 +240,21 @@ fun SalesNetworkMainApp(
                     }
                 }
 
-                availableUpdate?.let {
-                    UpdateBanner(
-                        info = it,
-                        onOpenUpdate = onOpenUpdate,
-                        modifier = Modifier.align(Alignment.TopCenter)
-                    )
+                availableUpdate?.let { update ->
+                    if (update.mandatory && showMandatoryUpdate) {
+                        UpdateBanner(
+                            info = update,
+                            onOpenUpdate = onOpenUpdate,
+                            modifier = Modifier.align(Alignment.TopCenter)
+                        )
+                    } else if (!update.mandatory) {
+                        UpdateBanner(
+                            info = update,
+                            onOpenUpdate = onOpenUpdate,
+                            onDismiss = { showMandatoryUpdate = false },
+                            modifier = Modifier.align(Alignment.TopCenter)
+                        )
+                    }
                 }
 
                 FloatingNavBar(
@@ -302,13 +321,18 @@ private fun FloatingNavBar(
 private fun UpdateBanner(
     info: AppUpdateInfo,
     onOpenUpdate: (String) -> Unit,
+    onDismiss: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    val isMandatory = info.mandatory
+    val containerColor = if (isMandatory) C.Error else MaterialTheme.colorScheme.primaryContainer
+    val contentColor = if (isMandatory) Color.White else MaterialTheme.colorScheme.onPrimaryContainer
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = S.SM, vertical = S.S),
-        color = MaterialTheme.colorScheme.primaryContainer,
+        color = containerColor,
         shape = RoundedCornerShape(S.RCard),
         border = B.cardBorder()
     ) {
@@ -317,11 +341,37 @@ private fun UpdateBanner(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(S.SM)
         ) {
-            Column(Modifier.weight(1f)) {
-                Text("Nueva version ${info.versionName}", fontWeight = FontWeight.Bold, fontSize = S.TextBody)
-                Text(info.releaseNotes, style = MaterialTheme.typography.bodySmall, maxLines = 2, fontSize = S.TextSmall)
+            if (isMandatory) {
+                Icon(
+                    Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(S.IconM)
+                )
             }
-            TextButton(onClick = { onOpenUpdate(info.apkUrl) }) { Text("Actualizar") }
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = if (isMandatory) "Actualizacion Obligatoria v${info.versionName}" else "Nueva version ${info.versionName}",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = S.TextBody,
+                    color = contentColor
+                )
+                Text(
+                    info.releaseNotes,
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 2,
+                    fontSize = S.TextSmall,
+                    color = contentColor.copy(alpha = 0.8f)
+                )
+            }
+            TextButton(onClick = { onOpenUpdate(info.apkUrl) }) {
+                Text("Actualizar", color = contentColor)
+            }
+            if (onDismiss != null && !isMandatory) {
+                IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
+                    Icon(Icons.Default.Close, contentDescription = "Cerrar", modifier = Modifier.size(S.IconS))
+                }
+            }
         }
     }
 }
