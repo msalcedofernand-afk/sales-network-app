@@ -2,6 +2,8 @@ param(
     [Parameter(Mandatory = $true)] [ValidateSet("stable", "beta")] [string]$Channel,
     [Parameter(Mandatory = $true)] [string]$ApkPath,
     [Parameter(Mandatory = $true)] [string]$OutputPath,
+    [int]$VersionCode = 0,
+    [string]$VersionName = "",
     [int]$MinSupportedVersionCode = 0,
     [string[]]$ReleaseNotes = @("Mejoras de seguridad y estabilidad."),
     [string]$ReleasedAt = (Get-Date).ToUniversalTime().ToString("o")
@@ -16,9 +18,9 @@ Get-Content -LiteralPath $propertiesPath | ForEach-Object {
     if ($_ -match '^\s*([^#][^=]*)=(.*)$') { $props[$Matches[1].Trim()] = $Matches[2].Trim() }
 }
 
-$versionCode = [int]$props.versionCode
-$versionName = [string]$props.versionName
-if ($Channel -eq "beta") { $versionName = "$versionName-beta.$($props.betaNumber)" }
+$versionCode = if ($VersionCode -gt 0) { $VersionCode } else { [int]$props.versionCode }
+$versionName = if ($VersionName) { $VersionName } else { [string]$props.versionName }
+if ($Channel -eq "beta" -and -not $PSBoundParameters.ContainsKey("VersionName")) { $versionName = "$versionName-beta.$($props.betaNumber)" }
 if ($MinSupportedVersionCode -le 0) { $MinSupportedVersionCode = $versionCode }
 
 $expectedPackage = if ($Channel -eq "beta") { "com.salesnetwork.avon.app.beta" } else { "com.salesnetwork.avon.app" }
