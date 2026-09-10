@@ -42,3 +42,11 @@ Las compilaciones `release` requieren una única clave de firma almacenada fuera
 Los canales no interfieren: estable conserva `com.salesnetwork.avon.app` y solo cambia su versión al aprobar una entrega. Beta usa `com.salesnetwork.avon.app.beta`; cada ejecución de GitHub Actions recibe automáticamente `versionCode = 450000 + número de ejecución` y `versionName = <versión>-beta.<número de ejecución>`.
 
 Consulta `UI_UX_GUIA.md` para los criterios de experiencia y `docs/DEPLOYMENT.md` para publicar.
+
+## Documentación
+
+- [Guía completa del proyecto](docs/PROJECT_GUIDE.md): flujos, componentes, operación y limitaciones.
+- [Arquitectura](docs/ARCHITECTURE.md) · [Base de datos](docs/DATABASE.md) · [API](docs/API.md).
+- [Despliegue](docs/DEPLOYMENT.md) · [GitHub](docs/GITHUB.md) · [Entornos Vercel](docs/VERCEL_ENTORNOS.md).
+- [Guía UI/UX](docs/UI_UX_GUIA.md) · [Actualizaciones](docs/UPDATES.md).
+- [Contribución](CONTRIBUTING.md) · [Seguridad](SECURITY.md).
