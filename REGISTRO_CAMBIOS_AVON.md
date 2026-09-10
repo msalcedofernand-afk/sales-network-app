@@ -497,3 +497,10 @@
 - **Por qué:** Mantener disponibilidad y precios recientes sin depender de que la persona abra manualmente el catálogo.
 - **Archivos:** `app/src/main/java/com/salesnetwork/avon/app/data/CatalogSyncWorker.kt`, `app/src/main/java/com/salesnetwork/avon/app/SalesNetworkApplication.kt`, `app/build.gradle.kts`.
 - **Resultado:** Los fallos se reintentan hasta tres veces y la caché anterior se conserva.
+
+## 2026-09-10 — Auditoría integral del proyecto
+
+- **Qué:** Se documentó la revisión completa de Android, web, Supabase, seguridad, UX/UI, CI/CD y pruebas.
+- **Por qué:** Definir con evidencia qué está listo para beta, qué bloquea producción y en qué orden debe corregirse.
+- **Archivos:** `docs/AUDITORIA_COMPLETA_2026-09-10.md`.
+- **Resultado:** Informe priorizado P0–P3, verificaciones ejecutadas, fortalezas, riesgos y plan de cuatro fases para llegar a estable.
