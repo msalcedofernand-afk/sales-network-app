@@ -1,6 +1,7 @@
 package com.salesnetwork.avon.app.data
 
 import android.content.Context
+import android.net.Uri
 import com.salesnetwork.avon.app.domain.model.Order
 import com.salesnetwork.avon.app.domain.model.OrderItem
 import com.salesnetwork.avon.app.domain.model.OrderStatus
@@ -28,6 +29,9 @@ class OrderRepository private constructor(context: Context) {
 
     suspend fun transitionStatusRemote(orderId: String, status: OrderStatus, reason: String? = null, proofPath: String? = null): Result<Unit> =
         remoteApi.transitionStatus(orderId, status, reason, proofPath)
+
+    suspend fun uploadPaymentProof(orderId: String, source: Uri): Result<String> =
+        remoteApi.uploadPaymentProof(orderId, source)
 
     fun getOrdersForLeader(leaderUserId: String, campaignCode: String? = null): List<Order> {
         val list = _orders.value.filter { it.leaderUserId == leaderUserId || it.leaderUserId.isEmpty() }
