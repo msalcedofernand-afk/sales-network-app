@@ -37,10 +37,10 @@ class SupabaseOrderApi(context: Context) {
         }
     }
 
-    suspend fun transitionStatus(orderId: String, status: OrderStatus): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun transitionStatus(orderId: String, status: OrderStatus, reason: String? = null, proofPath: String? = null): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {
             val auth = token ?: error("Sesión vencida. Vuelve a iniciar sesión.")
-            val connection = (URL(base + "/rest/v1/rpc/transition_order_status").openConnection() as HttpURLConnection).apply {
+            val connection = (URL(base + "/rest/v1/rpc/transition_order_status_with_details").openConnection() as HttpURLConnection).apply {
                 requestMethod = "POST"
                 doOutput = true
                 connectTimeout = 8_000
@@ -51,7 +51,7 @@ class SupabaseOrderApi(context: Context) {
                 setRequestProperty("Accept", "application/json")
             }
             connection.outputStream.use { output ->
-                output.write(JSONObject().put("input_order_id", orderId).put("next_status", status.name).toString().toByteArray())
+                output.write(JSONObject().put("input_order_id", orderId).put("next_status", status.name).put("reason", reason).put("proof_path", proofPath).toString().toByteArray())
             }
             val response = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)
                 ?.bufferedReader()?.use { it.readText() }.orEmpty()

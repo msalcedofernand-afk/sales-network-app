@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,7 +40,7 @@ fun OrderListScreen(
     availableCustomers: List<CustomerContact> = emptyList(),
     availableProducts: List<Product> = emptyList(),
     statusMessage: String? = null,
-    onUpdateStatus: (String, OrderStatus) -> Unit,
+    onUpdateStatus: (String, OrderStatus, String?, String?) -> Unit,
     onRegisterPayment: (String, PaymentMethod, Double) -> Unit = { _, _, _ -> },
     onCreateOrder: (customerId: String, customerName: String, items: List<OrderItem>, method: PaymentMethod, paid: Double) -> Unit = { _, _, _, _, _ -> },
     onDeleteOrder: (String) -> Unit = {},
@@ -179,7 +180,7 @@ fun OrderListScreen(
                     items(orders) { order ->
                         OrderCard(
                             order = order,
-                            onStatusUpdate = { st -> onUpdateStatus(order.id, st) },
+                            onStatusUpdate = { st, reason, proof -> onUpdateStatus(order.id, st, reason, proof) },
                             onShare = {
                                 val ticket = onShareTicket(order)
                                 ContactActionHelper.openWhatsAppChat(context, "", ticket)
@@ -297,12 +298,14 @@ fun OrderListScreen(
 @Composable
 private fun OrderCard(
     order: Order,
-    onStatusUpdate: (OrderStatus) -> Unit,
+    onStatusUpdate: (OrderStatus, String?, String?) -> Unit,
     onShare: () -> Unit,
     onCollect: () -> Unit,
     onDelete: () -> Unit
 ) {
     var showStatusMenu by remember { mutableStateOf(false) }
+    var detailStatus by remember { mutableStateOf<OrderStatus?>(null) }
+    var detailText by rememberSaveable { mutableStateOf("") }
 
     val statusColor = when (order.status) {
         OrderStatus.COBRADO -> C.Success
@@ -340,7 +343,13 @@ private fun OrderCard(
                         OrderStatus.values().forEach { st ->
                             DropdownMenuItem(
                                 text = { Text(st.name, fontSize = S.TextSmall, fontWeight = if (st == order.status) FontWeight.Bold else FontWeight.Normal) },
-                                onClick = { onStatusUpdate(st); showStatusMenu = false }
+                                onClick = {
+                                    showStatusMenu = false
+                                    if (st == OrderStatus.CANCELADO || st == OrderStatus.COBRADO) {
+                                        detailText = ""
+                                        detailStatus = st
+                                    } else onStatusUpdate(st, null, null)
+                                }
                             )
                         }
                     }
@@ -387,5 +396,33 @@ private fun OrderCard(
                 }
             }
         }
+    }
+    if (detailStatus != null) {
+        AlertDialog(
+            onDismissRequest = { detailStatus = null },
+            title = { Text(if (detailStatus == OrderStatus.COBRADO) "Comprobante de pago" else "Motivo de cancelación") },
+            text = {
+                OutlinedTextField(
+                    value = detailText,
+                    onValueChange = { detailText = it },
+                    label = { Text(if (detailStatus == OrderStatus.COBRADO) "Referencia o ruta de la foto" else "Motivo") },
+                    supportingText = { Text(if (detailStatus == OrderStatus.COBRADO) "Sube la foto desde el panel web y pega aquí su referencia." else "Mínimo 3 caracteres.") },
+                    singleLine = false,
+                    minLines = 2
+                )
+            },
+            confirmButton = {
+                Button(
+                    enabled = detailText.trim().length >= 3,
+                    onClick = {
+                        val selected = detailStatus ?: return@Button
+                        if (selected == OrderStatus.COBRADO) onStatusUpdate(selected, null, detailText.trim())
+                        else onStatusUpdate(selected, detailText.trim(), null)
+                        detailStatus = null
+                    }
+                ) { Text("Continuar") }
+            },
+            dismissButton = { TextButton(onClick = { detailStatus = null }) { Text("Cancelar") } }
+        )
     }
 }
