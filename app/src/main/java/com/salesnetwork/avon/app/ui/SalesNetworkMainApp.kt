@@ -267,7 +267,7 @@ fun SalesNetworkMainApp(
                                 availableCustomers = customerState.customers,
                                 availableProducts = catalogState.products,
                                 statusMessage = orderState.statusMessage,
-                                onUpdateStatus = { id, status -> orderViewModel.updateStatus(id, status) },
+                                onUpdateStatus = { id, status, reason, proof -> orderViewModel.updateStatus(id, status, reason, proof) },
                                 onRegisterPayment = { id, method, amount -> orderViewModel.registerPayment(id, method, amount) },
                                 onCreateOrder = { custId, custName, items, method, paid ->
                                     orderViewModel.createOrder(custId, custName, items, method, paid)

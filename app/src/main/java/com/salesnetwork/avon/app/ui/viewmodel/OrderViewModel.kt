@@ -87,14 +87,14 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun updateStatus(orderId: String, status: OrderStatus) {
+    fun updateStatus(orderId: String, status: OrderStatus, reason: String? = null, proofPath: String? = null) {
         val current = _uiState.value.orders.firstOrNull { it.id == orderId }
         if (current == null || !isValidTransition(current.status, status)) {
             _uiState.value = _uiState.value.copy(statusMessage = "Ese cambio de estado no está permitido.")
             return
         }
         viewModelScope.launch {
-            val result = repository.transitionStatusRemote(orderId, status)
+            val result = repository.transitionStatusRemote(orderId, status, reason, proofPath)
             _uiState.value = _uiState.value.copy(
                 statusMessage = result.fold({ "Estado actualizado." }, { it.message ?: "No pudimos actualizar el pedido." })
             )
