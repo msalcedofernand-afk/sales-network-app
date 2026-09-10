@@ -28,11 +28,16 @@ feature/* ──→ develop ──→ beta ──→ main
 
 ## Versiones (Semantic Versioning)
 - Formato: `MAJOR.MINOR.PATCH` (ej: 1.2.0)
-- `MAJOR`: cambios que rompen compatibilidad
-- `MINOR`: nuevas features sin breaking changes
-- `PATCH`: bug fixes
+- **Skill completa**: `.agents/skills/versioning/SKILL.md`
+- `MAJOR`: cambios que rompen compatibilidad (ej: eliminar API, migración obligatoria)
+- `MINOR`: nuevas features sin breaking changes (ej: nueva pantalla, nuevo módulo)
+- `PATCH`: bug fixes, correcciones menores, mejoras de rendimiento
+- **Prioridad**: MAJOR > MINOR > PATCH
 - `versionCode` se incrementa automáticamente en cada build
 - `versionName` se actualiza manualmente según semver
+- **Regla**: Analizar el conjunto de cambios desde la última versión publicada, no incrementar por cada commit
+- **Git tags**: `v{versionName}` (ej: v1.4.0)
+- **CHANGELOG**: Registrar cambios en `REGISTRO_CAMBIOS_AVON.md` por versión
 
 ## Instalación
 - Siempre usar `adb install -r` (reemplaza sin desinstalar)
