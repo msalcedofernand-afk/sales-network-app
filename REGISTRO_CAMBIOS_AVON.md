@@ -1,5 +1,26 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-09 - Skill de Versionado Agregada (v1.1.0)
+
+### Que se hizo
+1. **Skill de versionado** creada en `.agents/skills/versioning/SKILL.md` con:
+   - Reglas completas de MAJOR.MINOR.PATCH
+   - Algoritmo de decisión paso a paso
+   - Ejemplos de cada caso
+   - Reglas que el agente NO debe romper
+   - Flujo de Git tags y CHANGELOG
+
+2. **AGENTS.md actualizado**:
+   - Sección de versiones expandida con resumen de la skill
+   - Referencia al archivo completo de la skill
+   - Regla de CHANGELOG
+
+### Archivos modificados
+- `.agents/skills/versioning/SKILL.md` (nuevo)
+- `AGENTS.md`
+
+---
+
 ## 2026-09-09 - FASE 6: Offline Mode - Catálogo (v1.1.0)
 
 ### Que se hizo
