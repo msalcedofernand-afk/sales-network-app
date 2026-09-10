@@ -21,18 +21,23 @@ class SupabaseCheckoutApi(context: Context) {
             val auth = token ?: error("Sesión no disponible")
             val teamRows = JSONArray(request("/rest/v1/team_members?user_id=eq.$userId&select=team_id&limit=1", "GET", auth))
             val teamId = teamRows.optJSONObject(0)?.optString("team_id") ?: error("Tu cuenta todavía no pertenece a un equipo.")
-            val carts = JSONArray(request("/rest/v1/carts?user_id=eq.$userId&team_id=eq.$teamId&status=eq.ACTIVE&select=id&limit=1", "GET", auth))
-            val cartId = if (carts.length() > 0) carts.getJSONObject(0).getString("id") else {
-                val created = JSONArray(request("/rest/v1/carts", "POST", auth, JSONObject().apply { put("team_id", teamId); put("user_id", userId) }.toString(), "return=representation"))
-                created.getJSONObject(0).getString("id")
-            }
+            val cart = responseObject(request(
+                "/rest/v1/rpc/get_or_create_active_cart",
+                "POST",
+                auth,
+                JSONObject().put("input_team_id", teamId).toString()
+            ))
+            val cartId = cart.getString("id")
+            val desiredItems = JSONArray()
             items.forEach { item ->
                 val products = JSONArray(request("/rest/v1/products?sku=eq." + URLEncoder.encode(item.productSku, "UTF-8") + "&select=id&limit=1", "GET", auth))
                 val productId = products.optJSONObject(0)?.optString("id") ?: error("Producto no disponible: ${item.productSku}")
-                request("/rest/v1/cart_items", "POST", auth, JSONObject().apply {
-                    put("cart_id", cartId); put("product_id", productId); put("quantity", item.quantity)
-                }.toString(), "resolution=merge-duplicates,return=minimal")
+                desiredItems.put(JSONObject().put("product_id", productId).put("quantity", item.quantity))
             }
+            request("/rest/v1/rpc/replace_cart_items", "POST", auth, JSONObject().apply {
+                put("input_cart_id", cartId)
+                put("input_items", desiredItems)
+            }.toString())
             // Reuse the key until the server confirms the checkout. If the response is
             // lost, retrying the same cart remains idempotent instead of creating a duplicate.
             val keyName = "checkout_key_$cartId"
@@ -45,6 +50,11 @@ class SupabaseCheckoutApi(context: Context) {
             checkoutPrefs.edit().remove(keyName).apply()
             Unit
         }
+    }
+
+    private fun responseObject(raw: String): JSONObject {
+        val trimmed = raw.trim()
+        return if (trimmed.startsWith("[")) JSONArray(trimmed).getJSONObject(0) else JSONObject(trimmed)
     }
 
     private fun request(path: String, method: String, auth: String, payload: String? = null, prefer: String? = null): String {

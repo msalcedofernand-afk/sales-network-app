@@ -36,10 +36,10 @@ export async function proxy(request: NextRequest) {
         .from("team_members")
         .select("role")
         .eq("user_id", user.id)
-        .eq("role", "LIDER")
-        .limit(1)
         .maybeSingle();
-      if (!membership) return NextResponse.redirect(new URL("/catalogo", request.url));
+      if (!membership || !["LIDER", "ROOT_ADMIN"].includes(membership.role)) {
+        return NextResponse.redirect(new URL("/catalogo", request.url));
+      }
     }
     return response;
   } catch {

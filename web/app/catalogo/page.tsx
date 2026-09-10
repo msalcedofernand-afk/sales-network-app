@@ -1,11 +1,170 @@
 "use client";
+
 import Link from "next/link";
-import { useEffect,useMemo,useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { getSessionContext, money } from "../../lib/app-data";
+import { getOrCreateActiveCart, incrementCartItem } from "../../lib/cart";
 import { createClient } from "../../lib/supabase";
-import { getSessionContext } from "../../lib/app-data";
-type Product={id:string;slug:string;name:string;description:string|null;category:string|null;price_cents:number;currency:string;available:boolean;image_url:string|null};
-export default function CatalogPage(){const [products,setProducts]=useState<Product[]>([]);const [query,setQuery]=useState("");const [category,setCategory]=useState("Todas");const [loading,setLoading]=useState(true);const [error,setError]=useState("");const [message,setMessage]=useState("");
-useEffect(()=>{let active=true;(async()=>{try{const {data,error:e}=await createClient().from("products").select("id,slug,name,description,category,price_cents,currency,available,image_url").order("name");if(e)throw e;if(active)setProducts((data??[]) as Product[])}catch(e){if(active)setError(e instanceof Error?e.message:"No se pudo cargar el catálogo.")}finally{if(active)setLoading(false)}})();return()=>{active=false}},[]);
-const categories=useMemo(()=>["Todas",...Array.from(new Set(products.map(p=>p.category).filter(Boolean) as string[]))],[products]);const visible=products.filter(p=>(category==="Todas"||p.category===category)&&(p.name+" "+(p.category??"")).toLowerCase().includes(query.toLowerCase()));
-async function addToCart(productId:string){try{const {supabase,user,teamId}=await getSessionContext();let {data:cart}=await supabase.from("carts").select("id").eq("user_id",user.id).eq("team_id",teamId).eq("status","ACTIVE").maybeSingle();if(!cart){const created=await supabase.from("carts").insert({user_id:user.id,team_id:teamId}).select("id").single();if(created.error)throw created.error;cart=created.data}const existing=await supabase.from("cart_items").select("quantity").eq("cart_id",cart.id).eq("product_id",productId).maybeSingle();const result=existing.data?await supabase.from("cart_items").update({quantity:existing.data.quantity+1}).eq("cart_id",cart.id).eq("product_id",productId):await supabase.from("cart_items").insert({cart_id:cart.id,product_id:productId,quantity:1});if(result.error)throw result.error;setMessage("Producto añadido al carrito.");setTimeout(()=>setMessage(""),3000)}catch(e){setMessage(e instanceof Error?e.message:"No pudimos añadir el producto.")}}
-return <main><section className="hero hero-grid"><div><p className="eyebrow">VV / Colecciones</p><h1>Encuentra tu próxima venta.</h1><p className="lede">Explora productos, comparte fichas y prepara pedidos en segundos.</p></div><div className="hero-stat"><strong>{products.length}</strong><span>productos disponibles</span></div></section>{message&&<div className="notice" role="status" aria-live="polite">{message}</div>}<section className="toolbar"><label className="search"><span className="sr-only">Buscar productos</span><input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar por nombre o categoría"/></label><select value={category} onChange={e=>setCategory(e.target.value)} aria-label="Categoría">{categories.map(c=><option key={c}>{c}</option>)}</select></section>{loading?<div className="state card"><div className="spinner"/><p>Cargando catálogo…</p></div>:error?<div className="state card"><h2>No pudimos cargar el catálogo</h2><p>{error}</p><button onClick={()=>location.reload()}>Reintentar</button></div>:visible.length===0?<div className="state card"><h2>No encontramos productos</h2><p className="muted">Prueba otra búsqueda o categoría.</p></div>:<section className="grid" aria-label="Productos">{visible.map(p=><article className="product-card" key={p.id}><div className="product-image">{p.image_url?<img src={p.image_url} alt={p.name} loading="lazy" width="640" height="640"/>:<span>{p.name.slice(0,1)}</span>}</div><div className="product-content"><span className="badge">{p.category??"Sin categoría"}</span><h2>{p.name}</h2><p className="product-description">{p.description??"Descripción disponible en la ficha."}</p><strong>{p.price_cents!=null?`${p.currency} ${(p.price_cents/100).toFixed(2)}`:"Precio por confirmar"}</strong><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><Link className="button secondary" href={"/catalogo/"+p.slug}>Ver ficha</Link><button onClick={()=>addToCart(p.id)}>Añadir</button></div></div></article>)}</section>}</main>}
+
+type ProductImage = { storage_path: string; sort_order: number };
+type Product = {
+  id: string;
+  slug: string;
+  sku: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  price_cents: number;
+  currency: string;
+  available: boolean;
+  stock_quantity: number | null;
+  image_url: string | null;
+  updated_at: string;
+  product_images: ProductImage[];
+};
+
+function productImage(product: Product) {
+  return product.product_images?.toSorted((a, b) => a.sort_order - b.sort_order)[0]?.storage_path
+    ?? product.image_url;
+}
+
+function stockLabel(product: Product) {
+  if (!product.available || product.stock_quantity === 0) return "Agotado";
+  if (product.stock_quantity === null) return "Disponible";
+  return `${product.stock_quantity} disponibles`;
+}
+
+export default function CatalogPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("Todas");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [addingId, setAddingId] = useState<string | null>(null);
+  const deferredQuery = useDeferredValue(query.trim().toLocaleLowerCase("es-PE"));
+
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      try {
+        const { data, error: requestError } = await createClient()
+          .from("products")
+          .select("id,slug,sku,name,description,category,price_cents,currency,available,stock_quantity,image_url,updated_at,product_images(storage_path,sort_order)")
+          .order("name");
+        if (requestError) throw requestError;
+        if (active) setProducts((data ?? []) as unknown as Product[]);
+      } catch {
+        if (active) setError("No pudimos cargar el catálogo. Revisa tu conexión e inténtalo nuevamente.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
+
+  const categories = useMemo(
+    () => ["Todas", ...Array.from(new Set(products.map(product => product.category).filter(Boolean) as string[]))],
+    [products],
+  );
+  const visible = useMemo(() => products.filter(product => {
+    const matchesCategory = category === "Todas" || product.category === category;
+    const searchable = `${product.name} ${product.sku} ${product.category ?? ""}`.toLocaleLowerCase("es-PE");
+    return matchesCategory && searchable.includes(deferredQuery);
+  }), [category, deferredQuery, products]);
+
+  async function addToCart(product: Product) {
+    if (!product.available || product.stock_quantity === 0) return;
+    setAddingId(product.id);
+    setMessage("");
+    try {
+      const { supabase, teamId } = await getSessionContext();
+      const cart = await getOrCreateActiveCart(supabase, teamId);
+      await incrementCartItem(supabase, cart.id, product.id, 1);
+      setMessage(`${product.name} se añadió al carrito.`);
+    } catch {
+      setMessage("No pudimos añadir el producto. Comprueba el stock y vuelve a intentarlo.");
+    } finally {
+      setAddingId(null);
+    }
+  }
+
+  return (
+    <main>
+      <section className="hero hero-grid">
+        <div>
+          <p className="eyebrow">VV / Colecciones</p>
+          <h1>Encuentra tu próxima venta.</h1>
+          <p className="lede">Consulta el mismo catálogo, precio y stock disponible desde la web y la app.</p>
+        </div>
+        <div className="hero-stat" aria-label={`${products.length} productos en el catálogo`}>
+          <strong>{products.length}</strong><span>productos en catálogo</span>
+        </div>
+      </section>
+
+      {message ? <div className="notice" role="status" aria-live="polite">{message}</div> : null}
+
+      <section className="toolbar" aria-label="Filtros del catálogo">
+        <label className="search">
+          <span className="sr-only">Buscar productos</span>
+          <input
+            name="catalog-search"
+            type="search"
+            value={query}
+            onChange={event => setQuery(event.target.value)}
+            placeholder="Buscar por nombre, SKU o categoría…"
+          />
+        </label>
+        <label>
+          <span className="sr-only">Categoría</span>
+          <select name="catalog-category" value={category} onChange={event => setCategory(event.target.value)}>
+            {categories.map(item => <option key={item}>{item}</option>)}
+          </select>
+        </label>
+      </section>
+
+      {loading ? (
+        <div className="state card"><div className="spinner" /><p>Cargando catálogo…</p></div>
+      ) : error ? (
+        <div className="state card" role="alert">
+          <h2>No pudimos cargar el catálogo</h2><p>{error}</p>
+          <button onClick={() => location.reload()}>Reintentar</button>
+        </div>
+      ) : visible.length === 0 ? (
+        <div className="state card"><h2>No encontramos productos</h2><p className="muted">Prueba otra búsqueda o categoría.</p></div>
+      ) : (
+        <section className="grid" aria-label="Productos">
+          {visible.map(product => {
+            const image = productImage(product);
+            const canAdd = product.available && product.stock_quantity !== 0;
+            return (
+              <article className="product-card" key={product.id}>
+                <div className="product-image">
+                  {image
+                    ? <img src={image} alt={product.name} loading="lazy" width="640" height="640" />
+                    : <span aria-hidden="true">{product.name.slice(0, 1)}</span>}
+                </div>
+                <div className="product-content">
+                  <div className="section-head">
+                    <span className="badge">{product.category ?? "Sin categoría"}</span>
+                    <span className="muted">{stockLabel(product)}</span>
+                  </div>
+                  <h2>{product.name}</h2>
+                  <p className="muted">SKU {product.sku}</p>
+                  <p className="product-description">{product.description || "Descripción por completar."}</p>
+                  <strong>{money(product.price_cents, product.currency)}</strong>
+                  <div className="button-row">
+                    <Link className="button secondary" href={`/catalogo/${product.slug}`}>Ver ficha</Link>
+                    <button disabled={!canAdd || addingId === product.id} onClick={() => void addToCart(product)}>
+                      {addingId === product.id ? "Añadiendo…" : canAdd ? "Añadir" : "Agotado"}
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </section>
+      )}
+    </main>
+  );
+}

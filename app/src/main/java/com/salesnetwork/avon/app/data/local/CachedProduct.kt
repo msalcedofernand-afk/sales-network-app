@@ -16,6 +16,9 @@ data class CachedProduct(
     val price: Double,
     val description: String,
     val imageUrl: String,
+    val imageUrlsJson: String = "[]",
+    val available: Boolean = true,
+    val stockQuantity: Int? = null,
     val updatedAt: String,
     val syncedAt: Long = System.currentTimeMillis()
 )

@@ -132,7 +132,7 @@ fun CatalogScreen(
                     Text(p.usageMode, fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Text("Stock:", fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        StatusBadge(text = if (p.available) "Disponible" else "No disponible", color = if (p.available) C.Success else C.Error, backgroundColor = if (p.available) C.SuccessLight else C.ErrorLight)
+                        StatusBadge(text = p.stockLabel, color = if (p.canOrder) C.Success else C.Error, backgroundColor = if (p.canOrder) C.SuccessLight else C.ErrorLight)
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Text("Precio Campana:", fontSize = S.TextBody, fontWeight = FontWeight.SemiBold)
@@ -141,10 +141,10 @@ fun CatalogScreen(
                 }
             },
             confirmButton = {
-                Button(onClick = { onProductSelectedForOrder(p); detailProduct = null }, shape = SH.Button) {
+                Button(enabled = p.canOrder, onClick = { onProductSelectedForOrder(p); detailProduct = null }, shape = SH.Button) {
                     Icon(Icons.Default.ShoppingCart, contentDescription = null, modifier = Modifier.size(S.IconS))
                     Spacer(modifier = Modifier.width(S.XS))
-                    Text("+ Agregar a Pedido", fontWeight = FontWeight.Bold)
+                    Text(if (p.canOrder) "+ Agregar a Pedido" else "Producto agotado", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -180,6 +180,13 @@ private fun ProductCard(product: Product, onClick: () -> Unit) {
                 Text(product.name, fontWeight = FontWeight.Bold, fontSize = S.TextBody, maxLines = 2, minLines = 2)
 
                 Text("SKU: ${product.sku}", fontSize = S.TextCaption, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+                Text(
+                    product.stockLabel,
+                    fontSize = S.TextCaption,
+                    color = if (product.canOrder) C.Success else C.Error,
+                    fontWeight = FontWeight.SemiBold
+                )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),

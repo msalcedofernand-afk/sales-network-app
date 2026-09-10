@@ -1,11 +1,150 @@
 "use client";
-import Link from "next/link";
-import { useEffect,useMemo,useRef,useState } from "react";
-import { getSessionContext,money } from "../../lib/app-data";
-type Item={id:string;quantity:number;product_id:string;products:{name:string;sku:string;price_cents:number;currency:string;available:boolean}|null};
-type Customer={id:string;name:string};
-export default function CartPage(){const [items,setItems]=useState<Item[]>([]);const [customers,setCustomers]=useState<Customer[]>([]);const [customerId,setCustomerId]=useState("");const [cartId,setCartId]=useState<string|null>(null);const [loading,setLoading]=useState(true);const [busy,setBusy]=useState(false);const [message,setMessage]=useState("");const checkoutKey=useRef<string|null>(null);
-async function load(){try{const {supabase,user,teamId}=await getSessionContext();let {data:cart}=await supabase.from("carts").select("id").eq("user_id",user.id).eq("team_id",teamId).eq("status","ACTIVE").maybeSingle();if(!cart){const created=await supabase.from("carts").insert({user_id:user.id,team_id:teamId}).select("id").single();if(created.error)throw created.error;cart=created.data}setCartId(cart.id);const [cartResult,customerResult]=await Promise.all([supabase.from("cart_items").select("id,quantity,product_id,products(name,sku,price_cents,currency,available)").eq("cart_id",cart.id),supabase.from("customers").select("id,name").eq("team_id",teamId).eq("archived",false).order("name")]);if(cartResult.error)throw cartResult.error;setItems((cartResult.data??[]) as unknown as Item[]);setCustomers((customerResult.data??[]) as Customer[])}catch(e){setMessage(e instanceof Error?e.message:"No pudimos cargar el carrito.")}finally{setLoading(false)}}useEffect(()=>{load()},[]);
-async function change(item:Item,quantity:number){if(!cartId)return;const {supabase}=await getSessionContext();if(quantity<=0)await supabase.from("cart_items").delete().eq("id",item.id);else await supabase.from("cart_items").update({quantity}).eq("id",item.id);await load()}
-async function checkout(){if(!cartId||!customerId){setMessage("Selecciona un cliente antes de confirmar.");return}setBusy(true);try{const {supabase}=await getSessionContext();checkoutKey.current??="web-"+crypto.randomUUID();const result=await supabase.functions.invoke("checkout-cart",{body:{cart_id:cartId,customer_id:customerId,idempotency_key:checkoutKey.current}});if(result.error)throw result.error;checkoutKey.current=null;setMessage("Pedido confirmado correctamente.");await load()}catch(e){setMessage("No pudimos confirmar el pedido. Comprueba tu conexión e inténtalo nuevamente.")}finally{setBusy(false)}}const total=useMemo(()=>items.reduce((s,i)=>s+(i.products?.price_cents??0)*i.quantity,0),[items]);if(loading)return <main><div className="state card"><div className="spinner"/><p>Cargando tu carrito…</p></div></main>;return <main><section className="hero"><p className="eyebrow">VV / Compra</p><h1>Tu carrito.</h1><p className="lede">Revisa cantidades y prepara el pedido para tu cliente.</p></section>{message&&<div className="notice" role="status" aria-live="polite">{message}</div>}{items.length===0?<div className="state card"><h2>Tu carrito está vacío</h2><p className="muted">Explora el catálogo y añade productos para comenzar.</p><Link className="button" href="/catalogo">Explorar catálogo</Link></div>:<><section className="list">{items.map(item=><article className="list-row" key={item.id}><div><strong>{item.products?.name??"Producto"}</strong><p className="muted">SKU {item.products?.sku} · {item.products?.available?"Disponible":"No disponible"}</p></div><div style={{display:"flex",alignItems:"center",gap:10}}><button className="button ghost" onClick={()=>change(item,item.quantity-1)} aria-label="Disminuir cantidad">−</button><strong>{item.quantity}</strong><button className="button ghost" onClick={()=>change(item,item.quantity+1)} aria-label="Aumentar cantidad">+</button><strong>{money((item.products?.price_cents??0)*item.quantity,item.products?.currency)}</strong></div></article>)}</section><section className="card" style={{marginTop:18}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:16,flexWrap:"wrap"}}><div><span className="muted">Total estimado</span><h2 style={{margin:"4px 0"}}>{money(total)}</h2></div><Link className="button ghost" href="/pedidos">Ver pedidos</Link></div><div className="form-grid" style={{marginTop:14}}><label className="full">Cliente<select value={customerId} onChange={e=>setCustomerId(e.target.value)}><option value="">Selecciona un cliente</option>{customers.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><button className="full" disabled={busy||!customerId} onClick={checkout}>{busy?"Confirmando…":"Confirmar pedido"}</button></div></section></>}</main>}
 
+import Link from "next/link";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
+import { getSessionContext, money } from "../../lib/app-data";
+import { getOrCreateActiveCart, incrementCartItem } from "../../lib/cart";
+
+type Item = {
+  id: string;
+  quantity: number;
+  product_id: string;
+  products: {
+    name: string;
+    sku: string;
+    price_cents: number;
+    currency: string;
+    available: boolean;
+    stock_quantity: number | null;
+  } | null;
+};
+type Customer = { id: string; name: string };
+
+export default function CartPage() {
+  const [items, setItems] = useState<Item[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customerId, setCustomerId] = useState("");
+  const [cartId, setCartId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const checkoutKey = useRef<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      const { supabase, teamId } = await getSessionContext();
+      const cart = await getOrCreateActiveCart(supabase, teamId);
+      setCartId(cart.id);
+      const [cartResult, customerResult] = await Promise.all([
+        supabase.from("cart_items")
+          .select("id,quantity,product_id,products(name,sku,price_cents,currency,available,stock_quantity)")
+          .eq("cart_id", cart.id),
+        supabase.from("customers").select("id,name")
+          .eq("team_id", teamId).eq("archived", false).order("name"),
+      ]);
+      if (cartResult.error) throw cartResult.error;
+      if (customerResult.error) throw customerResult.error;
+      setItems((cartResult.data ?? []) as unknown as Item[]);
+      setCustomers((customerResult.data ?? []) as Customer[]);
+    } catch {
+      setMessage("No pudimos cargar el carrito. Revisa tu conexión e inténtalo nuevamente.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  async function change(item: Item, delta: number) {
+    if (!cartId || busy) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      const { supabase } = await getSessionContext();
+      await incrementCartItem(supabase, cartId, item.product_id, delta);
+      await load();
+    } catch {
+      setMessage("No pudimos cambiar la cantidad. Comprueba las existencias disponibles.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function checkout() {
+    if (!cartId || !customerId) {
+      setMessage("Selecciona un cliente antes de confirmar.");
+      return;
+    }
+    setBusy(true);
+    setMessage("");
+    try {
+      const { supabase } = await getSessionContext();
+      checkoutKey.current ??= `web-${crypto.randomUUID()}`;
+      const result = await supabase.functions.invoke("checkout-cart", {
+        body: { cart_id: cartId, customer_id: customerId, idempotency_key: checkoutKey.current },
+      });
+      if (result.error) throw result.error;
+      checkoutKey.current = null;
+      setMessage("Pedido confirmado correctamente.");
+      await load();
+    } catch {
+      setMessage("No pudimos confirmar el pedido. Comprueba tu conexión, precio y stock.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const total = useMemo(
+    () => items.reduce((sum, item) => sum + (item.products?.price_cents ?? 0) * item.quantity, 0),
+    [items],
+  );
+  const canCheckout = items.length > 0 && items.every(item => item.products?.available &&
+    (item.products.stock_quantity === null || item.products.stock_quantity >= item.quantity));
+
+  if (loading) return <main><div className="state card"><div className="spinner" /><p>Cargando tu carrito…</p></div></main>;
+  return (
+    <main>
+      <section className="hero"><p className="eyebrow">VV / Compra</p><h1>Tu carrito.</h1><p className="lede">Revisa cantidades y confirma el pedido con precios y stock del servidor.</p></section>
+      {message ? <div className="notice" role="status" aria-live="polite">{message}</div> : null}
+      {items.length === 0 ? (
+        <div className="state card"><h2>Tu carrito está vacío</h2><p className="muted">Explora el catálogo y añade productos para comenzar.</p><Link className="button" href="/catalogo">Explorar catálogo</Link></div>
+      ) : (
+        <>
+          <section className="list" aria-label="Productos del carrito">
+            {items.map(item => {
+              const available = item.products?.available && (item.products.stock_quantity === null || item.products.stock_quantity >= item.quantity);
+              return (
+                <article className="list-row" key={item.id}>
+                  <div>
+                    <strong>{item.products?.name ?? "Producto"}</strong>
+                    <p className="muted">SKU {item.products?.sku} · {available ? "Disponible" : "Sin stock suficiente"}</p>
+                  </div>
+                  <div className="quantity-controls">
+                    <button className="button ghost" disabled={busy} onClick={() => void change(item, -1)} aria-label={`Disminuir ${item.products?.name}`}>−</button>
+                    <strong aria-live="polite">{item.quantity}</strong>
+                    <button className="button ghost" disabled={busy || !available} onClick={() => void change(item, 1)} aria-label={`Aumentar ${item.products?.name}`}>+</button>
+                    <strong>{money((item.products?.price_cents ?? 0) * item.quantity, item.products?.currency)}</strong>
+                  </div>
+                </article>
+              );
+            })}
+          </section>
+          <section className="card cart-summary">
+            <div className="section-head"><div><span className="muted">Total confirmado al crear el pedido</span><h2>{money(total)}</h2></div><Link className="button ghost" href="/pedidos">Ver pedidos</Link></div>
+            <div className="form-grid">
+              <label className="full">Cliente
+                <select name="customer" value={customerId} onChange={event => setCustomerId(event.target.value)}>
+                  <option value="">Selecciona un cliente</option>
+                  {customers.map(customer => <option key={customer.id} value={customer.id}>{customer.name}</option>)}
+                </select>
+              </label>
+              <button className="full" disabled={busy || !customerId || !canCheckout} onClick={() => void checkout()}>
+                {busy ? "Confirmando…" : canCheckout ? "Confirmar pedido" : "Revisa el stock"}
+              </button>
+            </div>
+          </section>
+        </>
+      )}
+    </main>
+  );
+}

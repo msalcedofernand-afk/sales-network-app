@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONArray
 
 class ProductCatalogRepository private constructor(private val context: Context) {
 
@@ -68,9 +69,15 @@ class ProductCatalogRepository private constructor(private val context: Context)
         name = name,
         category = category,
         price = price,
-        imageUrls = listOfNotNull(imageUrl.takeIf { it.isNotBlank() }),
+        imageUrls = runCatching {
+            val array = JSONArray(imageUrlsJson)
+            (0 until array.length()).mapNotNull { array.optString(it).takeIf(String::isNotBlank) }
+        }.getOrDefault(listOfNotNull(imageUrl.takeIf { it.isNotBlank() })),
         description = description,
-        sourceUrl = ""
+        sourceUrl = "",
+        available = available,
+        stockQuantity = stockQuantity,
+        updatedAt = updatedAt
     )
 
     private fun Product.toCached(userId: String) = CachedProduct(
@@ -84,7 +91,10 @@ class ProductCatalogRepository private constructor(private val context: Context)
         price = price,
         description = description,
         imageUrl = imageUrls.firstOrNull().orEmpty(),
-        updatedAt = ""
+        imageUrlsJson = JSONArray(imageUrls).toString(),
+        available = available,
+        stockQuantity = stockQuantity,
+        updatedAt = updatedAt
     )
 
     companion object {

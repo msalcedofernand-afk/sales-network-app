@@ -12,6 +12,10 @@ Implementadas como base:
 - `calculate-cart`: usuario → `{ cart_id }`.
 - `checkout-cart`: usuario → `{ cart_id, customer_id, idempotency_key }`.
 - `transition_order_status_v2`: usuario autorizado → estado, motivo, pago y evidencia. Registra el historial y repone stock al cancelar o devolver.
+- `get_or_create_active_cart`: devuelve un único carrito activo sin carreras entre dispositivos.
+- `increment_cart_item`: incrementa o reduce una línea comprobando equipo, disponibilidad y stock.
+- `replace_cart_items`: reemplaza todas las líneas dentro de una sola transacción; Android lo usa antes del checkout.
+- `publish_campaign_atomic`: publica una campaña y despublica las demás en una sola operación.
 
 Funciones adicionales:
 

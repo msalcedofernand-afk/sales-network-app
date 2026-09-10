@@ -1,5 +1,12 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-10 — Catálogo y carrito iguales en Android y web
+
+- **Qué:** web y Android consumen stock y galería desde Supabase; el carrito usa RPC transaccionales para crearlo, incrementar y reemplazar líneas; la campaña se publica atómicamente.
+- **Por qué:** evitar cantidades reiniciadas, escrituras parciales, carreras entre dispositivos y diferencias de disponibilidad entre plataformas.
+- **Archivos:** migración `0015`, catálogo/carrito web, catálogo/checkout Android, caché Room y `publish-campaign`.
+- **Resultado:** build web correcto, pruebas y lint Android beta correctos, y once Edge Functions empaquetadas correctamente.
+
 ## 2026-09-10 — Acceso web seguro a Edge Functions e inventario importable
 
 - **Qué:** todas las Edge Functions comparten preflight CORS con allowlist, devuelven errores públicos sin detalles SQL y el importador admite `stock_quantity`, origen controlado y fallos de galería.
