@@ -504,3 +504,9 @@
 - **Por qué:** Definir con evidencia qué está listo para beta, qué bloquea producción y en qué orden debe corregirse.
 - **Archivos:** `docs/AUDITORIA_COMPLETA_2026-09-10.md`.
 - **Resultado:** Informe priorizado P0–P3, verificaciones ejecutadas, fortalezas, riesgos y plan de cuatro fases para llegar a estable.
+# 2026-09-10 — Contrato transaccional de equipos, inventario y pedidos
+
+- **Qué:** se añadieron las migraciones `0013` y `0014` para fijar un equipo por cuenta, unificar permisos de `LIDER`/`ROOT_ADMIN`, registrar movimientos de inventario, conservar el historial de estados y soportar pagos, entrega, cancelación y devolución.
+- **Por qué:** Android y web necesitan ejecutar las mismas reglas en Supabase y el stock debe mantenerse correcto ante compras simultáneas o reintentos.
+- **Archivos:** `supabase/migrations/0013_team_and_order_status_contract.sql`, `supabase/migrations/0014_inventory_and_order_history.sql`, `docs/DATABASE.md`, `docs/API.md`.
+- **Resultado:** pendiente de aplicar y validar contra el proyecto Supabase remoto antes de habilitar datos comerciales reales.

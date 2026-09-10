@@ -9,6 +9,7 @@ Implementadas como base:
 - `accept-invitation`: usuario → `{ code }`.
 - `calculate-cart`: usuario → `{ cart_id }`.
 - `checkout-cart`: usuario → `{ cart_id, customer_id, idempotency_key }`.
+- `transition_order_status_v2`: usuario autorizado → estado, motivo, pago y evidencia. Registra el historial y repone stock al cancelar o devolver.
 
 Funciones adicionales:
 
@@ -19,5 +20,7 @@ Funciones adicionales:
 - `sync-catalog`: líder o tarea autorizada → importa un feed validado e idempotente.
 
 Las imágenes de comprobantes se suben al bucket privado `order-proofs` con una ruta `<user_id>/<order_id>-<uuid>.jpg`. El servidor recibe únicamente la ruta resultante al cambiar el pedido de estado; nunca acepta precios ni totales del cliente.
+
+Estados admitidos: `PENDIENTE → CONFIRMADO → COBRADO → ENTREGADO`. Un pedido previo a entrega puede pasar a `CANCELADO`; uno entregado puede pasar a `DEVUELTO`. Cancelaciones y devoluciones requieren motivo.
 
 Los conectores de catálogo, rutas y mensajería devuelven `501` hasta configurar un proveedor autorizado. No se deben activar con datos falsos.
