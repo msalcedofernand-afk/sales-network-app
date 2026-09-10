@@ -1,5 +1,30 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-09 - FASE 5: Crash Reporting (v1.1.0)
+
+### Que se hizo
+1. **Tabla crash_reports**:
+   - Campos: id, user_id, app_version, version_code, build_type, stacktrace, device_info, created_at
+   - RLS: service_role insert, user read own, leader read team
+
+2. **Edge Function report-crash**:
+   - Recibe crash data y guarda en Supabase
+   - Validación de campos requeridos
+
+3. **Android CrashLogger actualizado**:
+   - Envía crashes automáticamente al servidor
+   - Incluye: stacktrace, device_info (model, SDK, release), version, user_id
+
+### Archivos modificados
+- `app/src/main/java/com/salesnetwork/avon/app/update/CrashLogger.kt`
+- `supabase/functions/report-crash/index.ts` (nuevo)
+- `supabase/migrations/0008_crash_reports.sql` (nuevo)
+
+### Resultado del build
+- BUILD SUCCESSFUL (stable v1.1.0 code=40)
+
+---
+
 ## 2026-09-09 - FASE 4: Seguridad y Auth (v1.1.0)
 
 ### Que se hizo
