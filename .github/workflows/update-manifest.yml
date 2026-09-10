@@ -1,31 +1,37 @@
-name: Validate update channels
+name: Validate update contract
 
 on:
   pull_request:
-    paths:
-      - "updates/**"
-      - "app/build.gradle.kts"
+    paths: ["updates/**", "web/public/updates/**", "version.properties", "scripts/**"]
   push:
-    branches: [main, beta]
-    paths:
-      - "updates/**"
-      - "app/build.gradle.kts"
+    branches: [main, beta, develop]
+    paths: ["updates/**", "web/public/updates/**", "version.properties", "scripts/**"]
 
 jobs:
   manifest:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate stable and beta manifests
+      - name: Validate templates and version source
         shell: pwsh
         run: |
-          $files = @("updates/stable.json", "updates/beta.json")
-          foreach ($file in $files) {
+          $props = @{}
+          Get-Content version.properties | ForEach-Object { if ($_ -match '^([^#][^=]*)=(.*)$') { $props[$Matches[1].Trim()] = $Matches[2].Trim() } }
+          foreach ($channel in @('stable', 'beta')) {
+            $file = "updates/$channel.json"
             $manifest = Get-Content $file -Raw | ConvertFrom-Json
-            if ($manifest.versionCode -lt 1) { throw "${file}: versionCode inválido" }
-            if ([string]::IsNullOrWhiteSpace($manifest.versionName)) { throw "${file}: versionName vacío" }
-            if ($manifest.channel -notin @("stable", "beta")) { throw "${file}: channel inválido" }
-            if ($manifest.apkUrl -notmatch "^https://") { throw "${file}: apkUrl debe ser HTTPS" }
-            if ([string]::IsNullOrWhiteSpace($manifest.releaseNotes)) { throw "${file}: releaseNotes vacío" }
+            if ($manifest.schemaVersion -ne 1) { throw "${file}: schemaVersion inválido" }
+            if ($manifest.versionCode -ne [int]$props.versionCode) { throw "${file}: versionCode no coincide con version.properties" }
+            $expectedName = if ($channel -eq 'beta') { "$($props.versionName)-beta.$($props.betaNumber)" } else { $props.versionName }
+            if ($manifest.versionName -ne $expectedName) { throw "${file}: versionName no coincide" }
+            if ($manifest.channel -ne $channel) { throw "${file}: canal incorrecto" }
+            if ($manifest.apkUrl -notmatch '^https://raw\.githubusercontent\.com/') { throw "${file}: apkUrl no aprobada" }
+            if ($manifest.sha256 -notmatch '^[a-f0-9]{64}$') { throw "${file}: SHA-256 inválido" }
+            if ($manifest.minSupportedVersionCode -lt 1) { throw "${file}: mínimo inválido" }
+            if ($manifest.releaseNotes.Count -lt 1) { throw "${file}: faltan notas" }
+            if ($null -ne $manifest.mandatory -or $null -ne $manifest.minVersionCode) { throw "${file}: contiene campos obsoletos" }
+            $webManifest = Get-Content "web/public/updates/$channel.json" -Raw | ConvertFrom-Json
+            if (($webManifest | ConvertTo-Json -Depth 5 -Compress) -ne ($manifest | ConvertTo-Json -Depth 5 -Compress)) {
+              throw "${file}: la copia publicada para Vercel no coincide"
+            }
           }
-          Write-Host "Manifiestos de actualización válidos."

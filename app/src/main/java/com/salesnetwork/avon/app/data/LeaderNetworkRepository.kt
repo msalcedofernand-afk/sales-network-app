@@ -2,24 +2,29 @@ package com.salesnetwork.avon.app.data
 
 import android.content.Context
 import android.util.Base64
-import com.salesnetwork.avon.app.BuildConfig
+import com.salesnetwork.avon.app.data.local.AppDatabase
 import com.salesnetwork.avon.app.domain.model.User
 import com.salesnetwork.avon.app.domain.model.UserRole
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.UUID
-import java.security.MessageDigest
 import java.net.HttpURLConnection
 import java.net.URL
 import org.json.JSONObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
-class LeaderNetworkRepository private constructor(context: Context) {
+class LeaderNetworkRepository private constructor(private val context: Context) {
 
     private val prefs = context.getSharedPreferences("leader_network_prefs", Context.MODE_PRIVATE)
     private val secureTokenStore = SecureTokenStore(context)
+    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val refreshMutex = Mutex()
 
     private val usersMap = mutableMapOf<String, User>()
     private val leaderCodesSet = mutableSetOf<String>()
@@ -47,7 +52,7 @@ class LeaderNetworkRepository private constructor(context: Context) {
     }
 
     init {
-        _currentUser.value = null
+        repositoryScope.launch { restoreSession() }
     }
 
     fun registerLeader(name: String, email: String, password: String): Result<User> {
@@ -75,6 +80,7 @@ class LeaderNetworkRepository private constructor(context: Context) {
             persistUser(remoteUser)
             saveActiveUserSession(remoteUser)
             _currentUser.value = remoteUser
+            com.salesnetwork.avon.app.update.CrashLogger.getInstance(context).flushPending()
             return Result.success(remoteUser)
         }
 
@@ -87,8 +93,6 @@ class LeaderNetworkRepository private constructor(context: Context) {
             return Result.failure(Exception("Demasiados intentos fallidos. Cuenta bloqueada 5 minutos."))
         }
 
-        val errorMsg = remote.exceptionOrNull()?.message ?: "Unknown error"
-        android.util.Log.e("Auth", "Login failed: $errorMsg")
         return Result.failure(Exception("Correo o contrasena incorrectos."))
     }
 
@@ -98,7 +102,6 @@ class LeaderNetworkRepository private constructor(context: Context) {
 
     private fun loginSupabase(email: String, password: String): Result<User> {
         return try {
-            android.util.Log.d("Auth", "Attempting Supabase login for: $email")
             val connection = (URL("https://xceqwexdufdgnmctsxcg.supabase.co/auth/v1/token?grant_type=password").openConnection() as HttpURLConnection).apply {
                 requestMethod = "POST"
                 doOutput = true
@@ -110,9 +113,7 @@ class LeaderNetworkRepository private constructor(context: Context) {
             connection.outputStream.use { it.write(JSONObject().put("email", email).put("password", password).toString().toByteArray()) }
             val body = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)
                 ?.bufferedReader()?.use { it.readText() }.orEmpty()
-            android.util.Log.d("Auth", "Supabase response code: ${connection.responseCode}")
             if (connection.responseCode !in 200..299) {
-                android.util.Log.e("Auth", "Supabase auth failed: $body")
                 return Result.failure(Exception("Correo o contrasena incorrectos."))
             }
             val json = JSONObject(body)
@@ -120,33 +121,32 @@ class LeaderNetworkRepository private constructor(context: Context) {
             val metadata = authUser.optJSONObject("user_metadata")
             val accessToken = json.optString("access_token")
             val refreshToken = json.optString("refresh_token")
-            if (accessToken.isNotBlank()) {
-                secureTokenStore.save(accessToken)
-                if (refreshToken.isNotBlank()) {
-                    prefs.edit().putString("refresh_token", refreshToken).apply()
-                }
-                prefs.edit().remove("supabase_access_token").apply()
-            }
             val userId = authUser.getString("id")
-            val role = fetchRemoteRole(userId, accessToken)
-            val referralCode = generateReferralCode(userId)
-            val expiresAt = System.currentTimeMillis() + (90L * 24 * 60 * 60 * 1000) // 90 days
+            if (accessToken.isBlank() || refreshToken.isBlank()) return Result.failure(Exception("Sesión incompleta."))
+            val expiresAt = System.currentTimeMillis() + json.optLong("expires_in", 3600L) * 1000L
+            secureTokenStore.saveSession(SecureSession(accessToken, refreshToken, expiresAt, userId))
+            prefs.edit().remove("refresh_token").remove("supabase_access_token").apply()
+            val role = fetchRemoteRole(userId, accessToken).getOrElse {
+                secureTokenStore.clear()
+                return Result.failure(Exception("No pudimos validar tu rol y equipo."))
+            }
+            val referralCode = fetchActiveInvitation(accessToken).orEmpty()
             Result.success(User(
                 id = userId,
                 name = metadata?.optString("name").orEmpty().ifBlank { email.substringBefore("@").replaceFirstChar { it.uppercase() } },
                 email = authUser.optString("email", email),
                 role = role,
                 referralCode = referralCode,
-                referralCodeExpiresAt = expiresAt
+                referralCodeExpiresAt = null
             ))
         } catch (_: Exception) {
             Result.failure(Exception("No se pudo conectar."))
         }
     }
 
-    private fun fetchRemoteRole(userId: String, accessToken: String): UserRole {
-        if (accessToken.isBlank()) return UserRole.MIEMBRO
-        return try {
+    private fun fetchRemoteRole(userId: String, accessToken: String): Result<UserRole> {
+        if (accessToken.isBlank()) return Result.failure(Exception("Sesión inválida."))
+        return runCatching {
             val endpoint = URL("https://xceqwexdufdgnmctsxcg.supabase.co/rest/v1/team_members?user_id=eq.$userId&select=role&limit=1")
             val connection = (endpoint.openConnection() as HttpURLConnection).apply {
                 requestMethod = "GET"
@@ -156,19 +156,31 @@ class LeaderNetworkRepository private constructor(context: Context) {
                 setRequestProperty("Authorization", "Bearer $accessToken")
                 setRequestProperty("Accept", "application/json")
             }
+            check(connection.responseCode in 200..299)
             val body = connection.inputStream.bufferedReader().use { it.readText() }
             connection.disconnect()
             val rows = org.json.JSONArray(body)
-            if (rows.length() == 0) UserRole.MIEMBRO else when (rows.getJSONObject(0).optString("role")) {
+            check(rows.length() > 0) { "membership_required" }
+            when (rows.getJSONObject(0).optString("role")) {
                 "LIDER" -> UserRole.LIDER
                 "ROOT_ADMIN" -> UserRole.ROOT_ADMIN
-                else -> UserRole.MIEMBRO
+                "MIEMBRO" -> UserRole.MIEMBRO
+                else -> error("unknown_role")
             }
-        } catch (_: Exception) { UserRole.MIEMBRO }
+        }
     }
 
-    private fun hashPassword(password: String): String = MessageDigest.getInstance("SHA-256")
-        .digest(password.toByteArray()).joinToString("") { "%02x".format(it) }
+    private fun fetchActiveInvitation(accessToken: String): String? = runCatching {
+        val endpoint = URL("https://xceqwexdufdgnmctsxcg.supabase.co/rest/v1/invitations?status=eq.ACTIVE&select=code&order=created_at.desc&limit=1")
+        val connection = (endpoint.openConnection() as HttpURLConnection).apply {
+            requestMethod = "GET"; connectTimeout = 5000; readTimeout = 5000
+            setRequestProperty("apikey", SUPABASE_ANON_KEY); setRequestProperty("Authorization", "Bearer $accessToken")
+        }
+        check(connection.responseCode in 200..299)
+        val rows = org.json.JSONArray(connection.inputStream.bufferedReader().use { it.readText() })
+        connection.disconnect()
+        if (rows.length() == 0) null else rows.getJSONObject(0).getString("code")
+    }.getOrNull()
 
     fun logout() {
         prefs.edit()
@@ -178,6 +190,7 @@ class LeaderNetworkRepository private constructor(context: Context) {
             .remove("lockout_until")
             .apply()
         secureTokenStore.clear()
+        AppDatabase.clearForLogout(context)
         _currentUser.value = null
     }
 
@@ -214,50 +227,22 @@ class LeaderNetworkRepository private constructor(context: Context) {
         return usersMap[activeId]
     }
 
-    private fun generateReferralCode(userId: String): String {
-        val hash = MessageDigest.getInstance("SHA-256")
-            .digest(userId.toByteArray())
-            .take(3)
-            .joinToString("") { "%02X".format(it) }
-        return "VV-$hash"
-    }
-
-    fun isReferralCodeExpired(user: User): Boolean {
-        val expiresAt = user.referralCodeExpiresAt ?: return false
-        return System.currentTimeMillis() > expiresAt
-    }
-
     fun isTokenExpired(): Boolean {
-        val token = secureTokenStore.get() ?: return true
-        return try {
-            val parts = token.split(".")
-            if (parts.size != 3) return true
-            val payload = String(Base64.decode(parts[1], Base64.URL_SAFE))
-            val json = JSONObject(payload)
-            val exp = json.getLong("exp") * 1000
-            System.currentTimeMillis() >= exp
-        } catch (_: Exception) {
-            true
-        }
+        val session = secureTokenStore.getSession() ?: return true
+        return System.currentTimeMillis() + TOKEN_REFRESH_BUFFER_MS >= session.expiresAtEpochMs
     }
 
     fun getTokenExpirationTime(): Long {
-        val token = secureTokenStore.get() ?: return 0L
-        return try {
-            val parts = token.split(".")
-            if (parts.size != 3) return 0L
-            val payload = String(Base64.decode(parts[1], Base64.URL_SAFE))
-            val json = JSONObject(payload)
-            json.getLong("exp") * 1000
-        } catch (_: Exception) {
-            0L
-        }
+        return secureTokenStore.getSession()?.expiresAtEpochMs ?: 0L
     }
 
     suspend fun refreshAccessToken(): Result<String> {
-        val refreshToken = prefs.getString("refresh_token", null)
-            ?: return Result.failure(Exception("No hay refresh token."))
-        return withContext(Dispatchers.IO) {
+        return refreshMutex.withLock {
+            val current = secureTokenStore.getSession() ?: return@withLock Result.failure(Exception("No hay sesión."))
+            if (System.currentTimeMillis() + TOKEN_REFRESH_BUFFER_MS < current.expiresAtEpochMs) {
+                return@withLock Result.success(current.accessToken)
+            }
+            withContext(Dispatchers.IO) {
             try {
                 val connection = (URL("https://xceqwexdufdgnmctsxcg.supabase.co/auth/v1/token?grant_type=refresh_token").openConnection() as HttpURLConnection).apply {
                     requestMethod = "POST"
@@ -267,7 +252,7 @@ class LeaderNetworkRepository private constructor(context: Context) {
                     setRequestProperty("apikey", SUPABASE_ANON_KEY)
                     setRequestProperty("Content-Type", "application/json")
                 }
-                connection.outputStream.use { it.write(JSONObject().put("refresh_token", refreshToken).toString().toByteArray()) }
+                connection.outputStream.use { it.write(JSONObject().put("refresh_token", current.refreshToken).toString().toByteArray()) }
                 val body = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)
                     ?.bufferedReader()?.use { it.readText() }.orEmpty()
                 if (connection.responseCode !in 200..299) {
@@ -276,15 +261,17 @@ class LeaderNetworkRepository private constructor(context: Context) {
                 val json = JSONObject(body)
                 val newAccessToken = json.optString("access_token")
                 val newRefreshToken = json.optString("refresh_token")
-                if (newAccessToken.isNotBlank()) {
-                    secureTokenStore.save(newAccessToken)
-                }
-                if (newRefreshToken.isNotBlank()) {
-                    prefs.edit().putString("refresh_token", newRefreshToken).apply()
-                }
+                if (newAccessToken.isBlank()) return@withContext Result.failure(Exception("Sesión inválida."))
+                secureTokenStore.saveSession(SecureSession(
+                    accessToken = newAccessToken,
+                    refreshToken = newRefreshToken.ifBlank { current.refreshToken },
+                    expiresAtEpochMs = System.currentTimeMillis() + json.optLong("expires_in", 3600L) * 1000L,
+                    userId = current.userId
+                ))
                 Result.success(newAccessToken)
             } catch (_: Exception) {
                 Result.failure(Exception("No se pudo refrescar el token."))
+            }
             }
         }
     }
@@ -298,6 +285,18 @@ class LeaderNetworkRepository private constructor(context: Context) {
             }
         }
         return true
+    }
+
+    private suspend fun restoreSession() {
+        val session = secureTokenStore.getSession() ?: return
+        if (!ensureValidToken()) return
+        val active = secureTokenStore.getSession() ?: return
+        val role = fetchRemoteRole(active.userId, active.accessToken).getOrElse { logout(); return }
+        val storedName = prefs.getString("user_${active.userId}_name", null) ?: "Usuario"
+        val storedEmail = prefs.getString("user_${active.userId}_email", null) ?: ""
+        val restored = User(active.userId, storedName, storedEmail, role, fetchActiveInvitation(active.accessToken).orEmpty())
+        usersMap[restored.id] = restored
+        _currentUser.value = restored
     }
 
     suspend fun generateInvitationCode(teamId: String, maxUses: Int = 1): Result<String> {

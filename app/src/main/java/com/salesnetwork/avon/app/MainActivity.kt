@@ -1,9 +1,7 @@
 package com.salesnetwork.avon.app
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,10 +12,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import com.salesnetwork.avon.app.ui.SalesNetworkMainApp
 import com.salesnetwork.avon.app.update.AppUpdateChecker
+import com.salesnetwork.avon.app.update.AppUpdateInstaller
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,6 +27,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             var availableUpdate by remember { mutableStateOf<com.salesnetwork.avon.app.update.AppUpdateInfo?>(null) }
             val updateChecker = remember { com.salesnetwork.avon.app.update.AppUpdateChecker(applicationContext) }
+            val updateInstaller = remember { AppUpdateInstaller(applicationContext) }
+            val scope = rememberCoroutineScope()
             LaunchedEffect(Unit) { availableUpdate = updateChecker.check() }
             MaterialTheme(
                 colorScheme = lightColorScheme(
@@ -44,10 +47,12 @@ class MainActivity : ComponentActivity() {
                 Surface {
                     SalesNetworkMainApp(
                         availableUpdate = availableUpdate,
-                        onOpenUpdate = { url ->
-                            updateChecker.markInstalled(url)
-                            try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
-                            catch (_: ActivityNotFoundException) { }
+                        onOpenUpdate = { info ->
+                            scope.launch {
+                                updateInstaller.downloadVerifyAndOpen(info).onFailure {
+                                    Toast.makeText(applicationContext, it.message ?: "No se pudo instalar la actualización", Toast.LENGTH_LONG).show()
+                                }
+                            }
                         }
                     )
                 }

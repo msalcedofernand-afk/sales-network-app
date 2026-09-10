@@ -10,7 +10,9 @@ web/.next/
 web/.vercel/
 web/.env*
 !.env.example
+web/test-results/
+web/playwright-report/
 *.jks
 *.keystore
+release-signing.properties
 supabase/.temp/
-

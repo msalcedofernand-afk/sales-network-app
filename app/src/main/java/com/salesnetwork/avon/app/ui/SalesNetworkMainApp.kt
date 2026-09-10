@@ -59,7 +59,7 @@ fun SalesNetworkMainApp(
     teamViewModel: TeamViewModel = viewModel(),
     orderViewModel: OrderViewModel = viewModel(),
     availableUpdate: AppUpdateInfo? = null,
-    onOpenUpdate: (String) -> Unit = {}
+    onOpenUpdate: (AppUpdateInfo) -> Unit = {}
 ) {
     val authState by authViewModel.uiState.collectAsState()
     val catalogState by catalogViewModel.uiState.collectAsState()
@@ -72,6 +72,20 @@ fun SalesNetworkMainApp(
     var showMandatoryUpdate by remember { mutableStateOf(true) }
 
     val currentUser = authState.currentUser
+
+    if (availableUpdate?.mandatory == true) {
+        Box(
+            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            UpdateBanner(
+                info = availableUpdate,
+                onOpenUpdate = onOpenUpdate,
+                modifier = Modifier.padding(S.M)
+            )
+        }
+        return
+    }
 
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
@@ -332,7 +346,7 @@ private fun FloatingNavBar(
 @Composable
 private fun UpdateBanner(
     info: AppUpdateInfo,
-    onOpenUpdate: (String) -> Unit,
+    onOpenUpdate: (AppUpdateInfo) -> Unit,
     onDismiss: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -369,14 +383,14 @@ private fun UpdateBanner(
                     color = contentColor
                 )
                 Text(
-                    info.releaseNotes,
+                    info.notesText,
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 2,
                     fontSize = S.TextSmall,
                     color = contentColor.copy(alpha = 0.8f)
                 )
             }
-            TextButton(onClick = { onOpenUpdate(info.apkUrl) }) {
+            TextButton(onClick = { onOpenUpdate(info) }) {
                 Text("Actualizar", color = contentColor)
             }
             if (onDismiss != null && !isMandatory) {

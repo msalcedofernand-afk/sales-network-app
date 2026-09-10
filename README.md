@@ -27,8 +27,16 @@ Configura las variables públicas de `.env.example` en Vercel. La clave administ
 ## Android
 
 ```powershell
-.\gradlew.bat :app:testDebugUnitTest
-.\gradlew.bat :app:lintDebug
+.\gradlew.bat :app:testBetaDebugUnitTest :app:lintBetaDebug
+.\gradlew.bat :app:testStableDebugUnitTest :app:lintStableDebug
 ```
+
+La versión se prepara explícitamente y nunca durante la compilación:
+
+```powershell
+.\scripts\prepare-release.ps1 -VersionName "1.2.0" -VersionCode 45 -BetaNumber 1 -ReleaseNotes "Cambios de seguridad"
+```
+
+Las compilaciones `release` requieren una única clave de firma almacenada fuera del repositorio. En GitHub se configuran `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y `ANDROID_KEY_PASSWORD`.
 
 Consulta `UI_UX_GUIA.md` para los criterios de experiencia y `docs/DEPLOYMENT.md` para publicar.

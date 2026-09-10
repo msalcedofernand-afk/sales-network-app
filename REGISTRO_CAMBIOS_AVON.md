@@ -1,5 +1,29 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-09 — Beta 1.2.0-beta.1 (code=45) preparada
+
+### Qué cambió
+- `version.properties` pasó a ser la única fuente de versión (`1.2.0`, code `45`, beta `1`). Compilar ya no modifica archivos ni aumenta el código.
+- El actualizador usa manifiestos versionados con SHA-256, canal, versión mínima y notas. Solo bloquea cuando la app instalada queda por debajo de `minSupportedVersionCode`.
+- La descarga se hace dentro de Android, comprueba SHA-256, package ID y firma; se comparte mediante un `FileProvider` privado.
+- Refresh token y token de acceso se guardan juntos cifrados con Android Keystore. La sesión se restaura y se refresca mediante un mutex.
+- Invitaciones y reportes de fallos se validan en Supabase con JWT, límites por usuario, transacciones e identidad derivada de la sesión.
+- Room usa SQLCipher y una clave aleatoria protegida por Android Keystore. La caché conserva UUIDs de productos y se borra al cerrar sesión.
+- CI ejecuta pruebas y lint de ambos sabores; el flujo de publicación crea un APK release firmado y genera el manifiesto desde el APK real.
+
+### Archivos principales
+- `version.properties`, `scripts/prepare-release.ps1`, `scripts/update-version-json.ps1`
+- `app/build.gradle.kts`, `AppUpdateChecker.kt`, `AppUpdateInstaller.kt`, `SecureTokenStore.kt`, `CrashLogger.kt`
+- `supabase/migrations/0009_release_1_2_security.sql` y funciones de invitaciones/crashes
+- `.github/workflows/ci.yml`, `.github/workflows/publish-release-repo.yml`
+
+### Validación
+- `:app:testBetaDebugUnitTest`, `:app:testStableDebugUnitTest`, `:app:lintBetaDebug` y `:app:lintStableDebug`: correctos.
+- `web/npm run build`: correcto.
+- La publicación de la APK release queda pendiente de configurar los cuatro secretos de firma en GitHub y desplegar la migración `0009` en Supabase.
+
+---
+
 ## 2026-09-09 - Skill de Versionado Agregada (v1.1.0)
 
 ### Que se hizo

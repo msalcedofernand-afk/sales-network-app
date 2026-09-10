@@ -1,8 +1,11 @@
 {
-    "versionCode": 44,
-    "versionName": "1.2.0",
-    "channel": "beta",
-    "apkUrl": "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/beta/releases/sales-network-beta.apk",
-    "releaseNotes": "Versión beta con cambios experimentales.",
-    "mandatory": true
+  "schemaVersion": 1,
+  "versionCode": 45,
+  "versionName": "1.2.0-beta.1",
+  "channel": "beta",
+  "apkUrl": "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/beta/releases/sales-network-beta.apk",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "minSupportedVersionCode": 45,
+  "releasedAt": null,
+  "releaseNotes": ["Sesión, actualizaciones e invitaciones reforzadas.", "Caché offline cifrada y aislada por equipo."]
 }

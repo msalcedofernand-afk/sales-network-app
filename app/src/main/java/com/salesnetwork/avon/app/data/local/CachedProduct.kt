@@ -6,6 +6,9 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "cached_products")
 data class CachedProduct(
     @PrimaryKey
+    val id: String,
+    val teamId: String,
+    val userId: String,
     val sku: String,
     val name: String,
     val brand: String,
@@ -13,5 +16,6 @@ data class CachedProduct(
     val price: Double,
     val description: String,
     val imageUrl: String,
-    val cachedAt: Long = System.currentTimeMillis()
+    val updatedAt: String,
+    val syncedAt: Long = System.currentTimeMillis()
 )
