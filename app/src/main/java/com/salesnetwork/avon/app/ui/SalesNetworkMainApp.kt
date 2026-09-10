@@ -90,7 +90,7 @@ fun SalesNetworkMainApp(
 
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
-            catalogViewModel.scrapeOfficialWebCatalog()
+            catalogViewModel.refreshCatalog()
             val isRoot = currentUser.role == UserRole.ROOT_ADMIN
             teamViewModel.loadTeamForUser(currentUser)
             customerViewModel.setUser(currentUser.id, isRoot)
@@ -229,7 +229,7 @@ fun SalesNetworkMainApp(
                                 products = catalogState.products,
                                 isScraping = catalogState.isScraping,
                                 onSyncWebCatalogClick = {
-                                    catalogViewModel.scrapeOfficialWebCatalog()
+                                    catalogViewModel.refreshCatalog()
                                 },
                                 onProductSelectedForOrder = { product ->
                                     selectedTab = SalesAppTab.ORDERS
