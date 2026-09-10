@@ -130,7 +130,7 @@ class LeaderNetworkRepository private constructor(private val context: Context) 
                 secureTokenStore.clear()
                 return Result.failure(Exception("No pudimos validar tu rol y equipo."))
             }
-            val referralCode = fetchActiveInvitation(accessToken).orEmpty()
+            val referralCode = fetchActiveInvitation(userId, accessToken).orEmpty()
             Result.success(User(
                 id = userId,
                 name = metadata?.optString("name").orEmpty().ifBlank { email.substringBefore("@").replaceFirstChar { it.uppercase() } },
@@ -170,8 +170,10 @@ class LeaderNetworkRepository private constructor(private val context: Context) 
         }
     }
 
-    private fun fetchActiveInvitation(accessToken: String): String? = runCatching {
-        val endpoint = URL("https://xceqwexdufdgnmctsxcg.supabase.co/rest/v1/invitations?status=eq.ACTIVE&select=code&order=created_at.desc&limit=1")
+    private fun fetchActiveInvitation(userId: String, accessToken: String): String? = runCatching {
+        // A leader only sees an invitation that they created. Never expose another
+        // member's code as this user's team code.
+        val endpoint = URL("https://xceqwexdufdgnmctsxcg.supabase.co/rest/v1/invitations?created_by=eq.$userId&status=eq.ACTIVE&select=code&order=created_at.desc&limit=1")
         val connection = (endpoint.openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"; connectTimeout = 5000; readTimeout = 5000
             setRequestProperty("apikey", SUPABASE_ANON_KEY); setRequestProperty("Authorization", "Bearer $accessToken")
@@ -293,7 +295,7 @@ class LeaderNetworkRepository private constructor(private val context: Context) 
         val role = fetchRemoteRole(active.userId, active.accessToken).getOrElse { logout(); return }
         val storedName = prefs.getString("user_${active.userId}_name", null) ?: "Usuario"
         val storedEmail = prefs.getString("user_${active.userId}_email", null) ?: ""
-        val restored = User(active.userId, storedName, storedEmail, role, fetchActiveInvitation(active.accessToken).orEmpty())
+        val restored = User(active.userId, storedName, storedEmail, role, fetchActiveInvitation(active.userId, active.accessToken).orEmpty())
         usersMap[restored.id] = restored
         _currentUser.value = restored
     }
