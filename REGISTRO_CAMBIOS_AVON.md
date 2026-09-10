@@ -1,5 +1,35 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-09 - FASE 4: Seguridad y Auth (v1.1.0)
+
+### Que se hizo
+1. **Rate Limiting en Login**:
+   - Máximo 5 intentos fallidos
+   - Lockout de 5 minutos después de 5 fallos
+   - Mensaje claro con tiempo restante
+
+2. **Validación JWT**:
+   - Decodificación del token para extraer `exp`
+   - Verificación de expiración en cada request
+
+3. **Refresh Token**:
+   - Almacenamiento del `refresh_token` de Supabase
+   - Auto-refresh antes de que expire el access token
+
+4. **Auto-Logout**:
+   - Verificación cada 5 minutos del estado del token
+   - Si el refresh falla, logout automático
+
+### Archivos modificados
+- `app/src/main/java/com/salesnetwork/avon/app/data/LeaderNetworkRepository.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/SalesNetworkMainApp.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/viewmodel/AuthViewModel.kt`
+
+### Resultado del build
+- BUILD SUCCESSFUL (stable v1.1.0 code=39)
+
+---
+
 ## 2026-09-09 - FASE 2: Ventana de Actualización (v1.1.0)
 
 ### Que se hizo
