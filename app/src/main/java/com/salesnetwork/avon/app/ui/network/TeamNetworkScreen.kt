@@ -53,6 +53,7 @@ fun TeamNetworkScreen(
     var kpiDetailBody by remember { mutableStateOf<String?>(null) }
     var generatedInvitationCode by remember { mutableStateOf<String?>(null) }
     var isGeneratingCode by remember { mutableStateOf(false) }
+    var invitationPanelExpanded by rememberSaveable { mutableStateOf(false) }
 
     val isCodeExpired = currentUser.referralCodeExpiresAt?.let {
         System.currentTimeMillis() > it
@@ -141,15 +142,22 @@ fun TeamNetworkScreen(
                     )
                 }
 
-                // Leader code section
-                if (isLeader) {
+                // Invitation details are secondary. Keep the profile compact until
+                // the leader explicitly needs to create or share a code.
+                if (isLeader && currentUser.referralCode.isNotBlank()) {
                     HorizontalDivider()
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
+                    TextButton(onClick = { invitationPanelExpanded = !invitationPanelExpanded }) {
+                        Icon(if (invitationPanelExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown, contentDescription = null)
+                        Spacer(Modifier.width(S.XS))
+                        Text(if (invitationPanelExpanded) "Ocultar invitación" else "Gestionar invitación")
+                    }
+                    if (invitationPanelExpanded) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
                             Text("CODIGO DE TU EQUIPO:", fontSize = S.TextSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
                                 text = currentUser.referralCode,
@@ -164,7 +172,7 @@ fun TeamNetworkScreen(
                             }
                         }
 
-                        Row(horizontalArrangement = Arrangement.spacedBy(S.S)) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(S.S)) {
                             OutlinedButton(
                                 onClick = {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -194,11 +202,11 @@ fun TeamNetworkScreen(
                                 Spacer(modifier = Modifier.width(S.XS))
                                 Text("Invitar", fontSize = S.TextSmall, color = Color.White)
                             }
+                            }
                         }
-                    }
 
-                    // Generated invitation code display
-                    if (generatedInvitationCode != null) {
+                        // Generated invitation code display
+                        if (generatedInvitationCode != null) {
                         HorizontalDivider()
                         Surface(
                             color = C.SuccessLight,
@@ -224,6 +232,7 @@ fun TeamNetworkScreen(
                                     Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", modifier = Modifier.size(S.IconXS))
                                 }
                             }
+                        }
                         }
                     }
                 }
