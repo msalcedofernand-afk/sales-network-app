@@ -8,6 +8,24 @@
 - Formato de commit: `tipo: descripción corta`
   - Tipos: `feat`, `fix`, `chore`, `docs`, `refactor`
 
+### Flujo de ramas
+```
+feature/* ──→ develop ──→ beta ──→ main
+    │              │         │         │
+    └── PR ────────┘    PR ──┘    Tag v{version}
+```
+
+### Después de cada cambio
+1. `git add -A`
+2. `git commit -m "tipo: descripción"`
+3. `git push origin develop`
+4. `git checkout beta && git merge develop && git push origin beta && git checkout develop`
+
+### Para release a producción
+1. Crear PR de `beta` → `main`
+2. After merge: `git tag v{versionName}`
+3. `git push origin v{versionName}`
+
 ## Versiones (Semantic Versioning)
 - Formato: `MAJOR.MINOR.PATCH` (ej: 1.2.0)
 - `MAJOR`: cambios que rompen compatibilidad
