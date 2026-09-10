@@ -88,6 +88,11 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateStatus(orderId: String, status: OrderStatus) {
+        val current = _uiState.value.orders.firstOrNull { it.id == orderId }
+        if (current == null || !isValidTransition(current.status, status)) {
+            _uiState.value = _uiState.value.copy(statusMessage = "Ese cambio de estado no está permitido.")
+            return
+        }
         viewModelScope.launch {
             val result = repository.transitionStatusRemote(orderId, status)
             _uiState.value = _uiState.value.copy(
@@ -125,10 +130,17 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
             sb.append("*SALDO PENDIENTE:* S/ ${String.format("%.2f", order.remainingDebt)}\n")
             sb.append("\nPuedes cancelar tu saldo por Yape o Plin al numero registrado de tu lider VV.")
         } else {
-            sb.append("Estado: CANCELADO CON EXITO\n")
+            sb.append("Estado: PAGADO\n")
         }
         sb.append("\nGracias por tu preferencia.")
         return sb.toString()
+    }
+
+    private fun isValidTransition(from: OrderStatus, to: OrderStatus): Boolean = when (from) {
+        OrderStatus.PENDIENTE -> to == OrderStatus.CONFIRMADO || to == OrderStatus.CANCELADO
+        OrderStatus.CONFIRMADO -> to == OrderStatus.COBRADO || to == OrderStatus.CANCELADO
+        OrderStatus.COBRADO -> to == OrderStatus.ENTREGADO || to == OrderStatus.CANCELADO
+        OrderStatus.ENTREGADO, OrderStatus.CANCELADO -> false
     }
 
     private fun loadOrders() {

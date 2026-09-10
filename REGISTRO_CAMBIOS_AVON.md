@@ -1,5 +1,11 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-10 — Estados de pedido consistentes en Android
+
+- Android valida las transiciones antes de llamar al servidor: pendiente → confirmado → cobrado → entregado.
+- Pedidos entregados o cancelados ya no pueden modificarse desde la interfaz.
+- El ticket compartido muestra “PAGADO” cuando corresponde, evitando un estado de cancelación incorrecto.
+
 ## 2026-09-10 — Configuración Supabase Android centralizada
 
 - Se centralizó la URL y clave pública de Supabase para catálogo, clientes, pedidos, checkout y sesión.
