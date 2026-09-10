@@ -16,7 +16,8 @@ data class AppUpdateInfo(
     val channel: String,
     val apkUrl: String,
     val releaseNotes: String,
-    val mandatory: Boolean
+    val mandatory: Boolean,
+    val minVersionCode: Int = 0
 )
 
 class AppUpdateChecker(private val context: Context? = null) {
@@ -24,7 +25,18 @@ class AppUpdateChecker(private val context: Context? = null) {
     private val prefs: SharedPreferences?
         get() = context?.getSharedPreferences("update_prefs", Context.MODE_PRIVATE)
 
+    companion object {
+        private const val CHECK_INTERVAL_MS = 60 * 60 * 1000L // 1 hour
+    }
+
     suspend fun check(): AppUpdateInfo? = withContext(Dispatchers.IO) {
+        val lastCheck = prefs?.getLong("last_check_timestamp", 0L) ?: 0L
+        val now = System.currentTimeMillis()
+        if (now - lastCheck < CHECK_INTERVAL_MS) {
+            return@withContext null
+        }
+        prefs?.edit()?.putLong("last_check_timestamp", now)?.apply()
+
         val channel = BuildConfig.UPDATE_CHANNEL
         val branch = if (channel == "beta") "beta" else "main"
         val endpoints = listOf(
@@ -57,17 +69,19 @@ class AppUpdateChecker(private val context: Context? = null) {
                 channel = json.optString("channel", channel),
                 apkUrl = apkUrl,
                 releaseNotes = json.optString("releaseNotes", "Nueva versión disponible."),
-                mandatory = json.optBoolean("mandatory", false)
+                mandatory = json.optBoolean("mandatory", false),
+                minVersionCode = json.optInt("minVersionCode", 0)
             )
 
             val lastInstalledUrl = prefs?.getString("last_installed_apk_url", null)
 
             val hasNewVersion = available.versionCode > BuildConfig.VERSION_CODE
             val hasDifferentApk = apkUrl.isNotBlank() && apkUrl != lastInstalledUrl
+            val belowMinVersion = available.minVersionCode > 0 && BuildConfig.VERSION_CODE < available.minVersionCode
             val channelMatch = available.channel == channel
             val approved = isApprovedDownload(apkUrl, channel)
 
-            if (channelMatch && approved && (hasNewVersion || hasDifferentApk)) {
+            if (channelMatch && approved && (hasNewVersion || hasDifferentApk || belowMinVersion)) {
                 available
             } else {
                 null
@@ -79,12 +93,20 @@ class AppUpdateChecker(private val context: Context? = null) {
         prefs?.edit()?.putString("last_installed_apk_url", apkUrl)?.apply()
     }
 
+    fun dismissMandatory() {
+        prefs?.edit()?.putLong("mandatory_dismissed_at", System.currentTimeMillis())?.apply()
+    }
+
+    fun isMandatoryDismissed(): Boolean {
+        val dismissedAt = prefs?.getLong("mandatory_dismissed_at", 0L) ?: 0L
+        return System.currentTimeMillis() - dismissedAt < 5 * 60 * 1000L // 5 min
+    }
+
     private fun isApprovedDownload(value: String, channel: String): Boolean {
         val uri = Uri.parse(value)
         if (uri.scheme != "https" || uri.host != "raw.githubusercontent.com") return false
         val expectedPrefix = "/msalcedofernand-afk/sales-network-app-releases/"
-        val expectedChannelPath = "/releases/sales-network-${channel}.apk"
-        return uri.path?.startsWith(expectedPrefix) == true && uri.path?.endsWith(expectedChannelPath) == true
+        val path = uri.path ?: return false
+        return path.startsWith(expectedPrefix) && path.endsWith(".apk")
     }
 }
-
