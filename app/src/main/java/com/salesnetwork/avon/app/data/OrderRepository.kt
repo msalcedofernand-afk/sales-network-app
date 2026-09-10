@@ -79,12 +79,19 @@ class OrderRepository private constructor(context: Context) {
 
     fun updateOrderStatus(orderId: String, newStatus: OrderStatus) {
         _orders.value = _orders.value.map { order ->
-            if (order.id == orderId) {
+            if (order.id == orderId && isValidTransition(order.status, newStatus)) {
                 order.copy(status = newStatus)
             } else {
                 order
             }
         }
+    }
+
+    private fun isValidTransition(from: OrderStatus, to: OrderStatus): Boolean = when (from) {
+        OrderStatus.PENDIENTE -> to == OrderStatus.CONFIRMADO || to == OrderStatus.CANCELADO
+        OrderStatus.CONFIRMADO -> to == OrderStatus.COBRADO || to == OrderStatus.CANCELADO
+        OrderStatus.COBRADO -> to == OrderStatus.ENTREGADO || to == OrderStatus.CANCELADO
+        OrderStatus.ENTREGADO, OrderStatus.CANCELADO -> false
     }
 
     fun registerPayment(orderId: String, method: PaymentMethod, amount: Double) {
