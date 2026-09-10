@@ -86,18 +86,25 @@ class LeaderNetworkRepository private constructor(context: Context) {
             val authUser = json.getJSONObject("user")
             val metadata = authUser.optJSONObject("user_metadata")
             val accessToken = json.optString("access_token")
+            val refreshToken = json.optString("refresh_token")
             if (accessToken.isNotBlank()) {
                 secureTokenStore.save(accessToken)
-                // Remove tokens written by versions prior to the Keystore migration.
+                if (refreshToken.isNotBlank()) {
+                    prefs.edit().putString("refresh_token", refreshToken).apply()
+                }
                 prefs.edit().remove("supabase_access_token").apply()
             }
-            val role = fetchRemoteRole(authUser.getString("id"), accessToken)
+            val userId = authUser.getString("id")
+            val role = fetchRemoteRole(userId, accessToken)
+            val referralCode = generateReferralCode(userId)
+            val expiresAt = System.currentTimeMillis() + (90L * 24 * 60 * 60 * 1000) // 90 days
             Result.success(User(
-                id = authUser.getString("id"),
+                id = userId,
                 name = metadata?.optString("name").orEmpty().ifBlank { email.substringBefore("@").replaceFirstChar { it.uppercase() } },
                 email = authUser.optString("email", email),
                 role = role,
-                referralCode = "VV-2026"
+                referralCode = referralCode,
+                referralCodeExpiresAt = expiresAt
             ))
         } catch (_: Exception) {
             Result.failure(Exception("No se pudo conectar."))
@@ -131,7 +138,10 @@ class LeaderNetworkRepository private constructor(context: Context) {
         .digest(password.toByteArray()).joinToString("") { "%02x".format(it) }
 
     fun logout() {
-        prefs.edit().remove("active_user_id").apply()
+        prefs.edit()
+            .remove("active_user_id")
+            .remove("refresh_token")
+            .apply()
         secureTokenStore.clear()
         _currentUser.value = null
     }
@@ -153,6 +163,7 @@ class LeaderNetworkRepository private constructor(context: Context) {
             .putString("user_${user.id}_email", user.email)
             .putString("user_${user.id}_role", user.role.name)
             .putString("user_${user.id}_refCode", user.referralCode)
+            .putLong("user_${user.id}_refCodeExpiresAt", user.referralCodeExpiresAt ?: 0L)
             .putString("user_${user.id}_leaderCode", user.leaderCode)
             .putString("user_${user.id}_passwordHash", passwordHashes[user.id])
             .apply()
@@ -166,6 +177,53 @@ class LeaderNetworkRepository private constructor(context: Context) {
     private fun loadCurrentUserFromPrefs(): User? {
         val activeId = prefs.getString("active_user_id", null) ?: return null
         return usersMap[activeId]
+    }
+
+    private fun generateReferralCode(userId: String): String {
+        val hash = MessageDigest.getInstance("SHA-256")
+            .digest(userId.toByteArray())
+            .take(3)
+            .joinToString("") { "%02X".format(it) }
+        return "VV-$hash"
+    }
+
+    fun isReferralCodeExpired(user: User): Boolean {
+        val expiresAt = user.referralCodeExpiresAt ?: return false
+        return System.currentTimeMillis() > expiresAt
+    }
+
+    suspend fun generateInvitationCode(teamId: String, maxUses: Int = 1): Result<String> {
+        val token = secureTokenStore.get() ?: return Result.failure(Exception("No hay sesión activa."))
+        return withContext(Dispatchers.IO) {
+            try {
+                val expiresAt = java.time.Instant.now().plusSeconds(7 * 24 * 60 * 60).toString()
+                val body = JSONObject().apply {
+                    put("team_id", teamId)
+                    put("expires_at", expiresAt)
+                    put("max_uses", maxUses)
+                }
+                val connection = (URL("https://xceqwexdufdgnmctsxcg.supabase.co/functions/v1/create-invitation").openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    doOutput = true
+                    connectTimeout = 8000
+                    readTimeout = 8000
+                    setRequestProperty("apikey", SUPABASE_ANON_KEY)
+                    setRequestProperty("Authorization", "Bearer $token")
+                    setRequestProperty("Content-Type", "application/json")
+                }
+                connection.outputStream.use { it.write(body.toString().toByteArray()) }
+                val response = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)
+                    ?.bufferedReader()?.use { it.readText() }.orEmpty()
+                if (connection.responseCode !in 200..299) {
+                    return@withContext Result.failure(Exception("Error al generar código."))
+                }
+                val json = JSONObject(response)
+                val code = json.getJSONObject("invitation").getString("code")
+                Result.success(code)
+            } catch (_: Exception) {
+                Result.failure(Exception("No se pudo generar el código."))
+            }
+        }
     }
 
     companion object {

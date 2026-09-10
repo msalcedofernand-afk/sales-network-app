@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SupervisorAccount
@@ -40,7 +42,8 @@ fun TeamNetworkScreen(
     networkCommissionTotal: Double = 135.50,
     allLeadersData: List<LeaderSupervisionData> = emptyList(),
     globalTotalSales: Double = 0.0,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onGenerateInvitation: ((String) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val isRootAdmin = currentUser.role == UserRole.ROOT_ADMIN
@@ -48,6 +51,17 @@ fun TeamNetworkScreen(
 
     var kpiDetailTitle by remember { mutableStateOf<String?>(null) }
     var kpiDetailBody by remember { mutableStateOf<String?>(null) }
+    var generatedInvitationCode by remember { mutableStateOf<String?>(null) }
+    var isGeneratingCode by remember { mutableStateOf(false) }
+
+    val isCodeExpired = currentUser.referralCodeExpiresAt?.let {
+        System.currentTimeMillis() > it
+    } ?: false
+
+    val daysUntilExpiry = currentUser.referralCodeExpiresAt?.let {
+        val remaining = it - System.currentTimeMillis()
+        if (remaining > 0) (remaining / (24 * 60 * 60 * 1000)).toInt() else 0
+    } ?: 0
 
     Column(
         modifier = Modifier
@@ -141,8 +155,13 @@ fun TeamNetworkScreen(
                                 text = currentUser.referralCode,
                                 fontWeight = FontWeight.Black,
                                 fontSize = S.TextHeadline,
-                                color = MaterialTheme.colorScheme.primary
+                                color = if (isCodeExpired) C.Error else MaterialTheme.colorScheme.primary
                             )
+                            if (isCodeExpired) {
+                                Text("Codigo expirado", fontSize = S.TextCaption, color = C.Error, fontWeight = FontWeight.Bold)
+                            } else {
+                                Text("Expira en $daysUntilExpiry dias", fontSize = S.TextCaption, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                         }
 
                         Row(horizontalArrangement = Arrangement.spacedBy(S.S)) {
@@ -153,7 +172,8 @@ fun TeamNetworkScreen(
                                     Toast.makeText(context, "Codigo copiado", Toast.LENGTH_SHORT).show()
                                 },
                                 contentPadding = PaddingValues(horizontal = S.SM, vertical = S.S),
-                                shape = SH.ButtonSmall
+                                shape = SH.ButtonSmall,
+                                enabled = !isCodeExpired
                             ) {
                                 Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(S.IconS))
                                 Spacer(modifier = Modifier.width(S.XS))
@@ -167,11 +187,42 @@ fun TeamNetworkScreen(
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = C.WhatsApp),
                                 contentPadding = PaddingValues(horizontal = S.SM, vertical = S.S),
-                                shape = SH.ButtonSmall
+                                shape = SH.ButtonSmall,
+                                enabled = !isCodeExpired
                             ) {
                                 Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(S.IconS))
                                 Spacer(modifier = Modifier.width(S.XS))
                                 Text("Invitar", fontSize = S.TextSmall, color = Color.White)
+                            }
+                        }
+                    }
+
+                    // Generated invitation code display
+                    if (generatedInvitationCode != null) {
+                        HorizontalDivider()
+                        Surface(
+                            color = C.SuccessLight,
+                            shape = SH.Badge,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(S.SM),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Codigo de invitacion: $generatedInvitationCode",
+                                    fontSize = S.TextSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = C.Success,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                IconButton(onClick = {
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    clipboard.setPrimaryClip(ClipData.newPlainText("Invitation", generatedInvitationCode))
+                                    Toast.makeText(context, "Codigo copiado", Toast.LENGTH_SHORT).show()
+                                }, modifier = Modifier.size(32.dp)) {
+                                    Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", modifier = Modifier.size(S.IconXS))
+                                }
                             }
                         }
                     }
