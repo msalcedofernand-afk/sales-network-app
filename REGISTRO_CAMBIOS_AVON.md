@@ -469,3 +469,10 @@
 - **Por qué:** Facilitar que las vendedoras instalen la aplicación Android desde el catálogo.
 - **Archivos:** `web/app/components/AppNavigation.tsx`, `web/app/globals.css`.
 - **Resultado:** El botón apunta al artefacto público beta de GitHub Releases y funciona en móvil, escritorio y login.
+
+## 2026-09-09 — Comprobante de pago con foto comprimida
+
+- **Qué:** El cambio de un pedido a `COBRADO` permite elegir una imagen, comprimirla antes de subirla y guardar la referencia en Supabase Storage.
+- **Por qué:** Evitar comprobantes pesados, reducir almacenamiento y conservar evidencia del pago sin bloquear el flujo con archivos innecesariamente grandes.
+- **Archivos:** `app/src/main/java/com/salesnetwork/avon/app/utils/PhotoCompressor.kt`, `app/src/main/java/com/salesnetwork/avon/app/data/SupabaseOrderApi.kt`, `app/src/main/java/com/salesnetwork/avon/app/ui/order/OrderListScreen.kt`, `app/src/main/java/com/salesnetwork/avon/app/ui/viewmodel/OrderViewModel.kt`, `supabase/migrations/0011_order_proofs_storage.sql`.
+- **Resultado:** La imagen se reduce a un máximo de 1600 px por lado, calidad JPEG 84 y 2,5 MB; se eliminan metadatos EXIF y el pedido solo cambia a `COBRADO` después de una subida autenticada correcta.

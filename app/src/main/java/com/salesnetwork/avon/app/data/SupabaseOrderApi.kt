@@ -1,6 +1,7 @@
 package com.salesnetwork.avon.app.data
 
 import android.content.Context
+import android.net.Uri
 import com.salesnetwork.avon.app.domain.model.Order
 import com.salesnetwork.avon.app.domain.model.OrderItem
 import com.salesnetwork.avon.app.domain.model.OrderStatus
@@ -9,12 +10,38 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 import org.json.JSONObject
 
 class SupabaseOrderApi(context: Context) {
+    private val context = context.applicationContext
     private val secureTokenStore = SecureTokenStore(context)
     private val base = SupabaseConfig.BASE_URL
     private val token get() = secureTokenStore.get()
+
+    suspend fun uploadPaymentProof(orderId: String, source: Uri): Result<String> = withContext(Dispatchers.IO) {
+        runCatching {
+            val auth = token ?: error("Sesión vencida. Vuelve a iniciar sesión.")
+            val compressed = com.salesnetwork.avon.app.utils.PhotoCompressor.compress(context, source).getOrThrow()
+            try {
+                require(compressed.bytes <= 2_500_000) { "La foto sigue siendo demasiado grande." }
+                val userId = secureTokenStore.getSession()?.userId ?: error("Sesión no disponible")
+                val objectPath = "$userId/$orderId-${java.util.UUID.randomUUID()}.jpg"
+                val encodedPath = objectPath.split('/').joinToString("/") { URLEncoder.encode(it, "UTF-8") }
+                val connection = (URL(base + "/storage/v1/object/order-proofs/$encodedPath").openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"; doOutput = true; connectTimeout = 8_000; readTimeout = 15_000
+                    setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY)
+                    setRequestProperty("Authorization", "Bearer $auth")
+                    setRequestProperty("Content-Type", compressed.mimeType)
+                    setRequestProperty("x-upsert", "false")
+                }
+                compressed.file.inputStream().use { input -> connection.outputStream.use { output -> input.copyTo(output) } }
+                if (connection.responseCode !in 200..299) error("No pudimos subir el comprobante.")
+                connection.disconnect()
+                objectPath
+            } finally { compressed.file.delete() }
+        }
+    }
 
     suspend fun fetch(): List<Order> = withContext(Dispatchers.IO) {
         val auth = token ?: return@withContext emptyList()

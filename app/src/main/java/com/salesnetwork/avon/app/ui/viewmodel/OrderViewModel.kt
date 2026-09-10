@@ -1,6 +1,7 @@
 package com.salesnetwork.avon.app.ui.viewmodel
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.salesnetwork.avon.app.data.OrderRepository
@@ -87,13 +88,27 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun updateStatus(orderId: String, status: OrderStatus, reason: String? = null, proofPath: String? = null) {
+    fun updateStatus(orderId: String, status: OrderStatus, reason: String? = null, proofUri: Uri? = null) {
         val current = _uiState.value.orders.firstOrNull { it.id == orderId }
         if (current == null || !isValidTransition(current.status, status)) {
             _uiState.value = _uiState.value.copy(statusMessage = "Ese cambio de estado no está permitido.")
             return
         }
         viewModelScope.launch {
+            val proofPath = if (status == OrderStatus.COBRADO) {
+                if (proofUri == null) {
+                    _uiState.value = _uiState.value.copy(statusMessage = "Selecciona una foto del comprobante.")
+                    return@launch
+                }
+                val upload = repository.uploadPaymentProof(orderId, proofUri)
+                if (upload.isFailure) {
+                    _uiState.value = _uiState.value.copy(
+                        statusMessage = "No pudimos subir el comprobante: ${upload.exceptionOrNull()?.message ?: "revisa tu conexión"}"
+                    )
+                    return@launch
+                }
+                upload.getOrThrow()
+            } else null
             val result = repository.transitionStatusRemote(orderId, status, reason, proofPath)
             _uiState.value = _uiState.value.copy(
                 statusMessage = result.fold({ "Estado actualizado." }, { it.message ?: "No pudimos actualizar el pedido." })

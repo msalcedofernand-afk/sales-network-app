@@ -1,5 +1,8 @@
 package com.salesnetwork.avon.app.ui.order
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -40,7 +43,7 @@ fun OrderListScreen(
     availableCustomers: List<CustomerContact> = emptyList(),
     availableProducts: List<Product> = emptyList(),
     statusMessage: String? = null,
-    onUpdateStatus: (String, OrderStatus, String?, String?) -> Unit,
+    onUpdateStatus: (String, OrderStatus, String?, Uri?) -> Unit,
     onRegisterPayment: (String, PaymentMethod, Double) -> Unit = { _, _, _ -> },
     onCreateOrder: (customerId: String, customerName: String, items: List<OrderItem>, method: PaymentMethod, paid: Double) -> Unit = { _, _, _, _, _ -> },
     onDeleteOrder: (String) -> Unit = {},
@@ -298,7 +301,7 @@ fun OrderListScreen(
 @Composable
 private fun OrderCard(
     order: Order,
-    onStatusUpdate: (OrderStatus, String?, String?) -> Unit,
+    onStatusUpdate: (OrderStatus, String?, Uri?) -> Unit,
     onShare: () -> Unit,
     onCollect: () -> Unit,
     onDelete: () -> Unit
@@ -306,6 +309,9 @@ private fun OrderCard(
     var showStatusMenu by remember { mutableStateOf(false) }
     var detailStatus by remember { mutableStateOf<OrderStatus?>(null) }
     var detailText by rememberSaveable { mutableStateOf("") }
+    val proofPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) onStatusUpdate(OrderStatus.COBRADO, null, uri)
+    }
 
     val statusColor = when (order.status) {
         OrderStatus.COBRADO -> C.Success
@@ -413,14 +419,14 @@ private fun OrderCard(
             },
             confirmButton = {
                 Button(
-                    enabled = detailText.trim().length >= 3,
+                    enabled = detailStatus == OrderStatus.COBRADO || detailText.trim().length >= 3,
                     onClick = {
                         val selected = detailStatus ?: return@Button
-                        if (selected == OrderStatus.COBRADO) onStatusUpdate(selected, null, detailText.trim())
+                        if (selected == OrderStatus.COBRADO) proofPicker.launch("image/*")
                         else onStatusUpdate(selected, detailText.trim(), null)
                         detailStatus = null
                     }
-                ) { Text("Continuar") }
+                ) { Text(if (detailStatus == OrderStatus.COBRADO) "Elegir foto" else "Continuar") }
             },
             dismissButton = { TextButton(onClick = { detailStatus = null }) { Text("Cancelar") } }
         )
