@@ -1,5 +1,11 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-10 — Compresión de comprobantes
+
+- Se añadió un compresor Android para fotos de comprobantes antes de subirlas.
+- Limita el lado mayor a 1600 px y usa JPEG calidad 84 para equilibrar lectura y almacenamiento.
+- La recodificación elimina metadatos EXIF de ubicación y dispositivo; la foto original no se modifica.
+
 ## 2026-09-10 — Estados de pedido consistentes en Android
 
 - Android valida las transiciones antes de llamar al servidor: pendiente → confirmado → cobrado → entregado.
