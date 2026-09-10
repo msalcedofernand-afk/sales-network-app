@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 data class CatalogUiState(
     val products: List<Product> = emptyList(),
@@ -37,6 +38,12 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                     categories = categories
                 )
                 applyFilters()
+            }
+        }
+        viewModelScope.launch {
+            while (true) {
+                delay(30 * 60 * 1000L)
+                refreshCatalog()
             }
         }
     }

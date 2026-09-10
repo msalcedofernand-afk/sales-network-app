@@ -483,3 +483,10 @@
 - **Por qué:** Mantener Android, web y Supabase con el mismo contrato y evitar que el cliente invente inventario o importes de comisión.
 - **Archivos:** `app/src/main/java/com/salesnetwork/avon/app/domain/model/Product.kt`, `app/src/main/java/com/salesnetwork/avon/app/domain/model/Order.kt`, `app/src/main/java/com/salesnetwork/avon/app/data/SupabaseCatalogApi.kt`, `app/src/main/java/com/salesnetwork/avon/app/ui/catalog/CatalogScreen.kt`.
 - **Resultado:** El catálogo muestra `Disponible/No disponible`, conserva múltiples URLs de imagen y las comisiones solo se consideran válidas cuando llegan calculadas por Supabase.
+
+## 2026-09-10 — Inventario transaccional y sincronización periódica
+
+- **Qué:** Se añadió `stock_quantity` opcional, descuento protegido por bloqueo de fila durante checkout y una tabla `order_batches` para agrupar futuros pedidos por operación. Android refresca el catálogo cada 30 minutos mientras está activo.
+- **Por qué:** Evitar vender la última unidad dos veces y mantener precios y disponibilidad actualizados.
+- **Archivos:** `supabase/migrations/0012_inventory_and_order_batches.sql`, `app/src/main/java/com/salesnetwork/avon/app/ui/viewmodel/CatalogViewModel.kt`.
+- **Resultado:** Dos checkouts simultáneos se serializan por producto; si no quedan unidades, el segundo recibe `product_out_of_stock`. Los productos antiguos sin inventario conservan gestión externa hasta que se importe una cantidad.
