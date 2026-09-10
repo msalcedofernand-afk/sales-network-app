@@ -476,3 +476,10 @@
 - **Por qué:** Evitar comprobantes pesados, reducir almacenamiento y conservar evidencia del pago sin bloquear el flujo con archivos innecesariamente grandes.
 - **Archivos:** `app/src/main/java/com/salesnetwork/avon/app/utils/PhotoCompressor.kt`, `app/src/main/java/com/salesnetwork/avon/app/data/SupabaseOrderApi.kt`, `app/src/main/java/com/salesnetwork/avon/app/ui/order/OrderListScreen.kt`, `app/src/main/java/com/salesnetwork/avon/app/ui/viewmodel/OrderViewModel.kt`, `supabase/migrations/0011_order_proofs_storage.sql`.
 - **Resultado:** La imagen se reduce a un máximo de 1600 px por lado, calidad JPEG 84 y 2,5 MB; se eliminan metadatos EXIF y el pedido solo cambia a `COBRADO` después de una subida autenticada correcta.
+
+## 2026-09-10 — Modelos de catálogo y comisiones alineados
+
+- **Qué:** Android deja de mostrar stock ficticio, usa disponibilidad real y representa las imágenes como galería; las comisiones locales dejan de calcularse.
+- **Por qué:** Mantener Android, web y Supabase con el mismo contrato y evitar que el cliente invente inventario o importes de comisión.
+- **Archivos:** `app/src/main/java/com/salesnetwork/avon/app/domain/model/Product.kt`, `app/src/main/java/com/salesnetwork/avon/app/domain/model/Order.kt`, `app/src/main/java/com/salesnetwork/avon/app/data/SupabaseCatalogApi.kt`, `app/src/main/java/com/salesnetwork/avon/app/ui/catalog/CatalogScreen.kt`.
+- **Resultado:** El catálogo muestra `Disponible/No disponible`, conserva múltiples URLs de imagen y las comisiones solo se consideran válidas cuando llegan calculadas por Supabase.

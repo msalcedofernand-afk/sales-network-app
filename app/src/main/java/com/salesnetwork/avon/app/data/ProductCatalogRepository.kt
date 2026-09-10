@@ -68,7 +68,7 @@ class ProductCatalogRepository private constructor(private val context: Context)
         name = name,
         category = category,
         price = price,
-        imageUrl = imageUrl,
+        imageUrls = listOfNotNull(imageUrl.takeIf { it.isNotBlank() }),
         description = description,
         sourceUrl = ""
     )
@@ -83,7 +83,7 @@ class ProductCatalogRepository private constructor(private val context: Context)
         category = category,
         price = price,
         description = description,
-        imageUrl = imageUrl,
+        imageUrl = imageUrls.firstOrNull().orEmpty(),
         updatedAt = ""
     )
 
