@@ -1,5 +1,12 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-10 — Configuración Supabase Android centralizada
+
+- Se centralizó la URL y clave pública de Supabase para catálogo, clientes, pedidos, checkout y sesión.
+- Se eliminaron copias de configuración repetidas para reducir errores al cambiar de proyecto.
+- No se incorporan claves `service_role` ni secretos al APK.
+- Pruebas beta y estable completadas correctamente.
+
 ## 2026-09-09 — Correcciones de seguridad y experiencia para beta
 
 ### Qué cambió

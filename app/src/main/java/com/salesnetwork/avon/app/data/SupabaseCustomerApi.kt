@@ -11,7 +11,7 @@ import java.net.URL
 
 class SupabaseCustomerApi(context: Context) {
     private val secureTokenStore = SecureTokenStore(context)
-    private val base = "https://xceqwexdufdgnmctsxcg.supabase.co"
+    private val base = SupabaseConfig.BASE_URL
     private val token get() = secureTokenStore.get()
 
     suspend fun fetch(): List<CustomerContact> = withContext(Dispatchers.IO) {
@@ -44,7 +44,7 @@ class SupabaseCustomerApi(context: Context) {
     private fun request(path: String, method: String, auth: String, payload: String? = null): String {
         val connection = (URL(base + path).openConnection() as HttpURLConnection).apply {
             requestMethod = method; connectTimeout = 8_000; readTimeout = 8_000; doOutput = payload != null
-            setRequestProperty("apikey", ANON_KEY); setRequestProperty("Authorization", "Bearer $auth"); setRequestProperty("Content-Type", "application/json"); setRequestProperty("Prefer", "return=minimal")
+            setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY); setRequestProperty("Authorization", "Bearer $auth"); setRequestProperty("Content-Type", "application/json"); setRequestProperty("Prefer", "return=minimal")
         }
         payload?.let { connection.outputStream.use { stream -> stream.write(it.toByteArray()) } }
         val response = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)?.bufferedReader()?.use { it.readText() }.orEmpty()
@@ -52,5 +52,4 @@ class SupabaseCustomerApi(context: Context) {
         connection.disconnect(); return response
     }
 
-    companion object { private const val ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjZXE3ZXhkdWZkZ25tY3RzeGNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MzgxMjgsImV4cCI6MjEwNDQxNDEyOH0.LqPTMoS3Q1-zdsOX9CMOahMynB5XAl-AxsjrVxSlse8" }
 }

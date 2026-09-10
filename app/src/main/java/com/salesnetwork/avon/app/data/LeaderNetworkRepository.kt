@@ -34,7 +34,6 @@ class LeaderNetworkRepository private constructor(private val context: Context) 
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
     companion object {
-        private const val SUPABASE_ANON_KEY = "sb_publishable_5lm6ZqlAg7Is_DlrJ5mNnA_0DKcDmGp"
         private const val MAX_LOGIN_ATTEMPTS = 5
         private const val LOCKOUT_DURATION_MS = 5 * 60 * 1000L // 5 minutes
         private const val TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000L // 5 min before expiry
@@ -102,12 +101,12 @@ class LeaderNetworkRepository private constructor(private val context: Context) 
 
     private fun loginSupabase(email: String, password: String): Result<User> {
         return try {
-            val connection = (URL("https://xceqwexdufdgnmctsxcg.supabase.co/auth/v1/token?grant_type=password").openConnection() as HttpURLConnection).apply {
+            val connection = (URL(SupabaseConfig.BASE_URL + "/auth/v1/token?grant_type=password").openConnection() as HttpURLConnection).apply {
                 requestMethod = "POST"
                 doOutput = true
                 connectTimeout = 8000
                 readTimeout = 8000
-                setRequestProperty("apikey", SUPABASE_ANON_KEY)
+                setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY)
                 setRequestProperty("Content-Type", "application/json")
             }
             connection.outputStream.use { it.write(JSONObject().put("email", email).put("password", password).toString().toByteArray()) }
@@ -147,12 +146,12 @@ class LeaderNetworkRepository private constructor(private val context: Context) 
     private fun fetchRemoteRole(userId: String, accessToken: String): Result<UserRole> {
         if (accessToken.isBlank()) return Result.failure(Exception("Sesión inválida."))
         return runCatching {
-            val endpoint = URL("https://xceqwexdufdgnmctsxcg.supabase.co/rest/v1/team_members?user_id=eq.$userId&select=role&limit=1")
+            val endpoint = URL(SupabaseConfig.BASE_URL + "/rest/v1/team_members?user_id=eq.$userId&select=role&limit=1")
             val connection = (endpoint.openConnection() as HttpURLConnection).apply {
                 requestMethod = "GET"
                 connectTimeout = 5000
                 readTimeout = 5000
-                setRequestProperty("apikey", SUPABASE_ANON_KEY)
+                setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY)
                 setRequestProperty("Authorization", "Bearer $accessToken")
                 setRequestProperty("Accept", "application/json")
             }
@@ -173,10 +172,10 @@ class LeaderNetworkRepository private constructor(private val context: Context) 
     private fun fetchActiveInvitation(userId: String, accessToken: String): String? = runCatching {
         // A leader only sees an invitation that they created. Never expose another
         // member's code as this user's team code.
-        val endpoint = URL("https://xceqwexdufdgnmctsxcg.supabase.co/rest/v1/invitations?created_by=eq.$userId&status=eq.ACTIVE&select=code&order=created_at.desc&limit=1")
+        val endpoint = URL(SupabaseConfig.BASE_URL + "/rest/v1/invitations?created_by=eq.$userId&status=eq.ACTIVE&select=code&order=created_at.desc&limit=1")
         val connection = (endpoint.openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"; connectTimeout = 5000; readTimeout = 5000
-            setRequestProperty("apikey", SUPABASE_ANON_KEY); setRequestProperty("Authorization", "Bearer $accessToken")
+            setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY); setRequestProperty("Authorization", "Bearer $accessToken")
         }
         check(connection.responseCode in 200..299)
         val rows = org.json.JSONArray(connection.inputStream.bufferedReader().use { it.readText() })
@@ -245,12 +244,12 @@ class LeaderNetworkRepository private constructor(private val context: Context) 
             }
             withContext(Dispatchers.IO) {
             try {
-                val connection = (URL("https://xceqwexdufdgnmctsxcg.supabase.co/auth/v1/token?grant_type=refresh_token").openConnection() as HttpURLConnection).apply {
+                val connection = (URL(SupabaseConfig.BASE_URL + "/auth/v1/token?grant_type=refresh_token").openConnection() as HttpURLConnection).apply {
                     requestMethod = "POST"
                     doOutput = true
                     connectTimeout = 8000
                     readTimeout = 8000
-                    setRequestProperty("apikey", SUPABASE_ANON_KEY)
+                    setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY)
                     setRequestProperty("Content-Type", "application/json")
                 }
                 connection.outputStream.use { it.write(JSONObject().put("refresh_token", current.refreshToken).toString().toByteArray()) }
@@ -310,12 +309,12 @@ class LeaderNetworkRepository private constructor(private val context: Context) 
                     put("expires_at", expiresAt)
                     put("max_uses", maxUses)
                 }
-                val connection = (URL("https://xceqwexdufdgnmctsxcg.supabase.co/functions/v1/create-invitation").openConnection() as HttpURLConnection).apply {
+                val connection = (URL(SupabaseConfig.BASE_URL + "/functions/v1/create-invitation").openConnection() as HttpURLConnection).apply {
                     requestMethod = "POST"
                     doOutput = true
                     connectTimeout = 8000
                     readTimeout = 8000
-                    setRequestProperty("apikey", SUPABASE_ANON_KEY)
+                    setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY)
                     setRequestProperty("Authorization", "Bearer $token")
                     setRequestProperty("Content-Type", "application/json")
                 }
