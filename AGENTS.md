@@ -1,9 +1,9 @@
 # Reglas del Proyecto - VV Lideres Chiclayo
 
 ## Git (OBLIGATORIO)
-- **Después de CADA cambio** (sin importar lo básico que sea): commit + push
-- Preguntar después de cada cambio: "¿A qué rama? `develop`, `beta` o `main`?"
-- Nunca commit directo a `main` o `beta` — solo via PR desde `develop`
+- **Después de CADA cambio**: commit + push directo a `beta`
+- Solo se hace PR a `main` cuando se diga explícitamente
+- Nunca commit directo a `main` — solo via PR desde `beta`
 - Tag automático `v{versionName}` después de merge a `main`
 - Formato de commit: `tipo: descripción corta`
   - Tipos: `feat`, `fix`, `chore`, `docs`, `refactor`
