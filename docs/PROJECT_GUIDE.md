@@ -12,6 +12,8 @@ Sales Network es una plataforma para equipos de venta. Android y la web oficial 
 6. El pedido avanza por `PENDIENTE`, `CONFIRMADO`, `COBRADO`, `ENTREGADO` o `CANCELADO`.
 7. Al cobrar, Android puede adjuntar un comprobante; la imagen se comprime y se guarda en Storage privado.
 
+El inventario se descuenta en la misma transacción del checkout cuando `products.stock_quantity` tiene un valor. La fila del producto se bloquea antes de comprobar existencias, por lo que dos personas no pueden vender simultáneamente la misma última unidad. Los pedidos multicliente se agruparán mediante `order_batches`; el checkout actual sigue siendo de un cliente por carrito.
+
 ## Componentes
 
 ### Android
