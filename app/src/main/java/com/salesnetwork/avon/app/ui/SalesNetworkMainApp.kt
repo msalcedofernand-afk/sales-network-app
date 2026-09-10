@@ -83,6 +83,18 @@ fun SalesNetworkMainApp(
         }
     }
 
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            while (true) {
+                kotlinx.coroutines.delay(5 * 60 * 1000L) // Check every 5 min
+                val isValid = authViewModel.ensureValidToken()
+                if (!isValid) {
+                    break
+                }
+            }
+        }
+    }
+
     if (currentUser == null) {
         Column(Modifier.fillMaxSize()) {
             availableUpdate?.let { update ->

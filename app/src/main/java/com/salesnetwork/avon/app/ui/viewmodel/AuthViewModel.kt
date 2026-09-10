@@ -102,4 +102,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun logout() {
         repository.logout()
     }
+
+    suspend fun ensureValidToken(): Boolean {
+        return repository.ensureValidToken()
+    }
 }
