@@ -1,6 +1,7 @@
 package com.salesnetwork.avon.app.data
 
 import android.content.Context
+import android.util.Base64
 import com.salesnetwork.avon.app.BuildConfig
 import com.salesnetwork.avon.app.domain.model.User
 import com.salesnetwork.avon.app.domain.model.UserRole
@@ -27,9 +28,25 @@ class LeaderNetworkRepository private constructor(context: Context) {
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
+    companion object {
+        private const val SUPABASE_ANON_KEY = "sb_publishable_5lm6ZqlAg7Is_DlrJ5mNnA_0DKcDmGp"
+        private const val MAX_LOGIN_ATTEMPTS = 5
+        private const val LOCKOUT_DURATION_MS = 5 * 60 * 1000L // 5 minutes
+        private const val TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000L // 5 min before expiry
+
+        @Volatile
+        private var INSTANCE: LeaderNetworkRepository? = null
+
+        fun getInstance(context: Context): LeaderNetworkRepository {
+            return INSTANCE ?: synchronized(this) {
+                val instance = LeaderNetworkRepository(context.applicationContext)
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
+
     init {
-        // A session is only considered valid after Supabase Auth verifies it.
-        // Do not restore a locally remembered identity as an authenticated session.
         _currentUser.value = null
     }
 
@@ -44,14 +61,30 @@ class LeaderNetworkRepository private constructor(context: Context) {
     suspend fun login(email: String, password: String): Result<User> {
         val cleanEmail = email.trim().lowercase()
 
+        val lockoutUntil = prefs.getLong("lockout_until", 0L)
+        if (System.currentTimeMillis() < lockoutUntil) {
+            val remaining = (lockoutUntil - System.currentTimeMillis()) / 1000
+            return Result.failure(Exception("Demasiados intentos. Espera ${remaining} segundos."))
+        }
+
         val remote = withContext(Dispatchers.IO) { loginSupabase(cleanEmail, password) }
         if (remote.isSuccess) {
+            prefs.edit().putInt("login_attempts", 0).apply()
             val remoteUser = remote.getOrThrow()
             usersMap[remoteUser.id] = remoteUser
             persistUser(remoteUser)
             saveActiveUserSession(remoteUser)
             _currentUser.value = remoteUser
             return Result.success(remoteUser)
+        }
+
+        val attempts = prefs.getInt("login_attempts", 0) + 1
+        prefs.edit().putInt("login_attempts", attempts).apply()
+
+        if (attempts >= MAX_LOGIN_ATTEMPTS) {
+            prefs.edit().putLong("lockout_until", System.currentTimeMillis() + LOCKOUT_DURATION_MS).apply()
+            prefs.edit().putInt("login_attempts", 0).apply()
+            return Result.failure(Exception("Demasiados intentos fallidos. Cuenta bloqueada 5 minutos."))
         }
 
         val errorMsg = remote.exceptionOrNull()?.message ?: "Unknown error"
@@ -141,6 +174,8 @@ class LeaderNetworkRepository private constructor(context: Context) {
         prefs.edit()
             .remove("active_user_id")
             .remove("refresh_token")
+            .remove("login_attempts")
+            .remove("lockout_until")
             .apply()
         secureTokenStore.clear()
         _currentUser.value = null
@@ -192,6 +227,79 @@ class LeaderNetworkRepository private constructor(context: Context) {
         return System.currentTimeMillis() > expiresAt
     }
 
+    fun isTokenExpired(): Boolean {
+        val token = secureTokenStore.get() ?: return true
+        return try {
+            val parts = token.split(".")
+            if (parts.size != 3) return true
+            val payload = String(Base64.decode(parts[1], Base64.URL_SAFE))
+            val json = JSONObject(payload)
+            val exp = json.getLong("exp") * 1000
+            System.currentTimeMillis() >= exp
+        } catch (_: Exception) {
+            true
+        }
+    }
+
+    fun getTokenExpirationTime(): Long {
+        val token = secureTokenStore.get() ?: return 0L
+        return try {
+            val parts = token.split(".")
+            if (parts.size != 3) return 0L
+            val payload = String(Base64.decode(parts[1], Base64.URL_SAFE))
+            val json = JSONObject(payload)
+            json.getLong("exp") * 1000
+        } catch (_: Exception) {
+            0L
+        }
+    }
+
+    suspend fun refreshAccessToken(): Result<String> {
+        val refreshToken = prefs.getString("refresh_token", null)
+            ?: return Result.failure(Exception("No hay refresh token."))
+        return withContext(Dispatchers.IO) {
+            try {
+                val connection = (URL("https://xceqwexdufdgnmctsxcg.supabase.co/auth/v1/token?grant_type=refresh_token").openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    doOutput = true
+                    connectTimeout = 8000
+                    readTimeout = 8000
+                    setRequestProperty("apikey", SUPABASE_ANON_KEY)
+                    setRequestProperty("Content-Type", "application/json")
+                }
+                connection.outputStream.use { it.write(JSONObject().put("refresh_token", refreshToken).toString().toByteArray()) }
+                val body = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)
+                    ?.bufferedReader()?.use { it.readText() }.orEmpty()
+                if (connection.responseCode !in 200..299) {
+                    return@withContext Result.failure(Exception("Refresh failed."))
+                }
+                val json = JSONObject(body)
+                val newAccessToken = json.optString("access_token")
+                val newRefreshToken = json.optString("refresh_token")
+                if (newAccessToken.isNotBlank()) {
+                    secureTokenStore.save(newAccessToken)
+                }
+                if (newRefreshToken.isNotBlank()) {
+                    prefs.edit().putString("refresh_token", newRefreshToken).apply()
+                }
+                Result.success(newAccessToken)
+            } catch (_: Exception) {
+                Result.failure(Exception("No se pudo refrescar el token."))
+            }
+        }
+    }
+
+    suspend fun ensureValidToken(): Boolean {
+        if (isTokenExpired()) {
+            val refresh = refreshAccessToken()
+            if (refresh.isFailure) {
+                logout()
+                return false
+            }
+        }
+        return true
+    }
+
     suspend fun generateInvitationCode(teamId: String, maxUses: Int = 1): Result<String> {
         val token = secureTokenStore.get() ?: return Result.failure(Exception("No hay sesión activa."))
         return withContext(Dispatchers.IO) {
@@ -222,20 +330,6 @@ class LeaderNetworkRepository private constructor(context: Context) {
                 Result.success(code)
             } catch (_: Exception) {
                 Result.failure(Exception("No se pudo generar el código."))
-            }
-        }
-    }
-
-    companion object {
-        private const val SUPABASE_ANON_KEY = "sb_publishable_5lm6ZqlAg7Is_DlrJ5mNnA_0DKcDmGp"
-        @Volatile
-        private var INSTANCE: LeaderNetworkRepository? = null
-
-        fun getInstance(context: Context): LeaderNetworkRepository {
-            return INSTANCE ?: synchronized(this) {
-                val instance = LeaderNetworkRepository(context.applicationContext)
-                INSTANCE = instance
-                instance
             }
         }
     }
