@@ -1,5 +1,39 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-09 - FASE 2: Ventana de Actualización (v1.1.0)
+
+### Que se hizo
+1. **Update Mandatory Banner**:
+   - Banner rojo persistente cuando `mandatory=true`
+   - No se puede cerrar mientras sea obligatoria
+   - Incluye icono de advertencia
+
+2. **Update No-Mandatory Banner**:
+   - Banner con botón de cerrar
+   - Cierra y reaparece después de 5 minutos
+
+3. **Rate Limiting**:
+   - Máximo 1 check por hora
+   - Se guarda timestamp del último check
+
+4. **minVersionCode**:
+   - Campo opcional en JSON para forzar update desde versión específica
+   - Si `BuildConfig.VERSION_CODE < minVersionCode`, muestra update
+
+5. **apkUrl Corregido**:
+   - Ahora apunta al nombre correcto del APK: `SalesNetworkAvon-v{version}-{channel}.apk`
+
+### Archivos modificados
+- `app/src/main/java/com/salesnetwork/avon/app/update/AppUpdateChecker.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/SalesNetworkMainApp.kt`
+- `web/public/updates/stable.json`
+- `web/public/updates/beta.json`
+
+### Resultado del build
+- BUILD SUCCESSFUL (stable v1.1.0 code=38)
+
+---
+
 ## 2026-09-09 - FASE 1: Código de Referido Único por Equipo (v1.1.0)
 
 ### Que se hizo
