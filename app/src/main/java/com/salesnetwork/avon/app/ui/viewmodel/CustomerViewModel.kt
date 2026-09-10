@@ -44,13 +44,13 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
     private val _uiState = MutableStateFlow(CustomerUiState())
     val uiState: StateFlow<CustomerUiState> = _uiState.asStateFlow()
 
-    private var currentUserId: String = "leader-demo-01"
+    private var currentUserId: String = ""
     private var isRootAdmin: Boolean = false
 
     fun setUser(userId: String, isRoot: Boolean = false) {
         currentUserId = userId
         isRootAdmin = isRoot
-        loadCustomers()
+        refreshFromSupabase()
     }
 
     fun setUserId(userId: String) {
@@ -59,8 +59,10 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun deleteCustomer(id: String) {
-        repository.deleteCustomer(id)
-        loadCustomers()
+        viewModelScope.launch {
+            repository.archiveRemote(id).onFailure { _uiState.value = _uiState.value.copy(statusMessage = "No pudimos archivar el cliente.") }
+            loadCustomers()
+        }
     }
 
     fun onSearchQueryChanged(query: String) {
@@ -100,8 +102,17 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
             )
             // Calculate instant route ETA
             newCustomer = routeEtaService.enrichCustomerWithEta(newCustomer)
-            repository.addCustomer(newCustomer, currentUserId)
+            val result = repository.addRemote(newCustomer, currentUserId)
+            if (result.isFailure) { _uiState.value = _uiState.value.copy(statusMessage = "No pudimos guardar el cliente."); return@launch }
             closeAddDialog()
+            loadCustomers()
+        }
+    }
+
+    private fun refreshFromSupabase() {
+        viewModelScope.launch {
+            val result = repository.refreshFromSupabase()
+            _uiState.value = _uiState.value.copy(statusMessage = result.fold({ "Clientes sincronizados." }, { "Sin conexión: mostrando la última copia." }))
             loadCustomers()
         }
     }

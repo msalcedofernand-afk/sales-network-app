@@ -11,9 +11,23 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.util.UUID
 
 class OrderRepository private constructor(context: Context) {
+    private val remoteApi = SupabaseOrderApi(context.applicationContext)
+    private val checkoutApi = SupabaseCheckoutApi(context.applicationContext)
 
-    private val _orders = MutableStateFlow<List<Order>>(generateInitialOrders())
+    private val _orders = MutableStateFlow<List<Order>>(emptyList())
     val orders: StateFlow<List<Order>> = _orders.asStateFlow()
+
+    suspend fun refreshFromSupabase(): Result<Int> = runCatching {
+        val remote = remoteApi.fetch()
+        _orders.value = remote
+        remote.size
+    }
+
+    suspend fun checkoutRemote(userId: String, customerId: String, items: List<OrderItem>): Result<Unit> =
+        checkoutApi.checkout(userId, customerId, items)
+
+    suspend fun transitionStatusRemote(orderId: String, status: OrderStatus): Result<Unit> =
+        remoteApi.transitionStatus(orderId, status)
 
     fun getOrdersForLeader(leaderUserId: String, campaignCode: String? = null): List<Order> {
         val list = _orders.value.filter { it.leaderUserId == leaderUserId || it.leaderUserId.isEmpty() }
@@ -92,49 +106,6 @@ class OrderRepository private constructor(context: Context) {
     fun calculateTotalNetworkCommission(leaderUserId: String, campaignCode: String? = null): Double {
         return getOrdersForLeader(leaderUserId, campaignCode).sumOf { it.networkCommissionLeader }
     }
-
-    private fun generateInitialOrders(): List<Order> {
-        return listOf(
-            Order(
-                id = "ord-1001",
-                customerId = "c-001",
-                customerName = "Maria Elena Flores",
-                leaderUserId = "leader-demo-01",
-                campaignCode = "C-01-2026",
-                items = listOf(
-                    OrderItem("PERF-01", "Far Away Royale EDP 50ml", 89.90, 1),
-                    OrderItem("FACIAL-01", "Crema Facial Anew Ultimate 50g", 119.90, 1)
-                ),
-                totalAmount = 209.80,
-                commissionLeader = 62.94,
-                networkCommissionLeader = 10.49,
-                commissionMember = 41.96,
-                status = OrderStatus.COBRADO,
-                paymentMethod = PaymentMethod.YAPE,
-                amountPaid = 209.80,
-                createdAt = "2026-09-05"
-            ),
-            Order(
-                id = "ord-1002",
-                customerId = "c-002",
-                customerName = "Carmen Rosa Gutierrez",
-                leaderUserId = "leader-demo-01",
-                campaignCode = "C-01-2026",
-                items = listOf(
-                    OrderItem("MAQ-01", "Labial Ultra Matte VV Red", 34.90, 2)
-                ),
-                totalAmount = 69.80,
-                commissionLeader = 20.94,
-                networkCommissionLeader = 3.49,
-                commissionMember = 13.96,
-                status = OrderStatus.PENDIENTE,
-                paymentMethod = PaymentMethod.PENDIENTE,
-                amountPaid = 0.0,
-                createdAt = "2026-09-06"
-            )
-        )
-    }
-
     companion object {
         @Volatile
         private var INSTANCE: OrderRepository? = null

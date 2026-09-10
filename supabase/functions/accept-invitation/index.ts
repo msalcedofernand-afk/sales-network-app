@@ -1,2 +1,17 @@
-import { adminClient, json, user } from "../_shared/http.ts";
-Deno.serve(async req => { if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405); const u = await user(req); if (!u) return json({ error: "unauthorized" }, 401); const { code } = await req.json(); if (!code) return json({ error: "code_required" }, 400); const sb = adminClient(); const { data: invitation } = await sb.from("invitations").select("id,team_id,expires_at,max_uses,uses,status").eq("code", String(code).trim().toUpperCase()).eq("status", "ACTIVE").maybeSingle(); if (!invitation || new Date(invitation.expires_at) <= new Date() || invitation.uses >= invitation.max_uses) return json({ error: "invitation_invalid_or_expired" }, 400); const { error: memberError } = await sb.from("team_members").upsert({ team_id: invitation.team_id, user_id: u.id, role: "MIEMBRO" }); if (memberError) return json({ error: memberError.message }, 400); const { error } = await sb.from("invitations").update({ uses: invitation.uses + 1, status: invitation.uses + 1 >= invitation.max_uses ? "USED" : "ACTIVE" }).eq("id", invitation.id); return error ? json({ error: error.message }, 400) : json({ team_id: invitation.team_id }); });
+import { client, json, user } from "../_shared/http.ts";
+
+Deno.serve(async req => {
+  if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
+  if (!(await user(req))) return json({ error: "unauthorized" }, 401);
+  let body: { code?: string };
+  try { body = await req.json(); } catch { return json({ error: "invalid_json" }, 400); }
+  if (!body.code?.trim()) return json({ error: "code_required" }, 400);
+
+  const { data, error } = await client(req).rpc("accept_invitation_code", {
+    invitation_code: body.code.trim(),
+  });
+  return error
+    ? json({ error: "invitation_invalid_or_expired", message: error.message }, 400)
+    : json({ team_id: data });
+});
+

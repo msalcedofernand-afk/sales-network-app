@@ -11,7 +11,8 @@ import kotlin.math.*
 data class RouteEtaResult(
     val distanceKm: Double,
     val durationMinutes: Int,
-    val formattedSummary: String
+    val formattedSummary: String,
+    val isRouteAvailable: Boolean = true
 )
 
 class RouteEtaService {
@@ -26,7 +27,7 @@ class RouteEtaService {
             originLat !in -90.0..90.0 || originLng !in -180.0..180.0 ||
             destinationLat !in -90.0..90.0 || destinationLng !in -180.0..180.0
         ) {
-            return@withContext RouteEtaResult(0.0, 0, "Ruta sin ubicación confirmada")
+            return@withContext RouteEtaResult(0.0, 0, "Sin calcular", isRouteAvailable = false)
         }
 
         try {
@@ -60,22 +61,9 @@ class RouteEtaService {
             // Offline fallback
         }
 
-        val earthRadiusKm = 6371.0
-        val dLat = Math.toRadians(destinationLat - originLat)
-        val dLng = Math.toRadians(destinationLng - originLng)
-        val a = sin(dLat / 2).pow(2.0) +
-                cos(Math.toRadians(originLat)) * cos(Math.toRadians(destinationLat)) *
-                sin(dLng / 2).pow(2.0)
-        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        val straightDistance = earthRadiusKm * c
-        val streetDistanceKm = (straightDistance * 1.4 * 10).roundToInt() / 10.0
-        val minutes = max(2, (streetDistanceKm / 25.0 * 60).roundToInt())
-
-        RouteEtaResult(
-            distanceKm = streetDistanceKm,
-            durationMinutes = minutes,
-            formattedSummary = "A ~$minutes min ($streetDistanceKm km) por ruta de ciudad"
-        )
+        // A straight-line estimate is intentionally not presented as a route.
+        // The UI will show “Sin calcular” until a routing provider responds.
+        RouteEtaResult(0.0, 0, "Sin calcular", isRouteAvailable = false)
     }
 
     suspend fun enrichCustomerWithEta(
@@ -92,6 +80,9 @@ class RouteEtaService {
             )
         }
         val eta = calculateRouteEta(userLat, userLng, lat, lng)
+        if (!eta.isRouteAvailable) {
+            return customer.copy(estimatedMinutes = null, estimatedDistanceKm = null)
+        }
         return customer.copy(
             estimatedMinutes = eta.durationMinutes,
             estimatedDistanceKm = eta.distanceKm

@@ -12,6 +12,7 @@ data class User(
     val email: String,
     val role: UserRole,
     val referralCode: String,
+    val referralCodeExpiresAt: Long? = null,
     val leaderCode: String? = null,
     val registrationDate: Long = System.currentTimeMillis(),
     val isActiveInCampaign: Boolean = true

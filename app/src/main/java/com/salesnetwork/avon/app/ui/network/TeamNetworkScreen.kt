@@ -4,34 +4,33 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.foundation.background
-import com.salesnetwork.avon.app.ui.SectionIntro
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SupervisorAccount
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.salesnetwork.avon.app.domain.model.User
 import com.salesnetwork.avon.app.domain.model.UserRole
+import com.salesnetwork.avon.app.ui.*
 import com.salesnetwork.avon.app.ui.viewmodel.LeaderSupervisionData
 import com.salesnetwork.avon.app.utils.ContactActionHelper
 
@@ -43,7 +42,8 @@ fun TeamNetworkScreen(
     networkCommissionTotal: Double = 135.50,
     allLeadersData: List<LeaderSupervisionData> = emptyList(),
     globalTotalSales: Double = 0.0,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onGenerateInvitation: ((String) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val isRootAdmin = currentUser.role == UserRole.ROOT_ADMIN
@@ -51,16 +51,27 @@ fun TeamNetworkScreen(
 
     var kpiDetailTitle by remember { mutableStateOf<String?>(null) }
     var kpiDetailBody by remember { mutableStateOf<String?>(null) }
+    var generatedInvitationCode by remember { mutableStateOf<String?>(null) }
+    var isGeneratingCode by remember { mutableStateOf(false) }
+
+    val isCodeExpired = currentUser.referralCodeExpiresAt?.let {
+        System.currentTimeMillis() > it
+    } ?: false
+
+    val daysUntilExpiry = currentUser.referralCodeExpiresAt?.let {
+        val remaining = it - System.currentTimeMillis()
+        if (remaining > 0) (remaining / (24 * 60 * 60 * 1000)).toInt() else 0
+    } ?: 0
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
+            .padding(S.M),
+        verticalArrangement = Arrangement.spacedBy(S.SM)
     ) {
         SectionIntro("VV / Tu espacio", "Hola, ${currentUser.name.substringBefore(" ")}", "Tu equipo y sus resultados, mas cerca.")
-        Spacer(Modifier.height(16.dp))
-        // Cabecera Principal
+
+        // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -69,13 +80,12 @@ fun TeamNetworkScreen(
             Column {
                 Text(
                     text = if (isRootAdmin) "Gestion de Redes" else "Mi Red de Ventas",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    fontSize = S.TextTitle,
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = if (isRootAdmin) "Administracion y Soporte" else if (isLeader) "Panel de Liderazgo VV Chiclayo" else "Panel de Vendedor",
-                    fontSize = 12.sp,
+                    fontSize = S.TextSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -85,114 +95,134 @@ fun TeamNetworkScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
-
-        // Tarjeta de Perfil
+        // Profile Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
+            shape = SH.Card,
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            border = B.cardBorder(),
+            elevation = CardDefaults.cardElevation(S.ElevationNone)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(S.M), verticalArrangement = Arrangement.spacedBy(S.SM)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Surface(
-                        shape = CircleShape,
+                        shape = SH.Avatar,
                         color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.size(46.dp)
+                        modifier = Modifier.size(48.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             if (isRootAdmin) {
-                                Icon(Icons.Default.Security, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                                Icon(Icons.Default.Security, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(S.IconL))
                             } else {
                                 Text(
                                     text = currentUser.name.take(2).uppercase(),
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
+                                    fontSize = S.TextSubtitle
                                 )
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(S.SM))
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = currentUser.name,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = currentUser.email,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Text(currentUser.name, fontWeight = FontWeight.Bold, fontSize = S.TextBody)
+                        Text(currentUser.email, fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
 
-                    Surface(
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(6.dp)
-                    ) {
-                        Text(
-                            text = if (isRootAdmin) "Administrador" else if (isLeader) "LIDER" else "MIEMBRO",
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 13.sp,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
+                    StatusBadge(
+                        text = if (isRootAdmin) "Administrador" else if (isLeader) "LIDER" else "MIEMBRO",
+                        color = MaterialTheme.colorScheme.primary,
+                        backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                    )
                 }
 
+                // Leader code section
                 if (isLeader) {
-                    Spacer(modifier = Modifier.height(14.dp))
                     HorizontalDivider()
-                    Spacer(modifier = Modifier.height(12.dp))
-
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("CODIGO DE TU EQUIPO:", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("CODIGO DE TU EQUIPO:", fontSize = S.TextSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
                                 text = currentUser.referralCode,
                                 fontWeight = FontWeight.Black,
-                                fontSize = 18.sp,
-                                color = MaterialTheme.colorScheme.primary
+                                fontSize = S.TextHeadline,
+                                color = if (isCodeExpired) C.Error else MaterialTheme.colorScheme.primary
                             )
+                            if (isCodeExpired) {
+                                Text("Codigo expirado", fontSize = S.TextCaption, color = C.Error, fontWeight = FontWeight.Bold)
+                            } else {
+                                Text("Expira en $daysUntilExpiry dias", fontSize = S.TextCaption, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                         }
 
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(S.S)) {
                             OutlinedButton(
                                 onClick = {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                     clipboard.setPrimaryClip(ClipData.newPlainText("Codigo Lider", currentUser.referralCode))
-                                    Toast.makeText(context, "Codigo copiado al portapapeles", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Codigo copiado", Toast.LENGTH_SHORT).show()
                                 },
-                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                                contentPadding = PaddingValues(horizontal = S.SM, vertical = S.S),
+                                shape = SH.ButtonSmall,
+                                enabled = !isCodeExpired
                             ) {
-                                Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Copiar", fontSize = 12.sp)
+                                Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(S.IconS))
+                                Spacer(modifier = Modifier.width(S.XS))
+                                Text("Copiar", fontSize = S.TextSmall)
                             }
 
                             Button(
                                 onClick = {
-                                    val text = "Hola, unete a mi equipo de ventas VV Chiclayo con mi codigo de lider: ${currentUser.referralCode}"
+                                    val text = "Hola, unete a mi equipo de ventas VV Chiclayo con mi codigo: ${currentUser.referralCode}"
                                     ContactActionHelper.openWhatsAppChat(context, "", text)
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366)),
-                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                                colors = ButtonDefaults.buttonColors(containerColor = C.WhatsApp),
+                                contentPadding = PaddingValues(horizontal = S.SM, vertical = S.S),
+                                shape = SH.ButtonSmall,
+                                enabled = !isCodeExpired
                             ) {
-                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Invitar", fontSize = 12.sp, color = Color.White)
+                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(S.IconS))
+                                Spacer(modifier = Modifier.width(S.XS))
+                                Text("Invitar", fontSize = S.TextSmall, color = Color.White)
+                            }
+                        }
+                    }
+
+                    // Generated invitation code display
+                    if (generatedInvitationCode != null) {
+                        HorizontalDivider()
+                        Surface(
+                            color = C.SuccessLight,
+                            shape = SH.Badge,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(S.SM),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Codigo de invitacion: $generatedInvitationCode",
+                                    fontSize = S.TextSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = C.Success,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                IconButton(onClick = {
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    clipboard.setPrimaryClip(ClipData.newPlainText("Invitation", generatedInvitationCode))
+                                    Toast.makeText(context, "Codigo copiado", Toast.LENGTH_SHORT).show()
+                                }, modifier = Modifier.size(32.dp)) {
+                                    Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", modifier = Modifier.size(S.IconXS))
+                                }
                             }
                         }
                     }
@@ -200,9 +230,7 @@ fun TeamNetworkScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
-
-        // VISTA EXCLUSIVA ADMINISTRADOR
+        // Admin View
         if (isRootAdmin) {
             val totalVendedoras = allLeadersData.sumOf { it.members.size }
             val totalActivas = allLeadersData.sumOf { it.activeMembersCount }
@@ -210,136 +238,92 @@ fun TeamNetworkScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(S.S)
             ) {
-                Card(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                            kpiDetailTitle = "Detalle de Lideres"
-                            kpiDetailBody = "Actualmente hay ${allLeadersData.size} lideres registrados supervisando redes en Chiclayo y distritos aledaños."
-                        },
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text("Lideres", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text("${allLeadersData.size}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.primary)
+                KpiCard(
+                    label = "Lideres",
+                    value = "${allLeadersData.size}",
+                    icon = Icons.Default.SupervisorAccount,
+                    onClick = {
+                        kpiDetailTitle = "Detalle de Lideres"
+                        kpiDetailBody = "Actualmente hay ${allLeadersData.size} lideres registrados supervisando redes en Chiclayo y distritos aledaños."
                     }
-                }
-
-                Card(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                            kpiDetailTitle = "Detalle de Vendedoras"
-                            kpiDetailBody = "Un total de $totalVendedoras vendedoras integran la organizacion.\n$totalActivas se encuentran activas en la campana actual."
-                        },
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text("Vendedoras", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text("$totalVendedoras", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                )
+                KpiCard(
+                    label = "Vendedoras",
+                    value = "$totalVendedoras",
+                    icon = Icons.Default.Group,
+                    onClick = {
+                        kpiDetailTitle = "Detalle de Vendedoras"
+                        kpiDetailBody = "Un total de $totalVendedoras vendedoras integran la organizacion.\n$totalActivas se encuentran activas en la campana actual."
                     }
-                }
-
-                Card(
-                    modifier = Modifier
-                        .weight(1.2f)
-                        .clickable {
-                            kpiDetailTitle = "Detalle de Facturacion"
-                            kpiDetailBody = "Volumen global facturado en Campana Activa: S/ ${String.format("%.2f", facturacionVal)} entre todos los equipos."
-                        },
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text("Facturacion", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text("S/ ${String.format("%.2f", facturacionVal)}", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF2E7D32))
+                )
+                KpiCard(
+                    label = "Facturacion",
+                    value = "S/ ${String.format("%.2f", facturacionVal)}",
+                    valueColor = C.Success,
+                    icon = Icons.Default.SupervisorAccount,
+                    onClick = {
+                        kpiDetailTitle = "Detalle de Facturacion"
+                        kpiDetailBody = "Volumen global facturado en Campana Activa: S/ ${String.format("%.2f", facturacionVal)} entre todos los equipos."
                     }
-                }
+                )
             }
 
             if (kpiDetailTitle != null) {
                 AlertDialog(
                     onDismissRequest = { kpiDetailTitle = null },
-                    title = { Text(kpiDetailTitle!!, fontWeight = FontWeight.Bold, fontSize = 16.sp) },
-                    text = { Text(kpiDetailBody.orEmpty(), fontSize = 13.sp) },
+                    title = { Text(kpiDetailTitle!!, fontWeight = FontWeight.Bold, fontSize = S.TextTitle) },
+                    text = { Text(kpiDetailBody.orEmpty(), fontSize = S.TextBody) },
                     confirmButton = {
-                        TextButton(onClick = { kpiDetailTitle = null }) {
-                            Text("Entendido")
-                        }
+                        TextButton(onClick = { kpiDetailTitle = null }) { Text("Entendido") }
                     }
                 )
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            Text(
-                text = "Equipos y Lideres (${allLeadersData.size})",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 6.dp)
-            )
+            SectionHeader(title = "Equipos y Lideres", count = allLeadersData.size)
 
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(S.S)
             ) {
                 items(allLeadersData) { leaderData ->
                     var expanded by remember { mutableStateOf(false) }
 
                     Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { expanded = !expanded },
-                        shape = RoundedCornerShape(14.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = SH.Card,
+                        border = B.cardBorder(),
+                        elevation = CardDefaults.cardElevation(S.ElevationNone),
+                        onClick = { expanded = !expanded }
                     ) {
-                        Column(modifier = Modifier.padding(14.dp)) {
+                        Column(modifier = Modifier.padding(S.M), verticalArrangement = Arrangement.spacedBy(S.S)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Surface(
-                                        shape = CircleShape,
-                                        color = MaterialTheme.colorScheme.primaryContainer,
-                                        modifier = Modifier.size(40.dp)
-                                    ) {
+                                    Surface(shape = SH.Avatar, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(40.dp)) {
                                         Box(contentAlignment = Alignment.Center) {
-                                            Icon(Icons.Default.SupervisorAccount, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                            Icon(Icons.Default.SupervisorAccount, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(S.IconM))
                                         }
                                     }
-                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Spacer(modifier = Modifier.width(S.SM))
                                     Column {
-                                        Text(leaderData.leader.name, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                                        Text("Codigo Red: ${leaderData.leader.referralCode}", fontSize = 13.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                                        Text(leaderData.leader.name, fontWeight = FontWeight.Bold, fontSize = S.TextBody)
+                                        Text("Codigo: ${leaderData.leader.referralCode}", fontSize = S.TextSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                                     }
                                 }
 
-                                Surface(
-                                    color = Color(0xFFE8F5E9),
-                                    shape = RoundedCornerShape(8.dp)
-                                ) {
-                                    Text(
-                                        text = "${leaderData.activeMembersCount} / ${leaderData.members.size} Activas",
-                                        color = Color(0xFF2E7D32),
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
-                                }
+                                StatusBadge(
+                                    text = "${leaderData.activeMembersCount} / ${leaderData.members.size} Activas",
+                                    color = C.Success,
+                                    backgroundColor = C.SuccessLight
+                                )
                             }
 
-                            Spacer(modifier = Modifier.height(8.dp))
                             HorizontalDivider()
-                            Spacer(modifier = Modifier.height(8.dp))
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -347,34 +331,32 @@ fun TeamNetworkScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column {
-                                    Text("Ventas de su Equipo: S/ ${String.format("%.2f", leaderData.totalTeamSales)}", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                                    Text("Sobrecomision Lider (5%): S/ ${String.format("%.2f", leaderData.networkCommission)}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text("Ventas: S/ ${String.format("%.2f", leaderData.totalTeamSales)}", fontSize = S.TextSmall, fontWeight = FontWeight.SemiBold)
+                                    Text("Sobrecomision (5%): S/ ${String.format("%.2f", leaderData.networkCommission)}", fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
-
-                                IconButton(onClick = { expanded = !expanded }) {
-                                    Icon(
-                                        if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                        contentDescription = "Ver Vendedoras"
-                                    )
-                                }
+                                Icon(
+                                    if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "Ver Vendedoras",
+                                    modifier = Modifier.size(S.IconM)
+                                )
                             }
 
                             if (expanded) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text("Vendedoras en la red de ${leaderData.leader.name}:", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Spacer(modifier = Modifier.height(4.dp))
+                                Text("Vendedoras de ${leaderData.leader.name}:", fontSize = S.TextSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                                 if (leaderData.members.isEmpty()) {
-                                    Text("No tiene vendedoras registradas aun.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text("Sin vendedoras registradas.", fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 } else {
                                     leaderData.members.forEach { m ->
                                         Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(vertical = 2.dp),
+                                            modifier = Modifier.fillMaxWidth().padding(vertical = S.XXS),
                                             horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
-                                            Text("- ${m.name} (${m.email})", fontSize = 13.sp)
-                                            Text(if (m.isActiveInCampaign) "Activa" else "Pendiente", fontSize = 12.sp, color = if (m.isActiveInCampaign) Color(0xFF2E7D32) else Color(0xFFC62828), fontWeight = FontWeight.Bold)
+                                            Text("- ${m.name}", fontSize = S.TextSmall)
+                                            StatusBadge(
+                                                text = if (m.isActiveInCampaign) "Activa" else "Pendiente",
+                                                color = if (m.isActiveInCampaign) C.Success else C.Error,
+                                                backgroundColor = if (m.isActiveInCampaign) C.SuccessLight else C.ErrorLight
+                                            )
                                         }
                                     }
                                 }
@@ -384,120 +366,76 @@ fun TeamNetworkScreen(
                 }
             }
         } else {
-            // VISTA NORMAL DE LIDER
+            // Leader / Member View
             if (isLeader) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Card(
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text("Sobrecomision Red (5%)", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(
-                                text = "S/ ${String.format("%.2f", networkCommissionTotal)}",
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 17.sp,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text("Por ventas de tu equipo", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-
-                    Card(
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        val activeCount = teamMembers.count { it.isActiveInCampaign }
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text("Vendedores Activos", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(
-                                text = "$activeCount / ${teamMembers.size}",
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 17.sp,
-                                color = if (activeCount > 0) Color(0xFF2E7D32) else Color(0xFFC62828)
-                            )
-                            Text("En campana activa", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
+                var showLeaderSummary by rememberSaveable { mutableStateOf(true) }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Resumen del lider", fontSize = S.TextSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    TextButton(onClick = { showLeaderSummary = !showLeaderSummary }) {
+                        Text(if (showLeaderSummary) "Ocultar" else "Mostrar", fontSize = S.TextSmall)
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
+                if (showLeaderSummary) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(S.S)) {
+                        KpiCard(
+                            label = "Sobrecomision Red",
+                            value = "S/ ${String.format("%.2f", networkCommissionTotal)}",
+                            icon = Icons.Default.SupervisorAccount
+                        )
+                        val activeCount = teamMembers.count { it.isActiveInCampaign }
+                        KpiCard(
+                            label = "Vendedores Activos",
+                            value = "$activeCount / ${teamMembers.size}",
+                            valueColor = if (activeCount > 0) C.Success else C.Error,
+                            icon = Icons.Default.Group
+                        )
+                    }
+                }
             }
 
-            Text(
-                text = "Integrantes de tu Red (${teamMembers.size})",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            SectionHeader(title = "Integrantes de tu Red", count = teamMembers.size)
 
             if (teamMembers.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Aun no tienes vendedores registrados.\nComparte tu codigo ${currentUser.referralCode} para inscribir miembros.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
+                EmptyState(
+                    icon = Icons.Default.Group,
+                    title = "Sin integrantes",
+                    description = "Comparte tu codigo ${currentUser.referralCode} para inscribir miembros a tu red."
+                )
             } else {
                 LazyColumn(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(S.S)
                 ) {
                     items(teamMembers) { member ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(20.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                            shape = SH.Card,
+                            border = B.cardBorder(),
+                            elevation = CardDefaults.cardElevation(S.ElevationNone)
                         ) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(S.M),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Surface(
-                                        shape = CircleShape,
-                                        color = MaterialTheme.colorScheme.primaryContainer,
-                                        modifier = Modifier.size(38.dp)
-                                    ) {
+                                    Surface(shape = SH.Avatar, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(40.dp)) {
                                         Box(contentAlignment = Alignment.Center) {
-                                            Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                                            Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(S.IconM))
                                         }
                                     }
-
-                                    Spacer(modifier = Modifier.width(10.dp))
-
+                                    Spacer(modifier = Modifier.width(S.SM))
                                     Column {
-                                        Text(member.name, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                        Text(member.email, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Text(member.name, fontWeight = FontWeight.Bold, fontSize = S.TextBody)
+                                        Text(member.email, fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
                                 }
 
-                                Surface(
-                                    color = if (member.isActiveInCampaign) Color(0xFFE8F5E9) else Color(0xFFFFEBEE),
-                                    shape = RoundedCornerShape(8.dp)
-                                ) {
-                                    Text(
-                                        text = if (member.isActiveInCampaign) "ACTIVO" else "PENDIENTE",
-                                        color = if (member.isActiveInCampaign) Color(0xFF2E7D32) else Color(0xFFC62828),
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
-                                }
+                                StatusBadge(
+                                    text = if (member.isActiveInCampaign) "ACTIVO" else "PENDIENTE",
+                                    color = if (member.isActiveInCampaign) C.Success else C.Error,
+                                    backgroundColor = if (member.isActiveInCampaign) C.SuccessLight else C.ErrorLight
+                                )
                             }
                         }
                     }

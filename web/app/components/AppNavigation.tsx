@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import ReleaseBadge from "./ReleaseBadge";
 
 type NavItem = {
   href: string;
@@ -10,6 +11,8 @@ type NavItem = {
   shortLabel: string;
   icon: ReactNode;
 };
+
+const APK_DOWNLOAD_URL = "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/beta/releases/sales-network-beta.apk";
 
 const iconProps = {
   width: 20,
@@ -54,6 +57,12 @@ const items: NavItem[] = [
     shortLabel: "Equipo",
     icon: <svg {...iconProps}><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2"/><path d="M3 20a6 6 0 0 1 12 0M14 16a5 5 0 0 1 7 4"/></svg>,
   },
+  {
+    href: "/cambios",
+    label: "Cambios",
+    shortLabel: "Cambios",
+    icon: <svg {...iconProps}><path d="M4 5h16M4 12h16M4 19h10"/><circle cx="18" cy="19" r="2"/></svg>,
+  },
 ];
 
 function NavLinks({ mobile = false }: { mobile?: boolean }) {
@@ -76,13 +85,15 @@ function NavLinks({ mobile = false }: { mobile?: boolean }) {
 
 export default function AppNavigation() {
   const pathname = usePathname();
-  if (pathname === "/login" || pathname === "/registro") {
+  if (pathname === "/login" || pathname === "/registro" || pathname === "/restablecer-contrasena" || pathname === "/onboarding") {
     return (
       <header className="mobile-header auth-header">
         <Link className="brand" href="/login" aria-label="Sales Network, ir al inicio de sesión">
           <span className="brand-mark" aria-hidden="true">VV</span>
           <span className="brand-copy"><strong>Sales Network</strong><small>Tu ruta de ventas</small></span>
         </Link>
+        <ReleaseBadge />
+        <a className="download-app-link" href={APK_DOWNLOAD_URL} download aria-label="Descargar aplicación Android">Descargar app</a>
       </header>
     );
   }
@@ -98,6 +109,8 @@ export default function AppNavigation() {
         <div className="sidebar-foot">
           <span className="sync-dot" aria-hidden="true" />
           <span>Conectado a tu equipo</span>
+          <ReleaseBadge />
+          <a className="download-app-link" href={APK_DOWNLOAD_URL} download>Descargar app</a>
         </div>
       </aside>
 
@@ -106,6 +119,8 @@ export default function AppNavigation() {
           <span className="brand-mark" aria-hidden="true">VV</span>
           <span className="brand-copy"><strong>Sales Network</strong><small>Tu ruta de ventas</small></span>
         </Link>
+        <ReleaseBadge />
+        <a className="download-app-link" href={APK_DOWNLOAD_URL} download aria-label="Descargar aplicación Android">Descargar app</a>
       </header>
 
       <nav className="bottom-nav" aria-label="Navegación móvil"><NavLinks mobile /></nav>

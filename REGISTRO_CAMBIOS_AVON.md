@@ -1,5 +1,89 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-09 - FASE 1: Código de Referido Único por Equipo (v1.1.0)
+
+### Que se hizo
+1. **Código de Referido Único por Usuario**:
+   - Generado con `VV-{SHA256(user_id).take(3).uppercase}` (ej: VV-A1B2C3)
+   - Cada usuario tiene un código único e inmutable
+   - Expiración a 90 días desde el login
+
+2. **Modelo User Actualizado**:
+   - Nuevo campo `referralCodeExpiresAt: Long?` para tracking de expiración
+
+3. **UI - TeamNetworkScreen**:
+   - Mostrar código con color de advertencia si expiró
+   - Mostrar días restantes hasta expiración
+   - Botones deshabilitados si código expirado
+
+4. **Edge Function `purge-expired-invitations`**:
+   - Marca como `EXPIRED` invitaciones pasadas de fecha
+   - Autenticación via `CRON_SECRET`
+
+5. **pg_cron para Purge Diario**:
+   - Limpieza automática a las 3am UTC
+   - También limpia crash reports mayores a 30 días
+
+### Archivos modificados
+- `app/src/main/java/com/salesnetwork/avon/app/domain/model/User.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/data/LeaderNetworkRepository.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/network/TeamNetworkScreen.kt`
+- `supabase/functions/purge-expired-invitations/index.ts` (nuevo)
+- `supabase/migrations/0007_cron_purge.sql` (nuevo)
+- `web/public/updates/stable.json`
+
+### Resultado del build
+- BUILD SUCCESSFUL (stable v1.1.0 code=37)
+- Pendiente: Instalar en dispositivo y probar login
+
+---
+
+## 2026-09-09 - UX Profesional + API Key + Versionado Semántico (v1.1.0)
+
+### Que se hizo
+1. **UX Redesign Completo**:
+   - Tokens centralizados en `Design.kt` (S, C, B, SH)
+   - Componenets reutilizables: KpiCard, StatusBadge, EmptyState, SectionHeader, SectionIntro
+   - Nav bar animada con `animateColorAsState`/`animateDpAsState`
+   - Inputs redondeados, header con gradiente en login
+   - KPIs interactivos en pedidos (click para detalle)
+   - Empty states con icono + acción en todas las pantallas
+
+2. **API Key Supabase Actualizada**:
+   - Reemplazada key inválida por nueva key pública
+   - Login funciona correctamente
+
+3. **Versionado Semántico Implementado**:
+   - `versionName`: 1.0.0 → 1.1.0 (nuevas features)
+   - `versionCode`: 35 (stable), 36 (beta)
+   - Reglas documentadas en `AGENTS.md`
+
+4. **Compilación e Instalación**:
+   - `assembleStableDebug` + `assembleBetaDebug` exitosos
+   - Ambas APKs instaladas vía `adb install -r`
+   - Releases actualizados en repo de releases
+
+### Archivos modificados
+- `app/src/main/java/com/salesnetwork/avon/app/ui/Design.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/SalesNetworkMainApp.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/auth/LoginRegisterScreen.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/catalog/CatalogScreen.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/customer/CustomerListScreen.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/network/TeamNetworkScreen.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/order/OrderListScreen.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/data/LeaderNetworkRepository.kt`
+- `web/public/updates/stable.json`
+- `web/public/updates/beta.json`
+- `version.properties`
+- `AGENTS.md`
+- `REGISTRO_CAMBIOS_AVON.md`
+
+### Resultado del build
+- BUILD SUCCESSFUL (stable v1.1.0 code=35, beta v1.1.0 code=36)
+- Instalación exitosa en dispositivo 7c13e912
+
+---
+
 ## 2026-09-08 - Reemplazo de Marca a "VV" & Rol Root Admin Total
 
 ### Que se hizo
@@ -81,3 +165,75 @@
 - Validación: `npm run build`, `testDebugUnitTest` y `assembleDebug` correctos. APK de prueba actualizado a versionCode 28.
 - Actualizador: el APK generado contiene el detector de versiones; el manifiesto estable apunta a versionCode 28 y beta a 29.
 - Beta: generado APK versionCode 29 para validar el aviso de actualización desde la rama `beta`; `main` conserva el APK estable 28.
+## 2026-09-09 — Sesión Android protegida
+
+- **Qué:** Se cifró el token de acceso de Supabase con Android Keystore y AES/GCM.
+- **Por qué:** Evitar guardar credenciales de sesión en texto plano en SharedPreferences.
+- **Archivos:** `SecureTokenStore.kt`, `LeaderNetworkRepository.kt` y clientes Supabase de catálogo, clientes, carrito y pedidos.
+- **Resultado:** La sesión se guarda, lee y revoca desde almacenamiento cifrado; validado con el build Android.
+## 2026-09-09 — Checkout idempotente en Android
+
+- **Qué:** La clave de checkout queda guardada hasta que Supabase confirma el pedido.
+- **Por qué:** Un reintento después de perder la respuesta de red no debe duplicar la venta.
+- **Archivos:** `SupabaseCheckoutApi.kt`.
+- **Resultado:** Reintentos del mismo carrito reutilizan la clave y el servidor mantiene la operación idempotente.
+## 2026-09-09 — ETA sin estimaciones inventadas
+
+- **Qué:** La app ya no muestra una distancia o tiempo calculado si el proveedor de rutas no responde.
+- **Por qué:** Evitar presentar una distancia en línea recta como si fuera una ruta real.
+- **Archivos:** `RouteEtaService.kt`, `SalesNetworkModuleTest.kt`.
+- **Resultado:** El cliente aparece como “Sin calcular” hasta tener una ruta confirmada.
+## 2026-09-09 — Clientes web
+
+- **Qué:** Se añadió edición de clientes, confirmación antes de archivar y acciones para llamar o abrir WhatsApp.
+- **Por qué:** Completar el flujo de gestión de clientes y evitar archivados accidentales.
+- **Archivos:** `web/app/clientes/page.tsx`.
+- **Resultado:** Build de Next.js correcto y cambios publicados en `develop`.
+## 2026-09-09 — Equipo sin cifras demo
+
+- **Qué:** Se eliminaron ventas y comisiones de ejemplo que aparecían cuando no había pedidos sincronizados.
+- **Por qué:** Los indicadores deben representar únicamente datos reales de Supabase.
+- **Archivos:** `TeamViewModel.kt`.
+- **Resultado:** Sin pedidos, los indicadores muestran cero hasta completar la sincronización.
+## 2026-09-09 — Automatización de despliegue Supabase
+
+- **Qué:** Se añadió `scripts/deploy-supabase.ps1` y la guía de puesta en marcha remota.
+- **Por qué:** Aplicar migraciones y Edge Functions de forma repetible sin exponer secretos.
+- **Archivos:** `scripts/deploy-supabase.ps1`, `docs/DEPLOYMENT.md`.
+- **Resultado:** El despliegue queda listo para ejecutarse cuando estén disponibles el token y la contraseña del proyecto.
+## 2026-09-09 — Pruebas web y RLS
+
+- **Qué:** Se añadió Playwright con pruebas de login y catálogo, integración en CI y un smoke test SQL para aislamiento RLS.
+- **Por qué:** Validar accesibilidad básica y detectar fugas entre equipos antes de publicar beta.
+- **Archivos:** `web/playwright.config.ts`, `web/tests/public-pages.spec.ts`, `.github/workflows/ci.yml`, `supabase/tests/rls_smoke.sql`.
+- **Resultado:** Suite preparada; la descarga del navegador Playwright queda para CI o una máquina con acceso al binario.
+## 2026-09-09 — Migración Supabase reintentable
+
+- **Qué:** Las definiciones de enums de la migración inicial toleran tipos que ya existan en el proyecto remoto.
+- **Por qué:** El primer `supabase db push` se detuvo porque `team_role` ya estaba creado.
+- **Archivos:** `supabase/migrations/0001_sales_network.sql`.
+- **Resultado:** El despliegue puede reintentarse sin fallar por tipos duplicados.
+## 2026-09-09 — Despliegue remoto con historial seguro
+
+- **Qué:** El script ahora se detiene cuando `db push` falla y la guía documenta cómo reparar el historial de migraciones existentes.
+- **Por qué:** El proyecto remoto ya contiene tablas; no se deben recrear ni borrar datos.
+- **Archivos:** `scripts/deploy-supabase.ps1`, `docs/DEPLOYMENT.md`.
+- **Resultado:** Las Edge Functions no se publican si la base de datos no está sincronizada y el siguiente paso queda explícito.
+## 2026-09-09 — Corrección de smoke test web
+
+- **Qué:** El smoke test de login ahora busca el texto real del botón `Ingresar`.
+- **Por qué:** CI fallaba aunque la pantalla funcionaba correctamente.
+- **Archivos:** `web/tests/public-pages.spec.ts`.
+- **Resultado:** La prueba coincide con la interfaz actual y el Pull Request se actualizará automáticamente.
+## 2026-09-09 — Estado real del README
+
+- **Qué:** Se actualizó el estado del proyecto para reflejar la integración remota real de Android, web y Supabase.
+- **Por qué:** Evitar que la documentación diga que la app sigue usando datos demo locales.
+- **Archivos:** `README.md`.
+- **Resultado:** Se documentan también Room/offline, firma de APK y validación beta como pendientes.
+## 2026-09-09 — Descarga de APK desde la web
+
+- **Qué:** Se añadió un botón visible para descargar la APK beta desde la navegación web.
+- **Por qué:** Facilitar que las vendedoras instalen la aplicación Android desde el catálogo.
+- **Archivos:** `web/app/components/AppNavigation.tsx`, `web/app/globals.css`.
+- **Resultado:** El botón apunta al artefacto público beta de GitHub Releases y funciona en móvil, escritorio y login.

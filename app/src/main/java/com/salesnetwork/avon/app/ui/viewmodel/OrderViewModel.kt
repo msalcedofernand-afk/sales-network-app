@@ -2,6 +2,7 @@ package com.salesnetwork.avon.app.ui.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.salesnetwork.avon.app.data.OrderRepository
 import com.salesnetwork.avon.app.domain.model.Order
 import com.salesnetwork.avon.app.domain.model.OrderItem
@@ -10,6 +11,7 @@ import com.salesnetwork.avon.app.domain.model.PaymentMethod
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 data class OrderUiState(
     val orders: List<Order> = emptyList(),
@@ -21,7 +23,8 @@ data class OrderUiState(
     val pendingCount: Int = 0,
     val activeCampaign: String = "C-01-2026",
     val campaigns: List<String> = listOf("C-01-2026", "C-02-2026", "C-03-2026"),
-    val showCreateDialog: Boolean = false
+    val showCreateDialog: Boolean = false,
+    val statusMessage: String? = null
 )
 
 class OrderViewModel(application: Application) : AndroidViewModel(application) {
@@ -31,13 +34,16 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(OrderUiState())
     val uiState: StateFlow<OrderUiState> = _uiState.asStateFlow()
 
-    private var currentLeaderId: String = "leader-demo-01"
+    private var currentLeaderId: String = ""
     private var isRootAdmin: Boolean = false
 
     fun setUser(userId: String, isRoot: Boolean = false) {
         currentLeaderId = userId
         isRootAdmin = isRoot
-        loadOrders()
+        viewModelScope.launch {
+            repository.refreshFromSupabase()
+            loadOrders()
+        }
     }
 
     fun setLeaderId(leaderId: String) {
@@ -71,22 +77,27 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         amountPaid: Double = 0.0
     ) {
         if (items.isEmpty()) return
-        repository.createOrder(
-            customerId = customerId,
-            customerName = customerName,
-            leaderUserId = currentLeaderId,
-            campaignCode = _uiState.value.activeCampaign,
-            items = items,
-            paymentMethod = paymentMethod,
-            amountPaid = amountPaid
-        )
-        closeCreateDialog()
-        loadOrders()
+        viewModelScope.launch {
+            val result = repository.checkoutRemote(currentLeaderId, customerId, items)
+            _uiState.value = _uiState.value.copy(
+                showCreateDialog = false,
+                statusMessage = result.fold({ "Pedido confirmado." }, { "No pudimos confirmar el pedido: " + (it.message ?: "revisa tu conexión") })
+            )
+            if (result.isSuccess) loadOrders()
+        }
     }
 
     fun updateStatus(orderId: String, status: OrderStatus) {
-        repository.updateOrderStatus(orderId, status)
-        loadOrders()
+        viewModelScope.launch {
+            val result = repository.transitionStatusRemote(orderId, status)
+            _uiState.value = _uiState.value.copy(
+                statusMessage = result.fold({ "Estado actualizado." }, { it.message ?: "No pudimos actualizar el pedido." })
+            )
+            if (result.isSuccess) {
+                repository.refreshFromSupabase()
+                loadOrders()
+            }
+        }
     }
 
     fun registerPayment(orderId: String, method: PaymentMethod, amount: Double) {

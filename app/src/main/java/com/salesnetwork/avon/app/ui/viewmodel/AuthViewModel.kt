@@ -50,12 +50,17 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             return Result.failure(IllegalArgumentException("Ingrese un correo electrónico."))
         }
         _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
-        val result = repository.login(email, password)
-        _uiState.value = _uiState.value.copy(
-            isLoading = false,
-            errorMessage = result.exceptionOrNull()?.message
-        )
-        return result.map { it as Any }
+        viewModelScope.launch {
+            val result = repository.login(email, password)
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                errorMessage = result.exceptionOrNull()?.message
+            )
+            if (result.isSuccess) {
+                _uiState.value = _uiState.value.copy(currentUser = result.getOrNull())
+            }
+        }
+        return Result.success(true)
     }
 
     fun registerLeader(name: String, email: String, password: String): Result<Any> {

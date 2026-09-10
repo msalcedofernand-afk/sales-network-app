@@ -11,6 +11,7 @@ data class OrderItem(
 
 enum class OrderStatus {
     PENDIENTE,
+    CONFIRMADO,
     ENTREGADO,
     COBRADO,
     CANCELADO

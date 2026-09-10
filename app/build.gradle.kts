@@ -19,6 +19,40 @@ tasks.matching { it.name.startsWith("assemble") }.configureEach {
         val newCode = (versionProps.getProperty("versionCode")?.toIntOrNull() ?: 1) + 1
         versionProps.setProperty("versionCode", newCode.toString())
         versionPropsFile.outputStream().use { versionProps.store(it, "Auto-incremented build code") }
+
+        // Auto-update version JSON manifests
+        val channel = when {
+            name.contains("stable", ignoreCase = true) -> "stable"
+            name.contains("beta", ignoreCase = true) -> "beta"
+            else -> "stable"
+        }
+        val webUpdatesDir = rootProject.file("web/public/updates")
+        val apkUrls = mapOf(
+            "stable" to "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/main/releases/sales-network-stable.apk",
+            "beta" to "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/beta/releases/sales-network-beta.apk"
+        )
+        val releaseNotes = mapOf(
+            "stable" to "Versión estable actualizada. Mejoras de rendimiento y correcciones.",
+            "beta" to "Versión beta con cambios experimentales."
+        )
+        try {
+            val jsonContent = """
+                {
+                    "versionCode": $newCode,
+                    "versionName": "${versionProps.getProperty("versionName", "1.0.0")}",
+                    "channel": "$channel",
+                    "apkUrl": "${apkUrls[channel]}",
+                    "releaseNotes": "${releaseNotes[channel]}",
+                    "mandatory": true
+                }
+            """.trimIndent()
+            val jsonFile = File(webUpdatesDir, "$channel.json")
+            jsonFile.parentFile?.mkdirs()
+            jsonFile.writeText(jsonContent)
+            logger.lifecycle("Updated version manifest: ${jsonFile.absolutePath} (code=$newCode)")
+        } catch (e: Exception) {
+            logger.warn("Failed to update version manifest: ${e.message}")
+        }
     }
 }
 
@@ -36,10 +70,23 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    flavorDimensions += "channel"
+    productFlavors {
+        create("stable") {
+            dimension = "channel"
+            buildConfigField("String", "UPDATE_CHANNEL", "\"stable\"")
+        }
+        create("beta") {
+            dimension = "channel"
+            applicationIdSuffix = ".beta"
+            versionNameSuffix = "-beta"
+            buildConfigField("String", "UPDATE_CHANNEL", "\"beta\"")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
-            buildConfigField("String", "UPDATE_CHANNEL", "\"stable\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -47,7 +94,6 @@ android {
         }
         debug {
             isDebuggable = true
-            buildConfigField("String", "UPDATE_CHANNEL", "\"beta\"")
         }
     }
 

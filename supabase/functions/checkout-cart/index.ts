@@ -1,2 +1,21 @@
 import { client, json, user } from "../_shared/http.ts";
-Deno.serve(async req => { if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405); const u = await user(req); if (!u) return json({ error: "unauthorized" }, 401); let body: { cart_id?: string; customer_id?: string; idempotency_key?: string }; try { body = await req.json(); } catch { return json({ error: "invalid_json" }, 400); } const { cart_id, customer_id, idempotency_key } = body; if (!cart_id || !customer_id || !idempotency_key || idempotency_key.length > 120) return json({ error: "cart_customer_and_idempotency_key_required" }, 400); const sb = client(req); const { data: existing } = await sb.from("orders").select("*").eq("user_id", u.id).eq("idempotency_key", idempotency_key).maybeSingle(); if (existing) return json({ order: existing, duplicate: true }, 200); const { data: cart } = await sb.from("carts").select("id,team_id,status").eq("id", cart_id).eq("user_id", u.id).eq("status", "ACTIVE").maybeSingle(); if (!cart) return json({ error: "active_cart_not_found" }, 404); const { data: customer } = await sb.from("customers").select("id,team_id,owner_user_id,archived").eq("id", customer_id).maybeSingle(); if (!customer || customer.team_id !== cart.team_id || customer.archived || (customer.owner_user_id !== u.id && !(await sb.rpc("is_team_leader", { target_team: cart.team_id })).data)) return json({ error: "customer_not_allowed" }, 403); const { data: items } = await sb.from("cart_items").select("quantity,product_id,products(sku,name,price_cents,available)").eq("cart_id", cart_id); if (!items?.length || items.some((row: any) => !row.products?.available || row.quantity < 1)) return json({ error: "cart_empty_or_product_unavailable" }, 400); const total = items.reduce((sum: number, row: any) => sum + row.quantity * row.products.price_cents, 0); const { data: order, error } = await sb.from("orders").insert({ team_id: cart.team_id, user_id: u.id, customer_id, total_cents: total, idempotency_key }).select().single(); if (error) { if (error.code === "23505") { const { data: duplicate } = await sb.from("orders").select("*").eq("user_id", u.id).eq("idempotency_key", idempotency_key).maybeSingle(); return json({ order: duplicate, duplicate: true }, 200); } return json({ error: "order_create_failed" }, 400); } const lines = items.map((row: any) => ({ order_id: order.id, product_id: row.product_id, sku: row.products.sku, product_name: row.products.name, quantity: row.quantity, unit_price_cents: row.products.price_cents })); const lineResult = await sb.from("order_items").insert(lines); if (lineResult.error) return json({ error: "order_items_create_failed" }, 500); await sb.from("carts").update({ status: "CONVERTED" }).eq("id", cart_id); return json({ order }, 201); });
+
+Deno.serve(async req => {
+  if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
+  if (!(await user(req))) return json({ error: "unauthorized" }, 401);
+
+  let body: { cart_id?: string; customer_id?: string; idempotency_key?: string };
+  try { body = await req.json(); } catch { return json({ error: "invalid_json" }, 400); }
+  if (!body.cart_id || !body.customer_id || !body.idempotency_key) {
+    return json({ error: "cart_customer_and_idempotency_key_required" }, 400);
+  }
+
+  const { data, error } = await client(req).rpc("checkout_active_cart", {
+    input_cart_id: body.cart_id,
+    input_customer_id: body.customer_id,
+    input_idempotency_key: body.idempotency_key,
+  });
+  if (error) return json({ error: "checkout_failed", message: error.message }, 400);
+  return json({ order: data }, 201);
+});
+
