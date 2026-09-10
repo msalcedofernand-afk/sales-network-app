@@ -1,5 +1,43 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-09 - FASE 1: Código de Referido Único por Equipo (v1.1.0)
+
+### Que se hizo
+1. **Código de Referido Único por Usuario**:
+   - Generado con `VV-{SHA256(user_id).take(3).uppercase}` (ej: VV-A1B2C3)
+   - Cada usuario tiene un código único e inmutable
+   - Expiración a 90 días desde el login
+
+2. **Modelo User Actualizado**:
+   - Nuevo campo `referralCodeExpiresAt: Long?` para tracking de expiración
+
+3. **UI - TeamNetworkScreen**:
+   - Mostrar código con color de advertencia si expiró
+   - Mostrar días restantes hasta expiración
+   - Botones deshabilitados si código expirado
+
+4. **Edge Function `purge-expired-invitations`**:
+   - Marca como `EXPIRED` invitaciones pasadas de fecha
+   - Autenticación via `CRON_SECRET`
+
+5. **pg_cron para Purge Diario**:
+   - Limpieza automática a las 3am UTC
+   - También limpia crash reports mayores a 30 días
+
+### Archivos modificados
+- `app/src/main/java/com/salesnetwork/avon/app/domain/model/User.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/data/LeaderNetworkRepository.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/ui/network/TeamNetworkScreen.kt`
+- `supabase/functions/purge-expired-invitations/index.ts` (nuevo)
+- `supabase/migrations/0007_cron_purge.sql` (nuevo)
+- `web/public/updates/stable.json`
+
+### Resultado del build
+- BUILD SUCCESSFUL (stable v1.1.0 code=37)
+- Pendiente: Instalar en dispositivo y probar login
+
+---
+
 ## 2026-09-09 - UX Profesional + API Key + Versionado Semántico (v1.1.0)
 
 ### Que se hizo
