@@ -15,6 +15,12 @@ if (versionPropsFile.exists()) {
 val buildCode = versionProps.getProperty("versionCode")?.toIntOrNull() ?: 1
 val baseName = versionProps.getProperty("versionName") ?: "1.0.0"
 val betaNumber = versionProps.getProperty("betaNumber")?.toIntOrNull() ?: 1
+val gitSha = providers.environmentVariable("GITHUB_SHA").orNull?.take(7)
+    ?: providers.gradleProperty("buildRevision").orNull?.take(24)
+    ?: "local"
+val buildRun = providers.environmentVariable("GITHUB_RUN_NUMBER").orNull
+    ?: System.currentTimeMillis().toString()
+val buildRevision = "$gitSha.$buildRun"
 val signingPath = providers.environmentVariable("ANDROID_KEYSTORE_PATH").orNull
 val signingStorePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").orNull
 val signingAlias = providers.environmentVariable("ANDROID_KEY_ALIAS").orNull
@@ -31,6 +37,7 @@ android {
         targetSdk = 35
         versionCode = buildCode
         versionName = baseName
+        buildConfigField("String", "BUILD_REVISION", "\"$buildRevision\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

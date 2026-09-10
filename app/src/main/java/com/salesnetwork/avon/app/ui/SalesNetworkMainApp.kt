@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.salesnetwork.avon.app.domain.model.UserRole
+import com.salesnetwork.avon.app.BuildConfig
 import com.salesnetwork.avon.app.update.AppUpdateInfo
 import com.salesnetwork.avon.app.ui.auth.LoginRegisterScreen
 import com.salesnetwork.avon.app.ui.catalog.CatalogScreen
@@ -128,6 +129,13 @@ fun SalesNetworkMainApp(
                     isLoading = authState.isLoading
                 )
             }
+            Text(
+                text = "v${BuildConfig.VERSION_NAME} · build ${BuildConfig.BUILD_REVISION}",
+                modifier = Modifier.fillMaxWidth().padding(bottom = S.SM),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                fontSize = S.TextCaption,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     } else {
         Scaffold(
@@ -149,6 +157,11 @@ fun SalesNetworkMainApp(
                                         },
                                         fontWeight = FontWeight.Bold,
                                         fontSize = S.TextSubtitle
+                                    )
+                                    Text(
+                                        text = "Build ${BuildConfig.BUILD_REVISION}",
+                                        fontSize = S.TextCaption,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(

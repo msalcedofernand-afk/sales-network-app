@@ -3,6 +3,7 @@
 ## 2026-09-09 — Beta 1.2.0-beta.1 (code=45) preparada
 
 ### Qué cambió
+- Cada build ahora recibe un identificador visible: `commit.ejecución` en CI o `local.timestamp` en compilaciones locales. La versión comercial y el `versionCode` permanecen estables hasta preparar una nueva entrega.
 - `version.properties` pasó a ser la única fuente de versión (`1.2.0`, code `45`, beta `1`). Compilar ya no modifica archivos ni aumenta el código.
 - El actualizador usa manifiestos versionados con SHA-256, canal, versión mínima y notas. Solo bloquea cuando la app instalada queda por debajo de `minSupportedVersionCode`.
 - La descarga se hace dentro de Android, comprueba SHA-256, package ID y firma; se comparte mediante un `FileProvider` privado.
