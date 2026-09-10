@@ -490,3 +490,10 @@
 - **Por qué:** Evitar vender la última unidad dos veces y mantener precios y disponibilidad actualizados.
 - **Archivos:** `supabase/migrations/0012_inventory_and_order_batches.sql`, `app/src/main/java/com/salesnetwork/avon/app/ui/viewmodel/CatalogViewModel.kt`.
 - **Resultado:** Dos checkouts simultáneos se serializan por producto; si no quedan unidades, el segundo recibe `product_out_of_stock`. Los productos antiguos sin inventario conservan gestión externa hasta que se importe una cantidad.
+
+## 2026-09-10 — Sincronización en segundo plano
+
+- **Qué:** Se añadió `CatalogSyncWorker` con WorkManager y red requerida; Android programa una sincronización única cada 30 minutos, incluso si la aplicación está cerrada.
+- **Por qué:** Mantener disponibilidad y precios recientes sin depender de que la persona abra manualmente el catálogo.
+- **Archivos:** `app/src/main/java/com/salesnetwork/avon/app/data/CatalogSyncWorker.kt`, `app/src/main/java/com/salesnetwork/avon/app/SalesNetworkApplication.kt`, `app/build.gradle.kts`.
+- **Resultado:** Los fallos se reintentan hasta tres veces y la caché anterior se conserva.
