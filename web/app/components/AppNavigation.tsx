@@ -67,7 +67,10 @@ const items: NavItem[] = [
 
 function NavLinks({ mobile = false }: { mobile?: boolean }) {
   const pathname = usePathname();
-  return items.map((item) => {
+  // Bottom navigation has a maximum of five destinations. Release history stays
+  // reachable from the version badge and does not create a wrapped sixth item.
+  const visibleItems = mobile ? items.filter((item) => item.href !== "/cambios") : items;
+  return visibleItems.map((item) => {
     const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
     return (
       <Link

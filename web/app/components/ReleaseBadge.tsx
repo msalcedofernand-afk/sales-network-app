@@ -5,5 +5,6 @@ const DEPLOYED_CHANNEL = process.env.NEXT_PUBLIC_RELEASE_CHANNEL || "beta";
 export default function ReleaseBadge() {
   const isStable = DEPLOYED_CHANNEL === "stable";
   const version = `${CONFIGURED_VERSION} · build ${BUILD_ID}`;
-  return <span className={`release-badge ${isStable ? "release-stable" : "release-beta"}`} title={`Versión ${version}`}><span className="release-dot" aria-hidden="true" />{isStable ? "Producción" : "Beta"} · v{version}</span>;
+  return <Link href="/cambios" className={`release-badge ${isStable ? "release-stable" : "release-beta"}`} title={`Ver historial: ${version}`}><span className="release-dot" aria-hidden="true" />{isStable ? "Producción" : "Beta"} · v{version}</Link>;
 }
+import Link from "next/link";
