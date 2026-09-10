@@ -14,13 +14,26 @@ enum class OrderStatus {
     CONFIRMADO,
     ENTREGADO,
     COBRADO,
-    CANCELADO
+    CANCELADO,
+    DEVUELTO;
+
+    fun allowedNext(): List<OrderStatus> = when (this) {
+        PENDIENTE -> listOf(CONFIRMADO, CANCELADO)
+        CONFIRMADO -> listOf(COBRADO, CANCELADO)
+        COBRADO -> listOf(ENTREGADO, CANCELADO)
+        ENTREGADO -> listOf(DEVUELTO)
+        CANCELADO, DEVUELTO -> emptyList()
+    }
+
+    fun canTransitionTo(next: OrderStatus) = next in allowedNext()
 }
 
 enum class PaymentMethod {
     YAPE,
     PLIN,
     EFECTIVO,
+    TRANSFERENCIA,
+    OTRO,
     PENDIENTE
 }
 
@@ -39,6 +52,10 @@ data class Order(
     val status: OrderStatus = OrderStatus.PENDIENTE,
     val paymentMethod: PaymentMethod = PaymentMethod.PENDIENTE,
     val amountPaid: Double = 0.0,
+    val paymentProofPath: String = "",
+    val deliveryProofPath: String = "",
+    val cancellationReason: String = "",
+    val returnReason: String = "",
     val createdAt: String = "2026-09-08"
 ) {
     val remainingDebt: Double get() = (totalAmount - amountPaid).coerceAtLeast(0.0)

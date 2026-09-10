@@ -11,7 +11,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Share
@@ -43,15 +42,12 @@ fun OrderListScreen(
     availableCustomers: List<CustomerContact> = emptyList(),
     availableProducts: List<Product> = emptyList(),
     statusMessage: String? = null,
-    onUpdateStatus: (String, OrderStatus, String?, Uri?) -> Unit,
-    onRegisterPayment: (String, PaymentMethod, Double) -> Unit = { _, _, _ -> },
+    onUpdateStatus: (String, OrderStatus, String?, Uri?, PaymentMethod?) -> Unit,
     onCreateOrder: (customerId: String, customerName: String, items: List<OrderItem>, method: PaymentMethod, paid: Double) -> Unit = { _, _, _, _, _ -> },
-    onDeleteOrder: (String) -> Unit = {},
     onShareTicket: (Order) -> String
 ) {
     val context = LocalContext.current
     var showCreateDialog by remember { mutableStateOf(false) }
-    var orderToDelete by remember { mutableStateOf<Order?>(null) }
     var orderKpiTitle by remember { mutableStateOf<String?>(null) }
     var orderKpiBody by remember { mutableStateOf<String?>(null) }
 
@@ -142,21 +138,6 @@ fun OrderListScreen(
                 )
             }
 
-            // Delete dialog
-            if (orderToDelete != null) {
-                AlertDialog(
-                    onDismissRequest = { orderToDelete = null },
-                    title = { Text("Eliminar Pedido", fontWeight = FontWeight.Bold, fontSize = S.TextTitle) },
-                    text = { Text("Eliminar pedido de '${orderToDelete?.customerName}' por S/ ${String.format("%.2f", orderToDelete?.totalAmount ?: 0.0)}?", fontSize = S.TextBody) },
-                    confirmButton = {
-                        TextButton(onClick = { orderToDelete?.id?.let { onDeleteOrder(it) }; orderToDelete = null }, colors = ButtonDefaults.textButtonColors(contentColor = C.Error)) {
-                            Text("Eliminar")
-                        }
-                    },
-                    dismissButton = { TextButton(onClick = { orderToDelete = null }) { Text("Cancelar") } }
-                )
-            }
-
             // Orders list
             if (orders.isEmpty()) {
                 EmptyState(
@@ -183,13 +164,11 @@ fun OrderListScreen(
                     items(orders) { order ->
                         OrderCard(
                             order = order,
-                            onStatusUpdate = { st, reason, proof -> onUpdateStatus(order.id, st, reason, proof) },
+                            onStatusUpdate = { st, reason, proof, method -> onUpdateStatus(order.id, st, reason, proof, method) },
                             onShare = {
                                 val ticket = onShareTicket(order)
                                 ContactActionHelper.openWhatsAppChat(context, "", ticket)
-                            },
-                            onCollect = { onRegisterPayment(order.id, PaymentMethod.YAPE, order.totalAmount) },
-                            onDelete = { orderToDelete = order }
+                            }
                         )
                     }
                 }
@@ -203,7 +182,6 @@ fun OrderListScreen(
             val p = availableProducts.firstOrNull { it.sku == entry.key }
             (p?.price ?: 0.0) * entry.value
         }
-        val estimatedProfit = totalCart * 0.35
 
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
@@ -224,7 +202,7 @@ fun OrderListScreen(
                     if (availableCustomers.isEmpty()) {
                         Text("Sin clientes. Agrega uno en Clientes primero.", fontSize = S.TextBody, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     } else {
-                        availableCustomers.take(4).forEach { cust ->
+                        availableCustomers.forEach { cust ->
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                                 RadioButton(selected = selectedCustomerId == cust.id, onClick = { selectedCustomerId = cust.id; selectedCustomerName = cust.name })
                                 Spacer(modifier = Modifier.width(S.XS))
@@ -237,7 +215,7 @@ fun OrderListScreen(
 
                     // Step 2: Products
                     Text("2. Productos:", fontSize = S.TextSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                    availableProducts.take(4).forEach { product ->
+                    availableProducts.filter { it.canOrder }.forEach { product ->
                         val qty = cartItems[product.sku] ?: 0
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                             Column(modifier = Modifier.weight(1f)) {
@@ -245,11 +223,11 @@ fun OrderListScreen(
                                 Text("S/ ${String.format("%.2f", product.price)}", fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                IconButton(onClick = { if (qty > 0) cartItems = cartItems.toMutableMap().apply { if (qty == 1) remove(product.sku) else put(product.sku, qty - 1) } }, modifier = Modifier.size(36.dp)) {
+                                IconButton(onClick = { if (qty > 0) cartItems = cartItems.toMutableMap().apply { if (qty == 1) remove(product.sku) else put(product.sku, qty - 1) } }, modifier = Modifier.size(48.dp)) {
                                     Text("-", fontWeight = FontWeight.Bold, fontSize = S.TextSubtitle)
                                 }
                                 Text("$qty", fontSize = S.TextSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = S.XS))
-                                IconButton(onClick = { cartItems = cartItems.toMutableMap().apply { put(product.sku, qty + 1) } }, modifier = Modifier.size(36.dp)) {
+                                IconButton(onClick = { cartItems = cartItems.toMutableMap().apply { put(product.sku, qty + 1) } }, modifier = Modifier.size(48.dp)) {
                                     Text("+", fontWeight = FontWeight.Bold, fontSize = S.TextSubtitle)
                                 }
                             }
@@ -263,10 +241,7 @@ fun OrderListScreen(
                         Text("TOTAL:", fontWeight = FontWeight.Bold, fontSize = S.TextBody)
                         Text("S/ ${String.format("%.2f", totalCart)}", fontWeight = FontWeight.ExtraBold, fontSize = S.TextTitle, color = MaterialTheme.colorScheme.primary)
                     }
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Tu Ganancia:", fontSize = S.TextBody, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("S/ ${String.format("%.2f", estimatedProfit)}", fontWeight = FontWeight.Bold, fontSize = S.TextSmall, color = C.Success)
-                    }
+                    Text("La comisión se calculará en el servidor al confirmar.", fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                     // Step 3: Payment
                     Text("3. Metodo de Cobro:", fontSize = S.TextSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
@@ -301,16 +276,18 @@ fun OrderListScreen(
 @Composable
 private fun OrderCard(
     order: Order,
-    onStatusUpdate: (OrderStatus, String?, Uri?) -> Unit,
-    onShare: () -> Unit,
-    onCollect: () -> Unit,
-    onDelete: () -> Unit
+    onStatusUpdate: (OrderStatus, String?, Uri?, PaymentMethod?) -> Unit,
+    onShare: () -> Unit
 ) {
     var showStatusMenu by remember { mutableStateOf(false) }
     var detailStatus by remember { mutableStateOf<OrderStatus?>(null) }
     var detailText by rememberSaveable { mutableStateOf("") }
+    var detailPaymentMethod by remember { mutableStateOf(PaymentMethod.YAPE) }
     val proofPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) onStatusUpdate(OrderStatus.COBRADO, null, uri)
+        if (uri != null) onStatusUpdate(OrderStatus.COBRADO, null, uri, detailPaymentMethod)
+    }
+    val deliveryPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) onStatusUpdate(OrderStatus.ENTREGADO, null, uri, null)
     }
 
     val statusColor = when (order.status) {
@@ -319,6 +296,7 @@ private fun OrderCard(
         OrderStatus.ENTREGADO -> Color(0xFF1976D2)
         OrderStatus.PENDIENTE -> C.Warning
         OrderStatus.CANCELADO -> C.Error
+        OrderStatus.DEVUELTO -> C.Error
     }
     val statusBg = when (order.status) {
         OrderStatus.COBRADO -> C.SuccessLight
@@ -326,6 +304,7 @@ private fun OrderCard(
         OrderStatus.ENTREGADO -> C.InfoLight
         OrderStatus.PENDIENTE -> C.WarningLight
         OrderStatus.CANCELADO -> C.ErrorLight
+        OrderStatus.DEVUELTO -> C.ErrorLight
     }
 
     Card(
@@ -346,15 +325,15 @@ private fun OrderCard(
                         Text(order.status.name, fontSize = S.TextCaption, fontWeight = FontWeight.Bold, color = Color.White, modifier = Modifier.padding(horizontal = S.SM, vertical = S.XXS))
                     }
                     DropdownMenu(expanded = showStatusMenu, onDismissRequest = { showStatusMenu = false }) {
-                        OrderStatus.values().forEach { st ->
+                        order.status.allowedNext().forEach { st ->
                             DropdownMenuItem(
                                 text = { Text(st.name, fontSize = S.TextSmall, fontWeight = if (st == order.status) FontWeight.Bold else FontWeight.Normal) },
                                 onClick = {
                                     showStatusMenu = false
-                                    if (st == OrderStatus.CANCELADO || st == OrderStatus.COBRADO) {
+                                    if (st in listOf(OrderStatus.CANCELADO, OrderStatus.COBRADO, OrderStatus.ENTREGADO, OrderStatus.DEVUELTO)) {
                                         detailText = ""
                                         detailStatus = st
-                                    } else onStatusUpdate(st, null, null)
+                                    } else onStatusUpdate(st, null, null, null)
                                 }
                             )
                         }
@@ -389,16 +368,6 @@ private fun OrderCard(
                         Spacer(modifier = Modifier.width(S.XS))
                         Text("Ticket", fontSize = S.TextSmall, color = Color.White)
                     }
-                    if (order.remainingDebt > 0) {
-                        OutlinedButton(onClick = onCollect, contentPadding = PaddingValues(horizontal = S.SM, vertical = S.XS), shape = SH.ButtonSmall) {
-                            Icon(Icons.Default.Payments, contentDescription = null, modifier = Modifier.size(S.IconXS))
-                            Spacer(modifier = Modifier.width(S.XS))
-                            Text("Cobrar", fontSize = S.TextSmall)
-                        }
-                    }
-                    IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = C.Error, modifier = Modifier.size(S.IconS))
-                    }
                 }
             }
         }
@@ -406,29 +375,59 @@ private fun OrderCard(
     if (detailStatus != null) {
         AlertDialog(
             onDismissRequest = { detailStatus = null },
-            title = { Text(if (detailStatus == OrderStatus.COBRADO) "Comprobante de pago" else "Motivo de cancelación") },
+            title = { Text(when (detailStatus) {
+                OrderStatus.COBRADO -> "Registrar cobro"
+                OrderStatus.ENTREGADO -> "Registrar entrega"
+                OrderStatus.DEVUELTO -> "Registrar devolución"
+                else -> "Cancelar pedido"
+            }) },
             text = {
-                OutlinedTextField(
-                    value = detailText,
-                    onValueChange = { detailText = it },
-                    label = { Text(if (detailStatus == OrderStatus.COBRADO) "Referencia o ruta de la foto" else "Motivo") },
-                    supportingText = { Text(if (detailStatus == OrderStatus.COBRADO) "Sube la foto desde el panel web y pega aquí su referencia." else "Mínimo 3 caracteres.") },
-                    singleLine = false,
-                    minLines = 2
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(S.S)) {
+                    if (detailStatus == OrderStatus.COBRADO) {
+                        Text("Método de pago", fontWeight = FontWeight.SemiBold)
+                        Row(horizontalArrangement = Arrangement.spacedBy(S.XS)) {
+                            listOf(PaymentMethod.YAPE, PaymentMethod.PLIN, PaymentMethod.EFECTIVO).forEach { method ->
+                                FilterChip(selected = detailPaymentMethod == method, onClick = { detailPaymentMethod = method }, label = { Text(method.name) })
+                            }
+                        }
+                        Text(if (detailPaymentMethod == PaymentMethod.EFECTIVO) "Puedes confirmar sin fotografía." else "Selecciona una fotografía del comprobante.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    if (detailStatus == OrderStatus.CANCELADO || detailStatus == OrderStatus.DEVUELTO) {
+                        OutlinedTextField(
+                            value = detailText,
+                            onValueChange = { detailText = it },
+                            label = { Text("Motivo") },
+                            supportingText = { Text("Mínimo 3 caracteres.") },
+                            singleLine = false,
+                            minLines = 2
+                        )
+                    }
+                    if (detailStatus == OrderStatus.ENTREGADO) Text("Puedes incluir una fotografía como evidencia de entrega.")
+                }
             },
             confirmButton = {
                 Button(
-                    enabled = detailStatus == OrderStatus.COBRADO || detailText.trim().length >= 3,
+                    enabled = detailStatus in listOf(OrderStatus.COBRADO, OrderStatus.ENTREGADO) || detailText.trim().length >= 3,
                     onClick = {
                         val selected = detailStatus ?: return@Button
-                        if (selected == OrderStatus.COBRADO) proofPicker.launch("image/*")
-                        else onStatusUpdate(selected, detailText.trim(), null)
+                        when {
+                            selected == OrderStatus.COBRADO && detailPaymentMethod != PaymentMethod.EFECTIVO -> proofPicker.launch("image/*")
+                            selected == OrderStatus.COBRADO -> onStatusUpdate(selected, null, null, detailPaymentMethod)
+                            selected == OrderStatus.ENTREGADO -> deliveryPicker.launch("image/*")
+                            else -> onStatusUpdate(selected, detailText.trim(), null, null)
+                        }
                         detailStatus = null
                     }
-                ) { Text(if (detailStatus == OrderStatus.COBRADO) "Elegir foto" else "Continuar") }
+                ) { Text(if (detailStatus == OrderStatus.COBRADO || detailStatus == OrderStatus.ENTREGADO) "Continuar" else "Guardar") }
             },
-            dismissButton = { TextButton(onClick = { detailStatus = null }) { Text("Cancelar") } }
+            dismissButton = {
+                Row {
+                    if (detailStatus == OrderStatus.ENTREGADO) {
+                        TextButton(onClick = { onStatusUpdate(OrderStatus.ENTREGADO, null, null, null); detailStatus = null }) { Text("Sin foto") }
+                    }
+                    TextButton(onClick = { detailStatus = null }) { Text("Volver") }
+                }
+            }
         )
     }
 }

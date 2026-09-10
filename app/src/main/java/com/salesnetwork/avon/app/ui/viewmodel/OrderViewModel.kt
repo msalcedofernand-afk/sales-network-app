@@ -52,11 +52,6 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         loadOrders()
     }
 
-    fun deleteOrder(orderId: String) {
-        repository.deleteOrder(orderId)
-        loadOrders()
-    }
-
     fun setCampaign(campaign: String) {
         _uiState.value = _uiState.value.copy(activeCampaign = campaign)
         loadOrders()
@@ -88,19 +83,26 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun updateStatus(orderId: String, status: OrderStatus, reason: String? = null, proofUri: Uri? = null) {
+    fun updateStatus(
+        orderId: String,
+        status: OrderStatus,
+        reason: String? = null,
+        proofUri: Uri? = null,
+        paymentMethod: PaymentMethod? = null
+    ) {
         val current = _uiState.value.orders.firstOrNull { it.id == orderId }
-        if (current == null || !isValidTransition(current.status, status)) {
+        if (current == null || !current.status.canTransitionTo(status)) {
             _uiState.value = _uiState.value.copy(statusMessage = "Ese cambio de estado no está permitido.")
             return
         }
         viewModelScope.launch {
-            val proofPath = if (status == OrderStatus.COBRADO) {
-                if (proofUri == null) {
+            val proofPath = if (status == OrderStatus.COBRADO || (status == OrderStatus.ENTREGADO && proofUri != null)) {
+                if (status == OrderStatus.COBRADO && paymentMethod != PaymentMethod.EFECTIVO && proofUri == null) {
                     _uiState.value = _uiState.value.copy(statusMessage = "Selecciona una foto del comprobante.")
                     return@launch
                 }
-                val upload = repository.uploadPaymentProof(orderId, proofUri)
+                if (proofUri == null) null else {
+                val upload = repository.uploadOrderProof(orderId, proofUri, if (status == OrderStatus.COBRADO) "payment" else "delivery")
                 if (upload.isFailure) {
                     _uiState.value = _uiState.value.copy(
                         statusMessage = "No pudimos subir el comprobante: ${upload.exceptionOrNull()?.message ?: "revisa tu conexión"}"
@@ -108,8 +110,17 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
                     return@launch
                 }
                 upload.getOrThrow()
+                }
             } else null
-            val result = repository.transitionStatusRemote(orderId, status, reason, proofPath)
+            val result = repository.transitionStatusRemote(
+                orderId = orderId,
+                status = status,
+                reason = reason,
+                proofPath = proofPath,
+                paymentMethod = if (status == OrderStatus.COBRADO) paymentMethod ?: PaymentMethod.YAPE else null,
+                amountPaid = if (status == OrderStatus.COBRADO) current.totalAmount else null
+            )
+            if (result.isFailure && proofPath != null) repository.deleteOrderProof(proofPath)
             _uiState.value = _uiState.value.copy(
                 statusMessage = result.fold({ "Estado actualizado." }, { it.message ?: "No pudimos actualizar el pedido." })
             )
@@ -118,11 +129,6 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
                 loadOrders()
             }
         }
-    }
-
-    fun registerPayment(orderId: String, method: PaymentMethod, amount: Double) {
-        repository.registerPayment(orderId, method, amount)
-        loadOrders()
     }
 
     fun buildWhatsAppTicket(order: Order): String {
@@ -149,13 +155,6 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         }
         sb.append("\nGracias por tu preferencia.")
         return sb.toString()
-    }
-
-    private fun isValidTransition(from: OrderStatus, to: OrderStatus): Boolean = when (from) {
-        OrderStatus.PENDIENTE -> to == OrderStatus.CONFIRMADO || to == OrderStatus.CANCELADO
-        OrderStatus.CONFIRMADO -> to == OrderStatus.COBRADO || to == OrderStatus.CANCELADO
-        OrderStatus.COBRADO -> to == OrderStatus.ENTREGADO || to == OrderStatus.CANCELADO
-        OrderStatus.ENTREGADO, OrderStatus.CANCELADO -> false
     }
 
     private fun loadOrders() {
