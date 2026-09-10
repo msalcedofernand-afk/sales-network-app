@@ -11,7 +11,15 @@ data class Product(
     val sourceUrl: String = "",
     val usageMode: String = "Aplicar sobre la piel limpia con suaves masajes circulares.",
     val available: Boolean = true,
-    val teamId: String = ""
+    val teamId: String = "",
+    val stockQuantity: Int? = null,
+    val updatedAt: String = ""
 ) {
     val primaryImageUrl: String get() = imageUrls.firstOrNull().orEmpty()
+    val canOrder: Boolean get() = available && (stockQuantity == null || stockQuantity > 0)
+    val stockLabel: String get() = when {
+        !canOrder -> "Agotado"
+        stockQuantity == null -> "Disponible"
+        else -> "$stockQuantity disponibles"
+    }
 }
