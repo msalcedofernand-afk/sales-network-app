@@ -39,4 +39,6 @@ La versión se prepara explícitamente y nunca durante la compilación:
 
 Las compilaciones `release` requieren una única clave de firma almacenada fuera del repositorio. En GitHub se configuran `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y `ANDROID_KEY_PASSWORD`.
 
+Los canales no interfieren: estable conserva `com.salesnetwork.avon.app` y solo cambia su versión al aprobar una entrega. Beta usa `com.salesnetwork.avon.app.beta`; cada ejecución de GitHub Actions recibe automáticamente `versionCode = 450000 + número de ejecución` y `versionName = <versión>-beta.<número de ejecución>`.
+
 Consulta `UI_UX_GUIA.md` para los criterios de experiencia y `docs/DEPLOYMENT.md` para publicar.

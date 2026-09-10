@@ -15,6 +15,10 @@ if (versionPropsFile.exists()) {
 val buildCode = versionProps.getProperty("versionCode")?.toIntOrNull() ?: 1
 val baseName = versionProps.getProperty("versionName") ?: "1.0.0"
 val betaNumber = versionProps.getProperty("betaNumber")?.toIntOrNull() ?: 1
+val ciBetaBuild = providers.environmentVariable("BETA_BUILD_NUMBER").orNull?.toIntOrNull()
+val effectiveBetaNumber = ciBetaBuild ?: betaNumber
+// Beta has a distinct package id, so it owns an independent monotonic code range.
+val betaBuildCode = ciBetaBuild?.let { 450_000 + it } ?: buildCode
 val gitSha = providers.environmentVariable("GITHUB_SHA").orNull?.take(7)
     ?: providers.gradleProperty("buildRevision").orNull?.take(24)
     ?: "local"
@@ -51,7 +55,8 @@ android {
         create("beta") {
             dimension = "channel"
             applicationIdSuffix = ".beta"
-            versionNameSuffix = "-beta.$betaNumber"
+            versionCode = betaBuildCode
+            versionName = "$baseName-beta.$effectiveBetaNumber"
             buildConfigField("String", "UPDATE_CHANNEL", "\"beta\"")
         }
     }
