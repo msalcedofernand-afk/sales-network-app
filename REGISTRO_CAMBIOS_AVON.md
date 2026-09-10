@@ -1,5 +1,34 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-09 - FASE 6: Offline Mode - Catálogo (v1.1.0)
+
+### Que se hizo
+1. **Room Database**:
+   - Tabla `cached_products` con campos: sku, name, brand, category, price, description, imageUrl, cachedAt
+   - Dao con métodos: getAll, getByCategory, search, insertAll, deleteAll, count
+
+2. **ProductCatalogRepository actualizado**:
+   - Carga datos de Room al iniciar (offline-first)
+   - Guarda en Room después de cada fetch exitoso de Supabase
+   - Mapeo entre entidades Room y dominio
+
+3. **Flujo offline**:
+   - Sin conexión: muestra productos cacheados
+   - Con conexión: actualiza cache automáticamente
+
+### Archivos modificados
+- `app/build.gradle.kts` (Room + KSP dependency)
+- `build.gradle.kts` (KSP plugin)
+- `app/src/main/java/com/salesnetwork/avon/app/data/ProductCatalogRepository.kt`
+- `app/src/main/java/com/salesnetwork/avon/app/data/local/AppDatabase.kt` (nuevo)
+- `app/src/main/java/com/salesnetwork/avon/app/data/local/CachedProduct.kt` (nuevo)
+- `app/src/main/java/com/salesnetwork/avon/app/data/local/ProductDao.kt` (nuevo)
+
+### Resultado del build
+- BUILD SUCCESSFUL (stable v1.1.0 code=41)
+
+---
+
 ## 2026-09-09 - FASE 5: Crash Reporting (v1.1.0)
 
 ### Que se hizo
