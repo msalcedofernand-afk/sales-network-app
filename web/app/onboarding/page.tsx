@@ -28,13 +28,7 @@ export default function OnboardingPage() {
     if (!teamName.trim()) return;
     setBusy("team"); setMessage("");
     const supabase = createClient();
-    let { error } = await supabase.functions.invoke("create-team", { body: { name: teamName.trim() } });
-    // Fallback transaccional: el RPC mantiene JWT/RLS y permite continuar si la Edge Function está en despliegue.
-    if (error) {
-      const fallback = await supabase.rpc("create_team_with_leader", { team_name: teamName.trim() });
-      if (!fallback.error) error = null;
-      else error = { message: fallback.error.message };
-    }
+    const { error } = await supabase.functions.invoke("create-team", { body: { name: teamName.trim() } });
     if (error) setMessage(await explainFunctionError(error, "No pudimos crear el equipo. Inténtalo nuevamente."));
     else router.replace("/catalogo");
     setBusy(null);
