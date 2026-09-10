@@ -1,36 +1,52 @@
 ﻿package com.salesnetwork.avon.app.data
 
 import android.content.Context
+import com.salesnetwork.avon.app.data.local.AppDatabase
+import com.salesnetwork.avon.app.data.local.CachedProduct
 import com.salesnetwork.avon.app.domain.model.Product
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.json.JSONArray
-import org.json.JSONObject
+import kotlinx.coroutines.launch
 
 class ProductCatalogRepository private constructor(context: Context) {
 
     private val remoteApi = SupabaseCatalogApi(context.applicationContext)
-    private val cache = context.getSharedPreferences("catalog_cache", Context.MODE_PRIVATE)
-    private val _products = MutableStateFlow(loadCache())
+    private val productDao = AppDatabase.getInstance(context).productDao()
+    private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> = _products.asStateFlow()
 
     private val _isScraping = MutableStateFlow(false)
     val isScraping: StateFlow<Boolean> = _isScraping.asStateFlow()
+
+    init {
+        CoroutineScope(Dispatchers.IO).launch {
+            loadFromCache()
+        }
+    }
+
+    private suspend fun loadFromCache() {
+        val cached = productDao.getAll()
+        if (cached.isNotEmpty()) {
+            _products.value = cached.map { it.toDomain() }
+        }
+    }
 
     suspend fun refreshFromSupabase(): Result<Int> = runCatching {
         _isScraping.value = true
         val products = remoteApi.fetchProducts()
         if (products.isNotEmpty()) {
             _products.value = products
-            saveCache(products)
+            saveToCache(products)
         }
         products.size
     }.also { _isScraping.value = false }
 
     fun searchProducts(query: String, category: String? = null): List<Product> {
         return _products.value.filter { product ->
-            val matchesQuery = query.isBlank() || 
+            val matchesQuery = query.isBlank() ||
                 product.name.contains(query, ignoreCase = true) ||
                 product.sku.contains(query, ignoreCase = true)
             val matchesCategory = category.isNullOrBlank() || category == "Todos" ||
@@ -39,33 +55,31 @@ class ProductCatalogRepository private constructor(context: Context) {
         }
     }
 
-    private fun loadCache(): List<Product> {
-        return runCatching {
-            val rows = JSONArray(cache.getString("products", "[]"))
-            buildList(rows.length()) {
-                for (index in 0 until rows.length()) {
-                    val row = rows.getJSONObject(index)
-                    add(Product(row.getString("id"), row.optString("sku"), row.optString("name"),
-                        row.optString("category", "Otros"), row.optDouble("price", 0.0),
-                        row.optString("imageUrl"), row.optString("description"),
-                        row.optString("sourceUrl")))
-                }
-            }
-        }.getOrDefault(emptyList())
+    private suspend fun saveToCache(products: List<Product>) {
+        productDao.deleteAll()
+        productDao.insertAll(products.map { it.toCached() })
     }
 
-    private fun saveCache(products: List<Product>) {
-        val rows = JSONArray()
-        products.forEach { product ->
-            rows.put(JSONObject().apply {
-                put("id", product.id); put("sku", product.sku); put("name", product.name)
-                put("category", product.category); put("price", product.price)
-                put("imageUrl", product.imageUrl); put("description", product.description)
-                put("sourceUrl", product.sourceUrl)
-            })
-        }
-        cache.edit().putString("products", rows.toString()).apply()
-    }
+    private fun CachedProduct.toDomain() = Product(
+        id = sku,
+        sku = sku,
+        name = name,
+        category = category,
+        price = price,
+        imageUrl = imageUrl,
+        description = description,
+        sourceUrl = ""
+    )
+
+    private fun Product.toCached() = CachedProduct(
+        sku = sku,
+        name = name,
+        brand = "",
+        category = category,
+        price = price,
+        description = description,
+        imageUrl = imageUrl
+    )
 
     companion object {
         @Volatile
