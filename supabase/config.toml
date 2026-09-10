@@ -23,3 +23,6 @@ verify_jwt = false
 verify_jwt = true
 [functions.send-order-summary]
 verify_jwt = true
+
+[functions.report-crash]
+verify_jwt = true

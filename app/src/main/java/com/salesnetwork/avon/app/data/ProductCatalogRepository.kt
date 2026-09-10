@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ProductCatalogRepository private constructor(context: Context) {
+class ProductCatalogRepository private constructor(private val context: Context) {
 
     private val remoteApi = SupabaseCatalogApi(context.applicationContext)
     private val productDao = AppDatabase.getInstance(context).productDao()
@@ -28,7 +28,8 @@ class ProductCatalogRepository private constructor(context: Context) {
     }
 
     private suspend fun loadFromCache() {
-        val cached = productDao.getAll()
+        val userId = SecureTokenStore(context).getSession()?.userId ?: return
+        val cached = productDao.getAll(userId)
         if (cached.isNotEmpty()) {
             _products.value = cached.map { it.toDomain() }
         }
@@ -56,12 +57,13 @@ class ProductCatalogRepository private constructor(context: Context) {
     }
 
     private suspend fun saveToCache(products: List<Product>) {
-        productDao.deleteAll()
-        productDao.insertAll(products.map { it.toCached() })
+        val userId = SecureTokenStore(context).getSession()?.userId ?: return
+        productDao.replaceForUser(userId, products.map { it.toCached(userId) })
     }
 
     private fun CachedProduct.toDomain() = Product(
-        id = sku,
+        id = id,
+        teamId = teamId,
         sku = sku,
         name = name,
         category = category,
@@ -71,14 +73,18 @@ class ProductCatalogRepository private constructor(context: Context) {
         sourceUrl = ""
     )
 
-    private fun Product.toCached() = CachedProduct(
+    private fun Product.toCached(userId: String) = CachedProduct(
+        id = id,
+        teamId = teamId,
+        userId = userId,
         sku = sku,
         name = name,
         brand = "",
         category = category,
         price = price,
         description = description,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
+        updatedAt = ""
     )
 
     companion object {

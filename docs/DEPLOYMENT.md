@@ -46,6 +46,12 @@ En Supabase Auth añade como redirect URLs `https://sales-network-app.vercel.app
 
 Después del despliegue, crea dos usuarios en equipos distintos y verifica que cada uno solo pueda leer sus propios clientes, productos, carritos y pedidos. Esa prueba debe ejecutarse con usuarios reales autenticados, nunca con `service_role` desde el navegador.
 
+## Publicación 1.2.0
+
+Antes de enviar `beta`, guarda en GitHub Secrets la misma clave de firma para los dos canales: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y `ANDROID_KEY_PASSWORD`. Conserva una copia recuperable del keystore fuera de GitHub. El workflow compila `assembleBetaRelease` o `assembleStableRelease`, verifica la firma y genera el SHA-256 del manifiesto desde el APK producido.
+
+El manifiesto no se escribe durante el build. Ejecuta `scripts/prepare-release.ps1` antes del commit y el workflow completa `sha256` y `releasedAt` al publicar el APK. No promociones `beta` a `main` ni crees el tag `v1.2.0` hasta aceptar la beta con dos equipos reales.
+
 Proyectos remotos creados:
 
 - GitHub: https://github.com/msalcedofernand-afk/sales-network-app

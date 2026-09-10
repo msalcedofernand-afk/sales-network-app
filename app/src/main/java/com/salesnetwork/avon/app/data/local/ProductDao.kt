@@ -7,8 +7,8 @@ import androidx.room.Query
 
 @Dao
 interface ProductDao {
-    @Query("SELECT * FROM cached_products ORDER BY name ASC")
-    suspend fun getAll(): List<CachedProduct>
+    @Query("SELECT * FROM cached_products WHERE userId = :userId ORDER BY name ASC")
+    suspend fun getAll(userId: String): List<CachedProduct>
 
     @Query("SELECT * FROM cached_products WHERE category = :category ORDER BY name ASC")
     suspend fun getByCategory(category: String): List<CachedProduct>
@@ -19,9 +19,15 @@ interface ProductDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(products: List<CachedProduct>)
 
-    @Query("DELETE FROM cached_products")
-    suspend fun deleteAll()
+    @Query("DELETE FROM cached_products WHERE userId = :userId")
+    suspend fun deleteAll(userId: String)
 
     @Query("SELECT COUNT(*) FROM cached_products")
     suspend fun count(): Int
+
+    @androidx.room.Transaction
+    suspend fun replaceForUser(userId: String, products: List<CachedProduct>) {
+        deleteAll(userId)
+        insertAll(products)
+    }
 }

@@ -1,8 +1,11 @@
 {
-    "versionCode": 43,
-    "versionName": "1.2.0",
-    "channel": "stable",
-    "apkUrl": "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/main/releases/sales-network-stable.apk",
-    "releaseNotes": "Versión estable actualizada. Mejoras de rendimiento y correcciones.",
-    "mandatory": true
+  "schemaVersion": 1,
+  "versionCode": 45,
+  "versionName": "1.2.0",
+  "channel": "stable",
+  "apkUrl": "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/main/releases/sales-network-stable.apk",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "minSupportedVersionCode": 45,
+  "releasedAt": null,
+  "releaseNotes": ["Sesión, actualizaciones e invitaciones reforzadas.", "Caché offline cifrada y aislada por equipo."]
 }

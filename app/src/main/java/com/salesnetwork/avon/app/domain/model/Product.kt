@@ -10,5 +10,6 @@ data class Product(
     val description: String,
     val sourceUrl: String = "",
     val usageMode: String = "Aplicar sobre la piel limpia con suaves masajes circulares.",
-    val stockAvailable: Int = 15
+    val stockAvailable: Int = 15,
+    val teamId: String = ""
 )

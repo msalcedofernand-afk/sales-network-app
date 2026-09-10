@@ -13,7 +13,7 @@ class SupabaseCatalogApi(context: Context) {
 
     suspend fun fetchProducts(): List<Product> = withContext(Dispatchers.IO) {
         val token = secureTokenStore.get() ?: return@withContext emptyList()
-        val endpoint = URL("https://xceqwexdufdgnmctsxcg.supabase.co/rest/v1/products?select=id,sku,name,category,price_cents,currency,image_url,description,source_url,available&order=name")
+        val endpoint = URL("https://xceqwexdufdgnmctsxcg.supabase.co/rest/v1/products?select=id,team_id,sku,name,category,price_cents,currency,image_url,description,source_url,available,updated_at&order=name")
         val connection = (endpoint.openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
             connectTimeout = 8_000
@@ -36,6 +36,7 @@ class SupabaseCatalogApi(context: Context) {
                 if (!row.optBoolean("available", true)) continue
                 add(Product(
                     id = row.getString("id"),
+                    teamId = row.getString("team_id"),
                     sku = row.optString("sku"),
                     name = row.optString("name"),
                     category = row.optString("category", "Otros"),
