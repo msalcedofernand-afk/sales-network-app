@@ -2,6 +2,8 @@
 
 Las Edge Functions aceptan JSON y devuelven `{ error: string }` en fallos. Las funciones protegidas exigen `Authorization: Bearer <supabase_access_token>`.
 
+Las funciones llamadas desde navegador responden preflight CORS y aceptan únicamente los orígenes configurados en `WEB_ALLOWED_ORIGINS`, localhost de desarrollo y previews reconocidos del proyecto Vercel. Los errores públicos usan códigos estables y no incluyen mensajes internos de PostgreSQL.
+
 Implementadas como base:
 
 - `create-invitation`: líder → `{ team_id, expires_at, max_uses }`.

@@ -1,5 +1,12 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-10 — Acceso web seguro a Edge Functions e inventario importable
+
+- **Qué:** todas las Edge Functions comparten preflight CORS con allowlist, devuelven errores públicos sin detalles SQL y el importador admite `stock_quantity`, origen controlado y fallos de galería.
+- **Por qué:** corregir “Failed to send a request to the Edge Function”, igualar permisos de administradores y activar el control real de existencias.
+- **Archivos:** `supabase/functions/**`, `.env.example`, `docs/API.md`.
+- **Resultado:** código preparado localmente; el despliegue remoto requiere `SUPABASE_ACCESS_TOKEN` y configurar `WEB_ALLOWED_ORIGINS`.
+
 ## 2026-09-10 — Compresión de comprobantes
 
 - Se añadió un compresor Android para fotos de comprobantes antes de subirlas.

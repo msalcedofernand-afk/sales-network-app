@@ -1,4 +1,4 @@
-import { adminClient, json, user } from "../_shared/http.ts";
+import { preflight, adminClient, json, user } from "../_shared/http.ts";
 
 const MAX_STACKTRACE_BYTES = 32 * 1024;
 const allowedDeviceFields = new Set(["model", "os_version", "sdk"]);
@@ -12,15 +12,17 @@ function cleanText(value: unknown, max: number): string {
 }
 
 Deno.serve(async req => {
-  if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
+  const preflightResponse = preflight(req);
+  if (preflightResponse) return preflightResponse;
+  if (req.method !== "POST") return json(req, { error: "method_not_allowed" }, 405);
   const authenticatedUser = await user(req);
-  if (!authenticatedUser) return json({ error: "unauthorized" }, 401);
+  if (!authenticatedUser) return json(req, { error: "unauthorized" }, 401);
 
   let body: Record<string, unknown>;
-  try { body = await req.json(); } catch { return json({ error: "invalid_json" }, 400); }
+  try { body = await req.json(); } catch { return json(req, { error: "invalid_json" }, 400); }
   const stacktrace = cleanText(body.stacktrace, MAX_STACKTRACE_BYTES);
   const stackBytes = new TextEncoder().encode(stacktrace).byteLength;
-  if (!stacktrace || stackBytes > MAX_STACKTRACE_BYTES) return json({ error: "invalid_stacktrace" }, 413);
+  if (!stacktrace || stackBytes > MAX_STACKTRACE_BYTES) return json(req, { error: "invalid_stacktrace" }, 413);
 
   const admin = adminClient();
   const { data: allowed, error: limitError } = await admin.rpc("consume_edge_rate_limit", {
@@ -29,12 +31,12 @@ Deno.serve(async req => {
     input_limit: 10,
     input_window_seconds: 3600,
   });
-  if (limitError) return json({ error: "rate_limit_unavailable" }, 503);
-  if (!allowed) return json({ error: "rate_limited" }, 429);
+  if (limitError) return json(req, { error: "rate_limit_unavailable" }, 503);
+  if (!allowed) return json(req, { error: "rate_limited" }, 429);
 
   const { data: membership } = await admin.from("team_members")
     .select("team_id").eq("user_id", authenticatedUser.id).limit(1).maybeSingle();
-  if (!membership) return json({ error: "team_membership_required" }, 403);
+  if (!membership) return json(req, { error: "team_membership_required" }, 403);
 
   const rawDevice = body.device_info && typeof body.device_info === "object" ? body.device_info as Record<string, unknown> : {};
   const deviceInfo = Object.fromEntries(Object.entries(rawDevice)
@@ -53,8 +55,8 @@ Deno.serve(async req => {
     device_info: deviceInfo,
   };
   if (!record.app_version || !Number.isInteger(record.version_code) || record.version_code < 1) {
-    return json({ error: "invalid_version" }, 400);
+    return json(req, { error: "invalid_version" }, 400);
   }
   const { error } = await admin.from("crash_reports").insert(record);
-  return error ? json({ error: "crash_not_stored" }, 500) : json({ success: true }, 201);
+  return error ? json(req, { error: "crash_not_stored" }, 500) : json(req, { success: true }, 201);
 });
