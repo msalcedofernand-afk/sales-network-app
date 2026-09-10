@@ -13,7 +13,7 @@ import org.json.JSONObject
 
 class SupabaseOrderApi(context: Context) {
     private val secureTokenStore = SecureTokenStore(context)
-    private val base = "https://xceqwexdufdgnmctsxcg.supabase.co"
+    private val base = SupabaseConfig.BASE_URL
     private val token get() = secureTokenStore.get()
 
     suspend fun fetch(): List<Order> = withContext(Dispatchers.IO) {
@@ -45,7 +45,7 @@ class SupabaseOrderApi(context: Context) {
                 doOutput = true
                 connectTimeout = 8_000
                 readTimeout = 8_000
-                setRequestProperty("apikey", ANON_KEY)
+                setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY)
                 setRequestProperty("Authorization", "Bearer $auth")
                 setRequestProperty("Content-Type", "application/json")
                 setRequestProperty("Accept", "application/json")
@@ -63,7 +63,7 @@ class SupabaseOrderApi(context: Context) {
     private fun request(path: String, auth: String): String {
         val connection = (URL(base + path).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"; connectTimeout = 8_000; readTimeout = 8_000
-            setRequestProperty("apikey", ANON_KEY); setRequestProperty("Authorization", "Bearer " + auth); setRequestProperty("Accept", "application/json")
+            setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY); setRequestProperty("Authorization", "Bearer " + auth); setRequestProperty("Accept", "application/json")
         }
         val response = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)?.bufferedReader()?.use { it.readText() }.orEmpty()
         if (connection.responseCode !in 200..299) error("No pudimos cargar los pedidos")
@@ -71,7 +71,4 @@ class SupabaseOrderApi(context: Context) {
         return response
     }
 
-    companion object {
-        private const val ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjZXE3ZXhkdWZkZ25tY3RzeGNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MzgxMjgsImV4cCI6MjEwNDQxNDEyOH0.LqPTMoS3Q1-zdsOX9CMOahMynB5XAl-AxsjrVxSlse8"
-    }
 }

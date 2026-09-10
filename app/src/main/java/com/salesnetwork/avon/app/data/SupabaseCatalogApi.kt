@@ -13,12 +13,12 @@ class SupabaseCatalogApi(context: Context) {
 
     suspend fun fetchProducts(): List<Product> = withContext(Dispatchers.IO) {
         val token = secureTokenStore.get() ?: return@withContext emptyList()
-        val endpoint = URL("https://xceqwexdufdgnmctsxcg.supabase.co/rest/v1/products?select=id,team_id,sku,name,category,price_cents,currency,image_url,description,source_url,available,updated_at&order=name")
+        val endpoint = URL(SupabaseConfig.BASE_URL + "/rest/v1/products?select=id,team_id,sku,name,category,price_cents,currency,image_url,description,source_url,available,updated_at&order=name")
         val connection = (endpoint.openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
             connectTimeout = 8_000
             readTimeout = 8_000
-            setRequestProperty("apikey", ANON_KEY)
+            setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY)
             setRequestProperty("Authorization", "Bearer $token")
             setRequestProperty("Accept", "application/json")
         }
@@ -49,7 +49,4 @@ class SupabaseCatalogApi(context: Context) {
         }
     }
 
-    companion object {
-        private const val ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjZXE3ZXhkdWZkZ25tY3RzeGNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MzgxMjgsImV4cCI6MjEwNDQxNDEyOH0.LqPTMoS3Q1-zdsOX9CMOahMynB5XAl-AxsjrVxSlse8"
-    }
 }

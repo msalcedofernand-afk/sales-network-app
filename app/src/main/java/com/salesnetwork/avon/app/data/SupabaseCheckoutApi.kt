@@ -13,7 +13,7 @@ import java.net.URLEncoder
 class SupabaseCheckoutApi(context: Context) {
     private val secureTokenStore = SecureTokenStore(context)
     private val checkoutPrefs = context.getSharedPreferences("checkout_attempts", Context.MODE_PRIVATE)
-    private val base = "https://xceqwexdufdgnmctsxcg.supabase.co"
+    private val base = SupabaseConfig.BASE_URL
     private val token get() = secureTokenStore.get()
 
     suspend fun checkout(userId: String, customerId: String, items: List<OrderItem>): Result<Unit> = withContext(Dispatchers.IO) {
@@ -50,7 +50,7 @@ class SupabaseCheckoutApi(context: Context) {
     private fun request(path: String, method: String, auth: String, payload: String? = null, prefer: String? = null): String {
         val connection = (URL(base + path).openConnection() as HttpURLConnection).apply {
             requestMethod = method; connectTimeout = 8_000; readTimeout = 15_000; doOutput = payload != null
-            setRequestProperty("apikey", ANON_KEY); setRequestProperty("Authorization", "Bearer " + auth); setRequestProperty("Content-Type", "application/json")
+            setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY); setRequestProperty("Authorization", "Bearer " + auth); setRequestProperty("Content-Type", "application/json")
             prefer?.let { setRequestProperty("Prefer", it) }
         }
         payload?.let { connection.outputStream.use { stream -> stream.write(it.toByteArray()) } }
@@ -60,5 +60,4 @@ class SupabaseCheckoutApi(context: Context) {
         return response
     }
 
-    companion object { private const val ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjZXE3ZXhkdWZkZ25tY3RzeGNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MzgxMjgsImV4cCI6MjEwNDQxNDEyOH0.LqPTMoS3Q1-zdsOX9CMOahMynB5XAl-AxsjrVxSlse8" }
 }
