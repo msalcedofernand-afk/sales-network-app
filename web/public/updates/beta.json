@@ -1,9 +1,8 @@
 {
-    "versionCode": 37,
-    "versionName": "1.1.0",
+    "versionCode": 44,
+    "versionName": "1.2.0",
     "channel": "beta",
-    "apkUrl": "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/beta/releases/SalesNetworkAvon-v1.1.0-beta.apk",
-    "releaseNotes": "Beta: codigo de referido unico, expiracion 90 dias.",
-    "mandatory": false,
-    "minVersionCode": 0
+    "apkUrl": "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/beta/releases/sales-network-beta.apk",
+    "releaseNotes": "Versión beta con cambios experimentales.",
+    "mandatory": true
 }
