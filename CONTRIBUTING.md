@@ -1,45 +1,31 @@
-# Contribuir
+# Contribuir a Sales Network
 
-## Flujo de Ramas
+## Flujo de ramas
 
-```
-feature/* ──→ develop ──→ beta ──→ main
-```
+- `feature/*`: cambios pequeños y aislados.
+- `develop`: integración diaria.
+- `beta`: validación cerrada y APK beta.
+- `main`: producción estable; solo recibe Pull Requests aprobados.
 
-### Ramas
-- `main`: Producción estable. Solo via PR desde `beta`.
-- `beta`: Pruebas y desarrollo activo. Commits directos permitidos.
-- `develop`: Integración local. Features se mergean aquí primero.
-- `feature/*`, `fix/*`, `chore/*`: Ramas de trabajo desde `develop`.
+Cada Pull Request debe explicar el problema, el cambio, las pruebas ejecutadas y cualquier migración requerida. No se deben subir secretos, APK personales, bases locales, capturas con datos reales ni archivos `.env`.
 
-## Después de Cada Cambio
+## Desarrollo local
 
-1. **Commit** con formato: `tipo: descripción corta`
-   - Tipos: `feat`, `fix`, `chore`, `docs`, `refactor`
-2. **Push** a `develop`
-3. **Merge** a `beta`:
-   ```bash
-   git checkout beta
-   git merge develop
-   git push origin beta
-   git checkout develop
-   ```
+1. Clona el repositorio privado y abre la carpeta del proyecto.
+2. Ejecuta `npm ci` dentro de `web/`.
+3. Configura las variables públicas en `web/.env.local` usando `.env.example`.
+4. Ejecuta `npm run build` y las pruebas Playwright cuando correspondan.
+5. Para Android usa `gradlew.bat` y un emulador o dispositivo de prueba.
 
-## Para Release a Producción
+## Commits y revisión
 
-1. Crear **PR** de `beta` → `main`
-2. Después del merge:
-   ```bash
-   git checkout main
-   git tag v{versionName}
-   git push origin v{versionName}
-   git checkout develop
-   ```
+Usa mensajes imperativos y claros, por ejemplo `fix: validar invitación vencida`. Antes de solicitar revisión ejecuta el build del sabor afectado, lint y las pruebas relevantes. Las migraciones SQL deben ser reintentables y revisarse contra el historial remoto antes de desplegarlas.
 
-## Reglas
+## Checklist del Pull Request
 
-- No hacer commits directos a `main`
-- Todo cambio debe actualizar `REGISTRO_CAMBIOS_AVON.md`
-- Ejecutar build Android antes de push
-- No incluir `.env`, keystores, claves administrativas ni datos reales
-- Migraciones de base de datos deben ser aditivas y versionadas
+- [ ] No hay secretos ni datos reales.
+- [ ] Se actualizaron documentos y changelog si aplica.
+- [ ] Se revisaron permisos RLS y validación server-side.
+- [ ] Pasan build, lint y pruebas del área modificada.
+- [ ] Se verificó responsive o adaptación Android si cambió UI.
+- [ ] Se indicó cómo revertir o migrar el cambio.
