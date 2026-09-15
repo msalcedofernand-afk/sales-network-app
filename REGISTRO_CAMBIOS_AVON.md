@@ -1,5 +1,13 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-15 — Dev Inspector web para revisión beta
+
+- **Qué:** se añadió un inspector local para builds de desarrollo/beta que permite activar selección de componentes, consultar ruta, ID, tipo, dimensiones, contenido y nombre accesible, capturar evidencia, registrar incidencias JSONL y exportar un ZIP.
+- **Por qué:** facilitar la revisión pantalla por pantalla y dejar evidencia reproducible antes y después de corregir problemas visuales, funcionales y de accesibilidad.
+- **Seguridad:** el inspector se habilita solo con `NEXT_PUBLIC_ENABLE_DEV_INSPECTOR=true` o durante desarrollo; las capturas permanecen en el navegador y no se envían automáticamente a Supabase. Se limita la información a datos sanitizados del DOM.
+- **Archivos:** `web/app/components/DevInspector.tsx`, `web/app/layout.tsx`, `web/app/catalogo/page.tsx`, `web/app/globals.css`, `web/package.json`, `web/package-lock.json`, `.env.example`.
+- **Resultado:** `npm run build` correcto en `web/`.
+
 ## 2026-09-10 — Pedidos auditables con comprobantes y devoluciones
 
 - **Qué:** web y Android usan `transition_order_status_v2`; se añadieron cobro, método, comprobante comprimido, evidencia opcional de entrega, cancelación y devolución con motivo.

@@ -138,8 +138,8 @@ export default function CatalogPage() {
             const image = productImage(product);
             const canAdd = product.available && product.stock_quantity !== 0;
             return (
-              <article className="product-card" key={product.id}>
-                <div className="product-image">
+              <article className="product-card" key={product.id} data-inspectable="true" data-inspector-id={`product-card-${product.id}`} data-inspector-type="product-card">
+                <div className="product-image" data-inspectable="true" data-inspector-id={`product-image-${product.id}`} data-inspector-type="product-image">
                   {image
                     ? <img src={image} alt={product.name} loading="lazy" width="640" height="640" />
                     : <span aria-hidden="true">{product.name.slice(0, 1)}</span>}
@@ -149,10 +149,10 @@ export default function CatalogPage() {
                     <span className="badge">{product.category ?? "Sin categoría"}</span>
                     <span className="muted">{stockLabel(product)}</span>
                   </div>
-                  <h2>{product.name}</h2>
+                  <h2 data-inspectable="true" data-inspector-id={`product-name-${product.id}`} data-inspector-type="text">{product.name}</h2>
                   <p className="muted">SKU {product.sku}</p>
                   <p className="product-description">{product.description || "Descripción por completar."}</p>
-                  <strong>{money(product.price_cents, product.currency)}</strong>
+                  <strong data-inspectable="true" data-inspector-id={`product-price-${product.id}`} data-inspector-type="price">{money(product.price_cents, product.currency)}</strong>
                   <div className="button-row">
                     <Link className="button secondary" href={`/catalogo/${product.slug}`}>Ver ficha</Link>
                     <button disabled={!canAdd || addingId === product.id} onClick={() => void addToCart(product)}>
