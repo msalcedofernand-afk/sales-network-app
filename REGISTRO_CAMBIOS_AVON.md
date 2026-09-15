@@ -1,5 +1,13 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-15 — APK beta descargable desde este repositorio
+
+- **Qué:** se publicará `releases/sales-network-beta.apk` en la rama `beta` y se actualizarán el README y el manifiesto beta para descargarlo desde este repositorio.
+- **Por qué:** el repositorio externo de releases permite lectura, pero rechazó el push por falta de permisos de escritura.
+- **Versión:** `1.2.0-beta.1`, código `45`, paquete `com.salesnetwork.avon.app.beta`.
+- **SHA-256:** `9922edef6af038d1db4d22d4b6bb8dd29b6274e1ecdaa0d224d1bdbba9289680`.
+- **Resultado:** pendiente de completar el push de la APK.
+
 ## 2026-09-15 — Descarga directa de APK beta en README
 
 - **Qué:** se añadió al README un enlace público para descargar directamente la última APK beta desde el repositorio de releases.

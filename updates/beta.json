@@ -3,9 +3,9 @@
   "versionCode": 45,
   "versionName": "1.2.0-beta.1",
   "channel": "beta",
-  "apkUrl": "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/beta/releases/sales-network-beta.apk",
-  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "apkUrl": "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app/beta/releases/sales-network-beta.apk",
+  "sha256": "9922edef6af038d1db4d22d4b6bb8dd29b6274e1ecdaa0d224d1bdbba9289680",
   "minSupportedVersionCode": 45,
-  "releasedAt": null,
-  "releaseNotes": ["Sesión, actualizaciones e invitaciones reforzadas.", "Caché offline cifrada y aislada por equipo."]
+  "releasedAt": "2026-09-15T17:47:00Z",
+  "releaseNotes": ["Dev Inspector Android y web para revisión beta.", "Capturas y exportación de incidencias en JSONL y ZIP."]
 }
