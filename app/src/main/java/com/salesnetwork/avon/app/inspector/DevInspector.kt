@@ -142,7 +142,12 @@ private fun exportReport(context: Context) {
     val zipFile = File(context.cacheDir, "inspector").apply { mkdirs() }.resolve("sales-network-inspector-${System.currentTimeMillis()}.zip")
     ZipOutputStream(FileOutputStream(zipFile)).use { zip ->
         source.listFiles()?.forEach { file ->
-            zip.putNextEntry(ZipEntry(file.name))
+            val entryName = if (file.extension.equals("png", ignoreCase = true)) {
+                "screenshots/android/${file.name}"
+            } else {
+                file.name
+            }
+            zip.putNextEntry(ZipEntry(entryName))
             file.inputStream().use { it.copyTo(zip) }
             zip.closeEntry()
         }

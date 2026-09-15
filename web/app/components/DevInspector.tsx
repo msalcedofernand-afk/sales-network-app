@@ -149,8 +149,8 @@ export default function DevInspector() {
       route: location.pathname, elementId: selected.id, issueType: type, severity, status: "open",
       title: title.trim().slice(0, 160), description: description.trim().slice(0, 2000),
       expected: expected.trim().slice(0, 1000), actual: actual.trim().slice(0, 1000),
-      screenshotFile: screenshot ? `screenshots/web/${selected.id}-${Date.now()}.png` : undefined,
-      fullScreenshotFile: fullScreenshot ? `screenshots/web/full-${Date.now()}.png` : undefined,
+      screenshotFile: screenshot ? "screenshots/web/current-element.png" : undefined,
+      fullScreenshotFile: fullScreenshot ? "screenshots/web/current-page.png" : undefined,
       createdAt: new Date().toISOString(), appVersion: process.env.NEXT_PUBLIC_APP_VERSION ?? "unknown",
     };
     setIssues(current => [...current, issue]);
