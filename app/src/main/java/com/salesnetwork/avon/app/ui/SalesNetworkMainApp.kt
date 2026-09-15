@@ -450,6 +450,7 @@ private fun FloatingNavIcon(
         modifier = Modifier
             .width(72.dp)
             .height(56.dp)
+            .inspectable("navigation:$label", "navigation", label)
             .semantics {
                 selected = isSelected
                 role = Role.Tab

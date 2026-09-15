@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.view.View
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,8 +15,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +28,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect as ComposeRect
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -50,15 +56,23 @@ data class InspectorTarget(
 
 object DevInspectorState {
     private val bounds = mutableMapOf<String, ComposeRect>()
+    var active by mutableStateOf(false)
+        private set
     var selected by mutableStateOf<InspectorTarget?>(null)
         private set
 
     fun select(target: InspectorTarget) {
+        if (!active) return
         selected = target
     }
 
     fun clear() {
         selected = null
+    }
+
+    fun toggle() {
+        active = !active
+        if (!active) selected = null
     }
 
     fun recordBounds(id: String, value: ComposeRect) {
@@ -84,39 +98,76 @@ fun Modifier.inspectable(id: String, type: String, content: String = ""): Modifi
 @Composable
 fun DevInspectorOverlay() {
     if (!BuildConfig.DEBUG) return
-    val target = DevInspectorState.selected ?: return
     val context = LocalContext.current
     val view = LocalView.current
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomEnd) {
-        Surface(
+        if (!DevInspectorState.active) {
+            Button(onClick = DevInspectorState::toggle, modifier = Modifier.padding(16.dp)) { Text("Inspector") }
+        } else if (DevInspectorState.selected == null) {
+            Surface(modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.tertiaryContainer) {
+                Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("Inspector activo · mantén pulsado un componente")
+                    Button(onClick = DevInspectorState::toggle) { Text("Salir") }
+                }
+            }
+        } else {
+            val target = DevInspectorState.selected!!
+            Canvas(Modifier.fillMaxSize()) {
+                drawRect(
+                    color = Color(0xFFE39A26),
+                    topLeft = Offset(target.bounds.left, target.bounds.top),
+                    size = androidx.compose.ui.geometry.Size(target.bounds.width, target.bounds.height),
+                    style = Stroke(width = 4f)
+                )
+            }
+            Surface(
             modifier = Modifier.padding(16.dp).widthIn(max = 340.dp),
             color = MaterialTheme.colorScheme.surface,
             border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
             shadowElevation = 12.dp
-        ) {
+            ) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Dev Inspector", style = MaterialTheme.typography.titleMedium)
                 Text("${target.type} · ${target.id}", style = MaterialTheme.typography.bodyMedium)
                 if (target.content.isNotBlank()) Text(target.content.take(180), style = MaterialTheme.typography.bodySmall)
+                var title by androidx.compose.runtime.remember { mutableStateOf("Revisión de ${target.type}") }
+                var description by androidx.compose.runtime.remember { mutableStateOf("") }
+                var issueType by androidx.compose.runtime.remember { mutableStateOf("layout") }
+                var severity by androidx.compose.runtime.remember { mutableStateOf("P2") }
+                OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Título") }, singleLine = true)
+                OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Descripción") }, minLines = 2)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { saveEvidence(context, view, target) }) { Text("Capturar") }
+                    OutlinedTextField(value = issueType, onValueChange = { issueType = it }, label = { Text("Tipo") }, singleLine = true, modifier = Modifier.weight(1f))
+                    OutlinedTextField(value = severity, onValueChange = { severity = it }, label = { Text("Prioridad") }, singleLine = true, modifier = Modifier.weight(1f))
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = { saveEvidence(context, view, target, title, description, issueType, severity) }) { Text("Guardar") }
                     Button(onClick = { exportReport(context) }) { Text("Exportar") }
                     Button(onClick = DevInspectorState::clear) { Text("Cerrar") }
                 }
             }
+        }
         }
     }
 }
 
 private fun inspectorDirectory(context: Context): File = File(context.filesDir, "inspector").apply { mkdirs() }
 
-private fun saveEvidence(context: Context, view: View, target: InspectorTarget) {
+private fun saveEvidence(context: Context, view: View, target: InspectorTarget, title: String, description: String, issueType: String, severity: String) {
     val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
     view.draw(Canvas(bitmap))
     val safeId = target.id.replace(Regex("[^A-Za-z0-9_.-]"), "_").take(80)
     val imageName = "$safeId-${System.currentTimeMillis()}.png"
+    val crop = target.bounds.let { bounds ->
+        val left = bounds.left.toInt().coerceIn(0, bitmap.width)
+        val top = bounds.top.toInt().coerceIn(0, bitmap.height)
+        val right = bounds.right.toInt().coerceIn((left + 1).coerceAtMost(bitmap.width), bitmap.width)
+        val bottom = bounds.bottom.toInt().coerceIn((top + 1).coerceAtMost(bitmap.height), bitmap.height)
+        Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
+    }
     val imageFile = File(inspectorDirectory(context), imageName)
-    imageFile.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    imageFile.outputStream().use { crop.compress(Bitmap.CompressFormat.PNG, 100, it) }
+    crop.recycle()
     bitmap.recycle()
     val issue = JSONObject().apply {
         put("id", UUID.randomUUID().toString())
@@ -124,11 +175,11 @@ private fun saveEvidence(context: Context, view: View, target: InspectorTarget) 
         put("platform", "android")
         put("screen", target.id.substringBefore(':'))
         put("elementId", target.id)
-        put("issueType", "review")
-        put("severity", "P2")
+        put("issueType", issueType.take(40))
+        put("severity", severity.take(10))
         put("status", "open")
-        put("title", "Revisión de ${target.type}")
-        put("description", "Incidencia pendiente de completar por QA")
+        put("title", title.take(160))
+        put("description", description.take(2000))
         put("screenshotFile", "screenshots/android/$imageName")
         put("appVersion", BuildConfig.VERSION_NAME)
         put("buildRevision", BuildConfig.BUILD_REVISION)

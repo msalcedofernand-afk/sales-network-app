@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.salesnetwork.avon.app.domain.model.Product
 import com.salesnetwork.avon.app.ui.*
+import com.salesnetwork.avon.app.inspector.inspectable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +49,8 @@ fun CatalogScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(S.M),
+            .padding(S.M)
+            .inspectable("catalog:screen", "screen", "Catálogo de productos"),
         verticalArrangement = Arrangement.spacedBy(S.SM)
     ) {
         SectionIntro("VV / Colecciones", "Encuentra tu proxima venta", "${products.size} productos para explorar y compartir.")
@@ -157,7 +159,7 @@ fun CatalogScreen(
 @Composable
 private fun ProductCard(product: Product, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().inspectable("catalog:product:${product.id}", "product-card", product.name),
         shape = SH.Card,
         border = B.cardBorder(),
         elevation = CardDefaults.cardElevation(S.ElevationNone),
@@ -177,7 +179,7 @@ private fun ProductCard(product: Product, onClick: () -> Unit) {
             Column(modifier = Modifier.padding(S.M), verticalArrangement = Arrangement.spacedBy(S.XS)) {
                 StatusBadge(text = product.category, color = MaterialTheme.colorScheme.primary, backgroundColor = MaterialTheme.colorScheme.primaryContainer)
 
-                Text(product.name, fontWeight = FontWeight.Bold, fontSize = S.TextBody, maxLines = 2, minLines = 2)
+                Text(product.name, modifier = Modifier.inspectable("catalog:name:${product.id}", "text", product.name), fontWeight = FontWeight.Bold, fontSize = S.TextBody, maxLines = 2, minLines = 2)
 
                 Text("SKU: ${product.sku}", fontSize = S.TextCaption, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
@@ -195,6 +197,7 @@ private fun ProductCard(product: Product, onClick: () -> Unit) {
                 ) {
                     Text(
                         "S/ ${String.format("%.2f", product.price)}",
+                        modifier = Modifier.inspectable("catalog:price:${product.id}", "price", "S/ ${String.format("%.2f", product.price)}"),
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = S.TextTitle,
                         color = MaterialTheme.colorScheme.primary

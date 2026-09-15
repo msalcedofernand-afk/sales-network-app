@@ -15,6 +15,7 @@
 - **Archivos:** `app/src/main/java/com/salesnetwork/avon/app/inspector/DevInspector.kt`, `MainActivity.kt`, `SalesNetworkMainApp.kt`, `app/src/main/res/xml/update_file_paths.xml`.
 - **Resultado:** pendiente de validar con Gradle Android en este entorno.
 - **Corrección:** las rutas de capturas declaradas en JSONL ahora coinciden con los archivos incluidos en la exportación ZIP.
+- **Ampliación Android:** el panel debug permite activar/desactivar el modo inspector, seleccionar tarjetas, nombres, precios y navegación, resaltar el área seleccionada y completar tipo, prioridad, título y descripción antes de guardar.
 
 ## 2026-09-10 — Pedidos auditables con comprobantes y devoluciones
 
