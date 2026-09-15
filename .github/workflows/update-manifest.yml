@@ -2,6 +2,7 @@ name: Validate update channels
 
 on:
   pull_request:
+    branches: [main, beta]
     paths:
       - "updates/**"
       - "app/build.gradle.kts"
@@ -11,9 +12,17 @@ on:
       - "updates/**"
       - "app/build.gradle.kts"
 
+concurrency:
+  group: update-manifest-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   manifest:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Validate stable and beta manifests

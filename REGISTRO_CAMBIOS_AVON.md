@@ -81,3 +81,34 @@
 - Validación: `npm run build`, `testDebugUnitTest` y `assembleDebug` correctos. APK de prueba actualizado a versionCode 28.
 - Actualizador: el APK generado contiene el detector de versiones; el manifiesto estable apunta a versionCode 28 y beta a 29.
 - Beta: generado APK versionCode 29 para validar el aviso de actualización desde la rama `beta`; `main` conserva el APK estable 28.
+
+## 2026-09-15 - Optimización de costo en GitHub Actions (CI)
+
+### Que se hizo
+1. **Ejecución selectiva por impacto**:
+   - Se agregaron filtros por ramas y `paths` en CI para no correr el workflow cuando los cambios no afectan Android/Web.
+2. **Cancelación de ejecuciones redundantes**:
+   - Se agregó `concurrency` con `cancel-in-progress: true` en `ci.yml` y `update-manifest.yml`.
+3. **CI ligera vs completa**:
+   - Android y Web ahora se dividen en jobs para PR (rápido) y push a ramas principales (completo).
+4. **Optimización de dependencias web**:
+   - `npm install` se reemplazó por `npm ci` en CI para instalaciones más rápidas y reproducibles.
+5. **Control de consumo por job**:
+   - Se definieron `timeout-minutes` para cortar ejecuciones colgadas.
+6. **Revisión de jobs lentos**:
+   - Se revisaron runs recientes de Actions para identificar etapas costosas y priorizar optimización sobre pipelines de PR.
+7. **Runner strategy**:
+   - Se mantuvo Android en Windows por dependencia actual de `gradlew.bat` (uso estricto y acotado).
+   - Web y validación de manifiestos continúan en Linux para reducir costo.
+8. **Escalabilidad futura**:
+   - Se documenta evaluar `self-hosted runners` si el volumen de builds crece.
+
+### Archivos modificados
+- `.github/workflows/ci.yml`
+- `.github/workflows/update-manifest.yml`
+- `REGISTRO_CAMBIOS_AVON.md`
+
+### Resultado del Build y Prueba
+- Validación YAML workflows (`ci.yml` y `update-manifest.yml`) -> OK.
+- `cd web && npm ci && npm run build` -> BUILD SUCCESSFUL.
+- Revisión de Actions recientes: identificadas oportunidades de ahorro con cancelación temprana y jobs ligeros en PR.
