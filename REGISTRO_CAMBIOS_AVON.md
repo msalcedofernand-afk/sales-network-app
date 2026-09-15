@@ -8,6 +8,13 @@
 - **Archivos:** `web/app/components/DevInspector.tsx`, `web/app/layout.tsx`, `web/app/catalogo/page.tsx`, `web/app/globals.css`, `web/package.json`, `web/package-lock.json`, `.env.example`.
 - **Resultado:** `npm run build` correcto en `web/`.
 
+## 2026-09-15 — Base Android del Dev Inspector
+
+- **Qué:** se añadió un inspector local para builds debug Android con selección por pulsación larga de la pantalla, captura de evidencia, JSONL local y exportación ZIP mediante `FileProvider`.
+- **Seguridad:** está protegido por `BuildConfig.DEBUG`; no se activa en release ni envía información automáticamente.
+- **Archivos:** `app/src/main/java/com/salesnetwork/avon/app/inspector/DevInspector.kt`, `MainActivity.kt`, `SalesNetworkMainApp.kt`, `app/src/main/res/xml/update_file_paths.xml`.
+- **Resultado:** pendiente de validar con Gradle Android en este entorno.
+
 ## 2026-09-10 — Pedidos auditables con comprobantes y devoluciones
 
 - **Qué:** web y Android usan `transition_order_status_v2`; se añadieron cobro, método, comprobante comprimido, evidencia opcional de entrega, cancelación y devolución con motivo.

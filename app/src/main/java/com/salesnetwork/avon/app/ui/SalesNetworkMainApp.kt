@@ -43,6 +43,7 @@ import com.salesnetwork.avon.app.ui.viewmodel.CatalogViewModel
 import com.salesnetwork.avon.app.ui.viewmodel.CustomerViewModel
 import com.salesnetwork.avon.app.ui.viewmodel.OrderViewModel
 import com.salesnetwork.avon.app.ui.viewmodel.TeamViewModel
+import com.salesnetwork.avon.app.inspector.inspectable
 
 enum class SalesAppTab {
     NETWORK,
@@ -139,6 +140,12 @@ fun SalesNetworkMainApp(
         }
     } else {
         Scaffold(
+            modifier = Modifier.inspectable("screen:${selectedTab.name.lowercase()}", "screen", when (selectedTab) {
+                SalesAppTab.NETWORK -> "Mi Red de Liderazgo"
+                SalesAppTab.CATALOG -> "Catalogo de Productos"
+                SalesAppTab.CUSTOMERS -> "Directorio de Clientes"
+                SalesAppTab.ORDERS -> "Pedidos & Cobranza"
+            }),
             topBar = {
                 Column(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)) {
                     CenterAlignedTopAppBar(

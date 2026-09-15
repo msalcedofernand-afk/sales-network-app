@@ -16,6 +16,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import com.salesnetwork.avon.app.ui.SalesNetworkMainApp
+import com.salesnetwork.avon.app.inspector.DevInspectorOverlay
 import com.salesnetwork.avon.app.update.AppUpdateChecker
 import com.salesnetwork.avon.app.update.AppUpdateInstaller
 import kotlinx.coroutines.launch
@@ -45,7 +46,8 @@ class MainActivity : ComponentActivity() {
                 )
             ) {
                 Surface {
-                    SalesNetworkMainApp(
+                    androidx.compose.foundation.layout.Box {
+                        SalesNetworkMainApp(
                         availableUpdate = availableUpdate,
                         onOpenUpdate = { info ->
                             scope.launch {
@@ -54,10 +56,11 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
-                    )
+                        )
+                        DevInspectorOverlay()
+                    }
                 }
             }
         }
     }
 }
-
