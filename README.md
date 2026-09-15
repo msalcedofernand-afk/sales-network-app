@@ -6,6 +6,12 @@ Aplicación Android Compose para equipos de venta, con catálogo web Next.js, Su
 
 La beta conecta Android y `web/` con Supabase Auth, PostgreSQL/RLS y Edge Functions para sesión, catálogo, clientes, carrito y pedidos. Room/offline completo, la APK release firmada y la promoción a producción siguen pendientes de validación beta.
 
+## Descargar APK beta
+
+[Descargar la última APK beta directamente](https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/beta/releases/sales-network-beta.apk)
+
+La APK beta usa el paquete `com.salesnetwork.avon.app.beta` e incluye el Dev Inspector para revisión interna. Activa “Orígenes desconocidos” solo si confías en el dispositivo y en el equipo que distribuye la beta.
+
 ## Estructura
 
 - `app/`: aplicación Android existente.

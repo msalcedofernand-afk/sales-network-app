@@ -1,5 +1,12 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-15 — Descarga directa de APK beta en README
+
+- **Qué:** se añadió al README un enlace público para descargar directamente la última APK beta desde el repositorio de releases.
+- **Por qué:** facilitar la instalación de la beta y el acceso al Dev Inspector sin buscar manualmente el artefacto.
+- **Archivos:** `README.md` y `REGISTRO_CAMBIOS_AVON.md`.
+- **Resultado:** documentación actualizada; el enlace depende de que el workflow de publicación haya subido la APK al repositorio de releases.
+
 ## 2026-09-15 — Dev Inspector web para revisión beta
 
 - **Qué:** se añadió un inspector local para builds de desarrollo/beta que permite activar selección de componentes, consultar ruta, ID, tipo, dimensiones, contenido y nombre accesible, capturar evidencia, registrar incidencias JSONL y exportar un ZIP.
