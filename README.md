@@ -12,6 +12,8 @@ La beta conecta Android y `web/` con Supabase Auth, PostgreSQL/RLS y Edge Functi
 
 La APK beta usa el paquete `com.salesnetwork.avon.app.beta` e incluye el Dev Inspector para revisión interna. Activa “Orígenes desconocidos” solo si confías en el dispositivo y en el equipo que distribuye la beta.
 
+Cada publicación conserva un APK histórico con el formato `sales-network-beta-v<versión>-code<código>.apk`; el manifiesto de actualización registra ese código y la descarga principal continúa usando `sales-network-beta.apk`.
+
 ## Estructura
 
 - `app/`: aplicación Android existente.

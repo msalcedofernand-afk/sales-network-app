@@ -1,5 +1,12 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-16 — APK beta identificable por versión y código
+
+- **Qué:** el workflow de publicación conserva cada APK con nombre `sales-network-beta-v<versión>-code<código>.apk`, mantiene el alias de descarga actual y apunta el manifiesto al archivo histórico con su código.
+- **Por qué:** identificar exactamente qué build se instaló y evitar que las publicaciones nuevas oculten el APK anterior.
+- **Archivos:** `.github/workflows/publish-release-repo.yml`, `scripts/update-version-json.ps1`, `README.md`.
+- **Resultado:** pendiente de generar la primera publicación con el nuevo nombre.
+
 ## 2026-09-16 — Dev Inspector disponible en login Android
 
 - **Qué:** se añadieron objetivos inspeccionables al formulario de login (tarjeta, logo, título, campos, selector de rol y botones), y el detector táctil del inspector ahora solo se activa cuando el modo está encendido.

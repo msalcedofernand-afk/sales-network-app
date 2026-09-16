@@ -59,6 +59,19 @@ jobs:
             echo "apk=app/build/outputs/apk/beta/release/app-beta-release.apk" >> "$GITHUB_OUTPUT"
             echo "branch=beta" >> "$GITHUB_OUTPUT"
           fi
+          base_version=$(awk -F= '$1 == "versionName" { print $2 }' version.properties)
+          if [ "$GITHUB_REF_NAME" = "beta" ]; then
+            channel_name="beta"
+            artifact_code=$((450000 + GITHUB_RUN_NUMBER))
+            artifact_version="${base_version}-beta.${GITHUB_RUN_NUMBER}"
+          else
+            channel_name="stable"
+            artifact_code=$(awk -F= '$1 == "versionCode" { print $2 }' version.properties)
+            artifact_version="$base_version"
+          fi
+          artifact_name="sales-network-${channel_name}-v${artifact_version}-code${artifact_code}.apk"
+          echo "artifact-name=$artifact_name" >> "$GITHUB_OUTPUT"
+          echo "artifact-code=$artifact_code" >> "$GITHUB_OUTPUT"
       - name: Build signed release
         run: ./gradlew :app:${{ steps.release.outputs.task }}
       - name: Verify APK signature
@@ -73,7 +86,7 @@ jobs:
             $code = 450000 + [int]$env:GITHUB_RUN_NUMBER
             $version = "$version-beta.$env:GITHUB_RUN_NUMBER"
           }
-          ./scripts/update-version-json.ps1 -Channel $channel -ApkPath '${{ steps.release.outputs.apk }}' -OutputPath "generated/$channel.json" -VersionCode $code -VersionName $version -ReleaseNotes @('Sesión y actualizaciones reforzadas.', 'Invitaciones y caché segura corregidas.')
+          ./scripts/update-version-json.ps1 -Channel $channel -ApkPath '${{ steps.release.outputs.apk }}' -OutputPath "generated/$channel.json" -VersionCode $code -VersionName $version -ApkName '${{ steps.release.outputs.artifact-name }}' -ReleaseNotes @('Sesión y actualizaciones reforzadas.', 'Invitaciones y caché segura corregidas.')
       - name: Publish artifact and generated manifest
         env:
           RELEASES_REPO_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
@@ -82,12 +95,12 @@ jobs:
           test -n "$RELEASES_REPO_TOKEN" || { echo "Falta RELEASES_REPO_TOKEN"; exit 1; }
           git clone --branch "${{ steps.release.outputs.branch }}" "https://x-access-token:${RELEASES_REPO_TOKEN}@github.com/${RELEASES_REPO}.git" release-repo
           mkdir -p release-repo/releases release-repo/updates
+          cp "${{ steps.release.outputs.apk }}" "release-repo/releases/${{ steps.release.outputs.artifact-name }}"
           cp "${{ steps.release.outputs.apk }}" "release-repo/releases/sales-network-${{ steps.release.outputs.channel }}.apk"
           cp "generated/${{ steps.release.outputs.channel }}.json" "release-repo/updates/${{ steps.release.outputs.channel }}.json"
           cd release-repo
           git config user.name "sales-network-release-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add releases updates
-          git commit -m "release(${{ steps.release.outputs.channel }}): 1.2.0 ${GITHUB_SHA::7}" || exit 0
+          git commit -m "release(${{ steps.release.outputs.channel }}): code ${{ steps.release.outputs.artifact-code }} ${GITHUB_SHA::7}" || exit 0
           git push origin "HEAD:${{ steps.release.outputs.branch }}"
-

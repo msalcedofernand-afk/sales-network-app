@@ -5,6 +5,7 @@ param(
     [int]$VersionCode = 0,
     [string]$VersionName = "",
     [int]$MinSupportedVersionCode = 0,
+    [string]$ApkName = "",
     [string[]]$ReleaseNotes = @("Mejoras de seguridad y estabilidad."),
     [string]$ReleasedAt = (Get-Date).ToUniversalTime().ToString("o")
 )
@@ -24,7 +25,7 @@ if ($Channel -eq "beta" -and -not $PSBoundParameters.ContainsKey("VersionName"))
 if ($MinSupportedVersionCode -le 0) { $MinSupportedVersionCode = $versionCode }
 
 $expectedPackage = if ($Channel -eq "beta") { "com.salesnetwork.avon.app.beta" } else { "com.salesnetwork.avon.app" }
-$apkName = if ($Channel -eq "beta") { "sales-network-beta.apk" } else { "sales-network-stable.apk" }
+$apkName = if ($ApkName) { $ApkName } elseif ($Channel -eq "beta") { "sales-network-beta.apk" } else { "sales-network-stable.apk" }
 $branch = if ($Channel -eq "beta") { "beta" } else { "main" }
 $apkUrl = "https://raw.githubusercontent.com/msalcedofernand-afk/sales-network-app-releases/$branch/releases/$apkName"
 $sha256 = (Get-FileHash -LiteralPath $resolvedApk -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -48,4 +49,3 @@ $parent = Split-Path -Parent $OutputPath
 if ($parent) { New-Item -ItemType Directory -Force -Path $parent | Out-Null }
 $manifest | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $OutputPath -Encoding utf8NoBOM
 Write-Host "Manifiesto $Channel generado desde $resolvedApk -> $OutputPath"
-
