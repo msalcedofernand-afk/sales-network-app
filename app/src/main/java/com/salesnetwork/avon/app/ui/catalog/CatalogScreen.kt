@@ -23,6 +23,7 @@ import coil.compose.AsyncImage
 import com.salesnetwork.avon.app.domain.model.Product
 import com.salesnetwork.avon.app.ui.*
 import com.salesnetwork.avon.app.inspector.inspectable
+import com.salesnetwork.avon.app.utils.formatMoney
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -138,7 +139,7 @@ fun CatalogScreen(
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Text("Precio Campana:", fontSize = S.TextBody, fontWeight = FontWeight.SemiBold)
-                        Text("S/ ${String.format("%.2f", p.price)}", fontWeight = FontWeight.Black, fontSize = S.TextHeadline, color = MaterialTheme.colorScheme.primary)
+                        Text("S/ ${formatMoney(p.price)}", fontWeight = FontWeight.Black, fontSize = S.TextHeadline, color = MaterialTheme.colorScheme.primary)
                     }
                 }
             },
@@ -196,8 +197,8 @@ private fun ProductCard(product: Product, onClick: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "S/ ${String.format("%.2f", product.price)}",
-                        modifier = Modifier.inspectable("catalog:price:${product.id}", "price", "S/ ${String.format("%.2f", product.price)}"),
+                        "S/ ${formatMoney(product.price)}",
+                        modifier = Modifier.inspectable("catalog:price:${product.id}", "price", "S/ ${formatMoney(product.price)}"),
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = S.TextTitle,
                         color = MaterialTheme.colorScheme.primary

@@ -9,6 +9,7 @@ import com.salesnetwork.avon.app.domain.model.Order
 import com.salesnetwork.avon.app.domain.model.OrderItem
 import com.salesnetwork.avon.app.domain.model.OrderStatus
 import com.salesnetwork.avon.app.domain.model.PaymentMethod
+import com.salesnetwork.avon.app.utils.formatMoney
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -140,15 +141,15 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         sb.append("------------------------------------\n")
         sb.append("*DETALLE DE PRODUCTOS:*\n")
         order.items.forEach { item ->
-            sb.append("- ${item.quantity}x ${item.productName}: S/ ${String.format("%.2f", item.subtotal)}\n")
+            sb.append("- ${item.quantity}x ${item.productName}: S/ ${formatMoney(item.subtotal)}\n")
         }
         sb.append("------------------------------------\n")
-        sb.append("*TOTAL A PAGAR:* S/ ${String.format("%.2f", order.totalAmount)}\n")
+        sb.append("*TOTAL A PAGAR:* S/ ${formatMoney(order.totalAmount)}\n")
         if (order.amountPaid > 0) {
-            sb.append("Monto Abonado: S/ ${String.format("%.2f", order.amountPaid)} (${order.paymentMethod.name})\n")
+            sb.append("Monto Abonado: S/ ${formatMoney(order.amountPaid)} (${order.paymentMethod.name})\n")
         }
         if (order.remainingDebt > 0) {
-            sb.append("*SALDO PENDIENTE:* S/ ${String.format("%.2f", order.remainingDebt)}\n")
+            sb.append("*SALDO PENDIENTE:* S/ ${formatMoney(order.remainingDebt)}\n")
             sb.append("\nPuedes cancelar tu saldo por Yape o Plin al numero registrado de tu lider VV.")
         } else {
             sb.append("Estado: PAGADO\n")

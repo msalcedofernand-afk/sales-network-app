@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.salesnetwork.avon.app.domain.model.*
 import com.salesnetwork.avon.app.ui.*
 import com.salesnetwork.avon.app.utils.ContactActionHelper
+import com.salesnetwork.avon.app.utils.formatMoney
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,31 +100,31 @@ fun OrderListScreen(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(S.S)) {
                 KpiCard(
                     label = "Ventas",
-                    value = "S/ ${String.format("%.2f", totalSales)}",
+                    value = "S/ ${formatMoney(totalSales)}",
                     icon = Icons.Default.ReceiptLong,
                     onClick = {
                         orderKpiTitle = "Ventas de Campana"
-                        orderKpiBody = "Facturacion total de S/ ${String.format("%.2f", totalSales)} en ${orders.size} pedidos."
+                        orderKpiBody = "Facturacion total de S/ ${formatMoney(totalSales)} en ${orders.size} pedidos."
                     }
                 )
                 KpiCard(
                     label = "Ganancia",
-                    value = "S/ ${String.format("%.2f", totalProfit)}",
+                    value = "S/ ${formatMoney(totalProfit)}",
                     valueColor = C.Success,
                     icon = Icons.Default.Payments,
                     onClick = {
                         orderKpiTitle = "Ganancia Estimada"
-                        orderKpiBody = "Comision directa: S/ ${String.format("%.2f", directCommission)}\nSobrecomision red (5%): S/ ${String.format("%.2f", networkCommission)}\nTotal: S/ ${String.format("%.2f", totalProfit)}"
+                        orderKpiBody = "Comision directa: S/ ${formatMoney(directCommission)}\nSobrecomision red (5%): S/ ${formatMoney(networkCommission)}\nTotal: S/ ${formatMoney(totalProfit)}"
                     }
                 )
                 KpiCard(
                     label = "Por Cobrar",
-                    value = "S/ ${String.format("%.2f", pendingDebt)}",
+                    value = "S/ ${formatMoney(pendingDebt)}",
                     valueColor = if (pendingDebt > 0) C.Error else C.Success,
                     icon = Icons.Default.Payments,
                     onClick = {
                         orderKpiTitle = "Saldos por Cobrar"
-                        orderKpiBody = if (pendingDebt > 0) "Hay S/ ${String.format("%.2f", pendingDebt)} pendientes en $pendingCount pedidos." else "Todos los pedidos estan cobrados."
+                        orderKpiBody = if (pendingDebt > 0) "Hay S/ ${formatMoney(pendingDebt)} pendientes en $pendingCount pedidos." else "Todos los pedidos estan cobrados."
                     }
                 )
             }
@@ -220,7 +221,7 @@ fun OrderListScreen(
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(product.name, fontSize = S.TextSmall, fontWeight = FontWeight.Medium, maxLines = 1)
-                                Text("S/ ${String.format("%.2f", product.price)}", fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("S/ ${formatMoney(product.price)}", fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 IconButton(onClick = { if (qty > 0) cartItems = cartItems.toMutableMap().apply { if (qty == 1) remove(product.sku) else put(product.sku, qty - 1) } }, modifier = Modifier.size(48.dp)) {
@@ -239,7 +240,7 @@ fun OrderListScreen(
                     // Total
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("TOTAL:", fontWeight = FontWeight.Bold, fontSize = S.TextBody)
-                        Text("S/ ${String.format("%.2f", totalCart)}", fontWeight = FontWeight.ExtraBold, fontSize = S.TextTitle, color = MaterialTheme.colorScheme.primary)
+                        Text("S/ ${formatMoney(totalCart)}", fontWeight = FontWeight.ExtraBold, fontSize = S.TextTitle, color = MaterialTheme.colorScheme.primary)
                     }
                     Text("La comisión se calculará en el servidor al confirmar.", fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
@@ -347,16 +348,16 @@ private fun OrderCard(
             order.items.forEach { item ->
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("${item.quantity}x ${item.productName}", fontSize = S.TextSmall)
-                    Text("S/ ${String.format("%.2f", item.subtotal)}", fontSize = S.TextSmall, fontWeight = FontWeight.SemiBold)
+                    Text("S/ ${formatMoney(item.subtotal)}", fontSize = S.TextSmall, fontWeight = FontWeight.SemiBold)
                 }
             }
 
             // Footer
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text("Total: S/ ${String.format("%.2f", order.totalAmount)}", fontWeight = FontWeight.ExtraBold, fontSize = S.TextBody, color = MaterialTheme.colorScheme.primary)
+                    Text("Total: S/ ${formatMoney(order.totalAmount)}", fontWeight = FontWeight.ExtraBold, fontSize = S.TextBody, color = MaterialTheme.colorScheme.primary)
                     if (order.remainingDebt > 0) {
-                        StatusBadge(text = "Debe: S/ ${String.format("%.2f", order.remainingDebt)}", color = C.Error, backgroundColor = C.ErrorLight)
+                        StatusBadge(text = "Debe: S/ ${formatMoney(order.remainingDebt)}", color = C.Error, backgroundColor = C.ErrorLight)
                     } else {
                         StatusBadge(text = "Pagado con ${order.paymentMethod.name}", color = C.Success, backgroundColor = C.SuccessLight)
                     }

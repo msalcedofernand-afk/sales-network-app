@@ -1,5 +1,12 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-16 — Formateo de montos centralizado
+
+- **Qué:** se centralizó el formato de importes en `formatMoney` y se reemplazaron las repeticiones en catálogo, pedidos, red y mensajes de WhatsApp.
+- **Por qué:** mantener un único comportamiento para los montos y reducir cambios repetidos.
+- **Archivos:** `app/src/main/java/com/salesnetwork/avon/app/utils/Formatters.kt`, pantallas Android de catálogo, pedidos y red, `OrderViewModel.kt`.
+- **Resultado:** revisión estática y `git diff --check` correctos; falta validar Gradle en un entorno con Android SDK.
+
 ## 2026-09-16 — Nombre del APK beta con versionCode
 
 - **Qué:** el APK beta debug se conserva como `app-beta-debug-<versionCode>.apk`; el código cambia automáticamente en cada build.

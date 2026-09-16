@@ -32,6 +32,7 @@ import com.salesnetwork.avon.app.domain.model.User
 import com.salesnetwork.avon.app.domain.model.UserRole
 import com.salesnetwork.avon.app.ui.*
 import com.salesnetwork.avon.app.ui.viewmodel.LeaderSupervisionData
+import com.salesnetwork.avon.app.utils.formatMoney
 import com.salesnetwork.avon.app.utils.ContactActionHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -269,12 +270,12 @@ fun TeamNetworkScreen(
                 )
                 KpiCard(
                     label = "Facturacion",
-                    value = "S/ ${String.format("%.2f", facturacionVal)}",
+                    value = "S/ ${formatMoney(facturacionVal)}",
                     valueColor = C.Success,
                     icon = Icons.Default.SupervisorAccount,
                     onClick = {
                         kpiDetailTitle = "Detalle de Facturacion"
-                        kpiDetailBody = "Volumen global facturado en Campana Activa: S/ ${String.format("%.2f", facturacionVal)} entre todos los equipos."
+                        kpiDetailBody = "Volumen global facturado en Campana Activa: S/ ${formatMoney(facturacionVal)} entre todos los equipos."
                     }
                 )
             }
@@ -340,8 +341,8 @@ fun TeamNetworkScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column {
-                                    Text("Ventas: S/ ${String.format("%.2f", leaderData.totalTeamSales)}", fontSize = S.TextSmall, fontWeight = FontWeight.SemiBold)
-                                    Text("Sobrecomision (5%): S/ ${String.format("%.2f", leaderData.networkCommission)}", fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text("Ventas: S/ ${formatMoney(leaderData.totalTeamSales)}", fontSize = S.TextSmall, fontWeight = FontWeight.SemiBold)
+                                    Text("Sobrecomision (5%): S/ ${formatMoney(leaderData.networkCommission)}", fontSize = S.TextSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Icon(
                                     if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
@@ -388,7 +389,7 @@ fun TeamNetworkScreen(
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(S.S)) {
                         KpiCard(
                             label = "Sobrecomision Red",
-                            value = "S/ ${String.format("%.2f", networkCommissionTotal)}",
+                            value = "S/ ${formatMoney(networkCommissionTotal)}",
                             icon = Icons.Default.SupervisorAccount
                         )
                         val activeCount = teamMembers.count { it.isActiveInCampaign }
