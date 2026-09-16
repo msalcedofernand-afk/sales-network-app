@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salesnetwork.avon.app.domain.model.UserRole
+import com.salesnetwork.avon.app.inspector.inspectable
 import com.salesnetwork.avon.app.ui.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,14 +60,16 @@ fun LoginRegisterScreen(
             .fillMaxSize()
             .background(C.Petroleo900)
             .safeDrawingPadding()
-            .imePadding(),
+            .imePadding()
+            .inspectable("login:screen", "screen", "Inicio de sesión"),
         contentAlignment = Alignment.Center
     ) {
         Card(
             modifier = Modifier
                 .widthIn(max = 520.dp)
                 .fillMaxWidth()
-                .padding(S.M),
+                .padding(S.M)
+                .inspectable("login:card", "card", "Formulario de acceso"),
             shape = SH.Dialog,
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             border = B.cardBorder(),
@@ -82,7 +85,7 @@ fun LoginRegisterScreen(
             ) {
                 // Logo
                 Surface(
-                    modifier = Modifier.size(56.dp),
+                    modifier = Modifier.size(56.dp).inspectable("login:logo", "logo", "VV"),
                     shape = SH.Avatar,
                     color = MaterialTheme.colorScheme.primary
                 ) {
@@ -102,7 +105,8 @@ fun LoginRegisterScreen(
                     fontSize = S.TextHeadline,
                     lineHeight = 30.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.inspectable("login:title", "text")
                 )
 
                 // Subtitle
@@ -136,7 +140,7 @@ fun LoginRegisterScreen(
                         onValueChange = { name = it },
                         label = { Text("Nombre Completo") },
                         leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(S.IconM)) },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().inspectable("login:name", "input", "Nombre Completo"),
                         singleLine = true,
                         shape = SH.Input
                     )
@@ -148,7 +152,7 @@ fun LoginRegisterScreen(
                     onValueChange = { email = it },
                     label = { Text("Correo Electronico") },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(S.IconM)) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().inspectable("login:email", "input", "Correo Electronico"),
                     singleLine = true,
                     shape = SH.Input,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)
@@ -170,7 +174,7 @@ fun LoginRegisterScreen(
                             )
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().inspectable("login:password", "input", "Contrasena"),
                     singleLine = true,
                     shape = SH.Input,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done)
@@ -194,7 +198,7 @@ fun LoginRegisterScreen(
                                 onClick = { selectedRole = UserRole.LIDER },
                                 label = { Text("Lider de Red", fontSize = S.TextSmall) },
                                 leadingIcon = { Icon(Icons.Default.Group, contentDescription = null, modifier = Modifier.size(S.IconS)) },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.weight(1f).inspectable("login:role:leader", "selector", "Lider de Red"),
                                 shape = SH.Chip
                             )
                             FilterChip(
@@ -202,7 +206,7 @@ fun LoginRegisterScreen(
                                 onClick = { selectedRole = UserRole.MIEMBRO },
                                 label = { Text("Vendedor", fontSize = S.TextSmall) },
                                 leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(S.IconS)) },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.weight(1f).inspectable("login:role:member", "selector", "Vendedor"),
                                 shape = SH.Chip
                             )
                         }
@@ -230,7 +234,7 @@ fun LoginRegisterScreen(
                                     label = { Text("Codigo de invitacion") },
                                     placeholder = { Text("Ej. VV-2026") },
                                     leadingIcon = { Icon(Icons.Default.QrCode, contentDescription = null, modifier = Modifier.size(S.IconM)) },
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.fillMaxWidth().inspectable("login:leader-code", "input", "Codigo de invitacion"),
                                     singleLine = true,
                                     shape = SH.Input,
                                     isError = leaderCode.isBlank()
@@ -273,7 +277,8 @@ fun LoginRegisterScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(56.dp)
+                        .inspectable("login:submit", "button", if (isRegisterMode) "Crear Cuenta" else "Iniciar Sesion"),
                     shape = SH.Button,
                     enabled = !isLoading,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
@@ -307,6 +312,7 @@ fun LoginRegisterScreen(
                             showResetDialog = true
                         },
                         modifier = Modifier.align(Alignment.CenterHorizontally)
+                            .inspectable("login:forgot-password", "button", "Olvidaste tu contrasena?"),
                     ) {
                         Text(
                             text = "Olvidaste tu contrasena?",
@@ -323,6 +329,7 @@ fun LoginRegisterScreen(
                         errorMessage = null
                     },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
+                        .inspectable("login:toggle-mode", "button"),
                 ) {
                     Text(
                         text = if (isRegisterMode) "Ya tienes cuenta? Inicia Sesion" else "No tienes cuenta? Registrate aqui",

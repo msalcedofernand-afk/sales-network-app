@@ -1,5 +1,12 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-16 — Dev Inspector disponible en login Android
+
+- **Qué:** se añadieron objetivos inspeccionables al formulario de login (tarjeta, logo, título, campos, selector de rol y botones), y el detector táctil del inspector ahora solo se activa cuando el modo está encendido.
+- **Por qué:** el modo de inspección no permitía seleccionar componentes en el inicio de sesión y podía interceptar gestos normales cuando estaba apagado.
+- **Archivos:** `app/src/main/java/com/salesnetwork/avon/app/inspector/DevInspector.kt`, `app/src/main/java/com/salesnetwork/avon/app/ui/auth/LoginRegisterScreen.kt`.
+- **Resultado:** pendiente de validar con build Android.
+
 ## 2026-09-15 — APK beta descargable desde este repositorio
 
 - **Qué:** se publicará `releases/sales-network-beta.apk` en la rama `beta` y se actualizarán el README y el manifiesto beta para descargarlo desde este repositorio.

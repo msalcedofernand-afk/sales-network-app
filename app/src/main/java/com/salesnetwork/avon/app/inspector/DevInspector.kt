@@ -88,10 +88,12 @@ fun Modifier.inspectable(id: String, type: String, content: String = ""): Modifi
         if (size.width > 0 && size.height > 0) {
             DevInspectorState.recordBounds(id, ComposeRect(position.x, position.y, position.x + size.width, position.y + size.height))
         }
-    }.pointerInput(id) {
-        detectTapGestures(onLongPress = {
-            DevInspectorState.select(InspectorTarget(id, type, DevInspectorState.boundsFor(id), content))
-        })
+    }.pointerInput(DevInspectorState.active, id) {
+        if (DevInspectorState.active) {
+            detectTapGestures(onLongPress = {
+                DevInspectorState.select(InspectorTarget(id, type, DevInspectorState.boundsFor(id), content))
+            })
+        }
     }
 
 @Composable
