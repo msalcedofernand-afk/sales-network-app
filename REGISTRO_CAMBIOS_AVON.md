@@ -1,5 +1,12 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-16 — Corrección del flujo remoto de generación APK
+
+- **Qué:** los workflows usan el comando `gradle` disponible en GitHub Actions y se sincronizó el manifiesto beta publicado en web.
+- **Por qué:** la ejecución anterior no pudo compilar porque el repositorio no tenía `gradlew`, y la validación de manifiestos encontró una copia beta desactualizada.
+- **Archivos:** `.github/workflows/ci.yml`, `.github/workflows/publish-release-repo.yml`, `web/public/updates/beta.json`.
+- **Resultado:** pendiente de confirmar la nueva ejecución remota.
+
 ## 2026-09-16 — APK beta identificable por versión y código
 
 - **Qué:** el workflow de publicación conserva cada APK con nombre `sales-network-beta-v<versión>-code<código>.apk`, mantiene el alias de descarga actual y apunta el manifiesto al archivo histórico con su código.

@@ -73,7 +73,7 @@ jobs:
           echo "artifact-name=$artifact_name" >> "$GITHUB_OUTPUT"
           echo "artifact-code=$artifact_code" >> "$GITHUB_OUTPUT"
       - name: Build signed release
-        run: ./gradlew :app:${{ steps.release.outputs.task }}
+        run: gradle :app:${{ steps.release.outputs.task }}
       - name: Verify APK signature
         run: apksigner verify --verbose --print-certs "${{ steps.release.outputs.apk }}"
       - name: Generate manifest from APK

@@ -23,7 +23,7 @@ jobs:
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v4
       - name: Unit tests and lint for both channels
-        run: ./gradlew :app:testBetaDebugUnitTest :app:lintBetaDebug :app:testStableDebugUnitTest :app:lintStableDebug
+        run: gradle :app:testBetaDebugUnitTest :app:lintBetaDebug :app:testStableDebugUnitTest :app:lintStableDebug
       - name: Upload Android reports on failure
         if: failure()
         uses: actions/upload-artifact@v4
@@ -61,4 +61,3 @@ jobs:
             web/playwright-report/
             web/test-results/
           retention-days: 14
-
