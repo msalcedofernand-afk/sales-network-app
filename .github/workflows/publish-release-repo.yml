@@ -76,7 +76,10 @@ jobs:
       - name: Build signed release
         run: gradle :app:${{ steps.release.outputs.task }}
       - name: Verify APK signature
-        run: apksigner verify --verbose --print-certs "${{ steps.release.outputs.apk }}"
+        run: |
+          apksigner_path=$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)
+          test -n "$apksigner_path" || { echo "No se encontró apksigner en el Android SDK"; exit 1; }
+          "$apksigner_path" verify --verbose --print-certs "${{ steps.release.outputs.apk }}"
       - name: Generate manifest from APK
         shell: pwsh
         run: |

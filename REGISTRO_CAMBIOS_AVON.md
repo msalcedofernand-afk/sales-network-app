@@ -1,5 +1,12 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-16 — Verificación de firma debug en runner Android
+
+- **Qué:** el workflow busca `apksigner` dentro de las herramientas del Android SDK en lugar de asumir que está en el PATH.
+- **Por qué:** el APK beta debug sí se compiló, pero la publicación se detuvo porque el runner no encontraba el comando.
+- **Archivos:** `.github/workflows/publish-release-repo.yml`.
+- **Resultado:** pendiente de confirmar la publicación final.
+
 ## 2026-09-16 — Beta personal con APK debug
 
 - **Qué:** la publicación de la rama `beta` genera `assembleBetaDebug` y no requiere keystore de producción; `main` conserva el flujo release firmado.
