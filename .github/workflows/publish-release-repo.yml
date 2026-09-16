@@ -70,7 +70,11 @@ jobs:
             artifact_code=$(awk -F= '$1 == "versionCode" { print $2 }' version.properties)
             artifact_version="$base_version"
           fi
-          artifact_name="sales-network-${channel_name}-v${artifact_version}-code${artifact_code}.apk"
+          if [ "$channel_name" = "beta" ]; then
+            artifact_name="app-beta-debug-${artifact_code}.apk"
+          else
+            artifact_name="app-stable-release-${artifact_code}.apk"
+          fi
           echo "artifact-name=$artifact_name" >> "$GITHUB_OUTPUT"
           echo "artifact-code=$artifact_code" >> "$GITHUB_OUTPUT"
       - name: Build signed release

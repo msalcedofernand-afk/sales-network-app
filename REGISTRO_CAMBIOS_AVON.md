@@ -1,5 +1,12 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-16 — Nombre del APK beta con versionCode
+
+- **Qué:** el APK beta debug se conserva como `app-beta-debug-<versionCode>.apk`; el código cambia automáticamente en cada build.
+- **Por qué:** identificar fácilmente el APK exacto que se generó e instaló.
+- **Archivos:** `.github/workflows/publish-release-repo.yml`, `README.md`.
+- **Resultado:** pendiente de confirmar la nueva publicación remota.
+
 ## 2026-09-16 — Verificación de firma debug en runner Android
 
 - **Qué:** el workflow busca `apksigner` dentro de las herramientas del Android SDK en lugar de asumir que está en el PATH.
