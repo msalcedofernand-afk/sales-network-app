@@ -1,5 +1,12 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-16 — Beta personal con APK debug
+
+- **Qué:** la publicación de la rama `beta` genera `assembleBetaDebug` y no requiere keystore de producción; `main` conserva el flujo release firmado.
+- **Por qué:** la beta se usa para desarrollo personal y no necesita distribución de producción.
+- **Archivos:** `.github/workflows/publish-release-repo.yml`.
+- **Resultado:** pendiente de confirmar la nueva ejecución y descarga del APK debug.
+
 ## 2026-09-16 — Corrección del flujo remoto de generación APK
 
 - **Qué:** los workflows usan el comando `gradle` disponible en GitHub Actions y se sincronizó el manifiesto beta publicado en web.

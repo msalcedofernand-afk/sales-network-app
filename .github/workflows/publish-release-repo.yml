@@ -35,7 +35,8 @@ jobs:
           distribution: temurin
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Restore release keystore
+      - name: Restore release keystore for stable
+        if: github.ref_name == 'main'
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
@@ -55,8 +56,8 @@ jobs:
             echo "branch=main" >> "$GITHUB_OUTPUT"
           else
             echo "channel=beta" >> "$GITHUB_OUTPUT"
-            echo "task=assembleBetaRelease" >> "$GITHUB_OUTPUT"
-            echo "apk=app/build/outputs/apk/beta/release/app-beta-release.apk" >> "$GITHUB_OUTPUT"
+            echo "task=assembleBetaDebug" >> "$GITHUB_OUTPUT"
+            echo "apk=app/build/outputs/apk/beta/debug/app-beta-debug.apk" >> "$GITHUB_OUTPUT"
             echo "branch=beta" >> "$GITHUB_OUTPUT"
           fi
           base_version=$(awk -F= '$1 == "versionName" { print $2 }' version.properties)
