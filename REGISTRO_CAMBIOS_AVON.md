@@ -1,5 +1,12 @@
 # REGISTRO_CAMBIOS_AVON.md - Historial de Cambios del Proyecto VV Lideres Chiclayo
 
+## 2026-09-16 — Limpieza de archivos residuales
+
+- **Qué:** se eliminaron capturas/mockups PNG y APK históricos de prueba que no usa la aplicación.
+- **Por qué:** reducir el tamaño del repositorio y evitar confundir artefactos antiguos con el APK beta vigente.
+- **Conservado:** `releases/sales-network-beta.apk`, código fuente, documentación, configuración, migraciones y manifiestos.
+- **Resultado:** pendiente de commit y push.
+
 ## 2026-09-16 — Formateo de montos centralizado
 
 - **Qué:** se centralizó el formato de importes en `formatMoney` y se reemplazaron las repeticiones en catálogo, pedidos, red y mensajes de WhatsApp.
